@@ -1,0 +1,24 @@
+{
+  "daily_targets": {
+    "calories": 1400,
+    "protein_g": 95,
+    "carbs_g": 140,
+    "fat_g": 45,
+    "water_ml": 2000
+  },
+  "entries": [
+    {
+      "date": "2026-07-14",
+      "calories": 869,
+      "protein_g": 69,
+      "carbs_g": 104,
+      "fat_g": 22,
+      "water_ml": 0,
+      "meals": [
+        "Lunch: steamed butternut squash 250g + steamed broccoli 300g + cereal with milk 250g + beef 50g + beef mince 80g",
+        "Snack: protein powder 26g"
+      ],
+      "notes": "Partial day log synced from goal-progression canvas. ~26g protein remaining to hit 95g target."
+    }
+  ]
+}
