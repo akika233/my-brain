@@ -7,6 +7,6 @@
 - **Timeline:** ~3–5 months at sustainable pace
 - **Track progress:** InBody scan every 4–6 weeks
 
-**See also:** [[body-composition]], [[workout-routine]]
+**See also:** [[body-composition]], [[workout-routine]], [[progression-map]], [[nutrition]]
 
 **Section:** [[profile]]

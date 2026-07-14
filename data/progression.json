@@ -1,0 +1,32 @@
+{
+  "goal": {
+    "target_weight_kg": 45,
+    "target_date": "2026-12-01",
+    "start_weight_kg": 50.5,
+    "start_date": "2026-07-14",
+    "weekly_loss_kg": 0.4
+  },
+  "baseline": {
+    "date": "2026-07-14",
+    "weight_kg": 50.5,
+    "smm_kg": 20.6,
+    "pbf_percent": 26.0,
+    "ecw_ratio": 0.365
+  },
+  "targets_at_goal": {
+    "weight_kg": 45,
+    "smm_kg_min": 21.0,
+    "pbf_percent_max": 23
+  },
+  "milestones": [
+    { "date": "2026-07-14", "weight_kg": 50.5, "type": "inbody", "label": "Baseline" },
+    { "date": "2026-08-11", "weight_kg": 49.5, "type": "weigh-in", "label": "−1 kg" },
+    { "date": "2026-08-25", "weight_kg": 49.0, "type": "inbody", "label": "InBody #2" },
+    { "date": "2026-09-08", "weight_kg": 48.5, "type": "weigh-in", "label": "−2 kg" },
+    { "date": "2026-10-06", "weight_kg": 47.5, "type": "inbody", "label": "InBody #3" },
+    { "date": "2026-11-03", "weight_kg": 46.5, "type": "weigh-in", "label": "−4 kg" },
+    { "date": "2026-11-17", "weight_kg": 46.0, "type": "inbody", "label": "InBody #4" },
+    { "date": "2026-12-01", "weight_kg": 45.0, "type": "inbody", "label": "Goal" }
+  ],
+  "checkins": []
+}
