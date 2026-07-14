@@ -1,6 +1,9 @@
 # Local secrets — never commit these
 .env
 
+# Hevy API cache (local only)
+health/hevy-*.json
+
 # OS files
 .DS_Store
 Thumbs.db
