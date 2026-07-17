@@ -106,6 +106,9 @@
     { "keywords": ["ijs", "ice cream"], "calories": 207, "protein": 3.5, "carbs": 24, "fat": 11, "baseGrams": 100 },
     { "keywords": ["koffie", "coffee"], "calories": 2, "protein": 0.1, "carbs": 0, "fat": 0, "baseGrams": 100 },
     { "keywords": ["latte", "cappuccino"], "calories": 43, "protein": 2.2, "carbs": 4, "fat": 2, "baseGrams": 100 },
+    { "keywords": ["ice tea", "iced tea", "ijsthee"], "calories": 19, "protein": 0, "carbs": 4.5, "fat": 0, "baseGrams": 100 },
+    { "keywords": ["tomato beef noodle", "tomato beef paste noodle", "beef tomato noodle"], "calories": 140, "protein": 5.6, "carbs": 18, "fat": 4.4, "baseGrams": 100 },
+    { "keywords": ["cheese vegetable sandwich", "cheese veg sandwich", "kaas groente sandwich"], "calories": 253, "protein": 11, "carbs": 25, "fat": 11, "baseGrams": 150 },
     { "keywords": ["water"], "calories": 0, "protein": 0, "carbs": 0, "fat": 0, "waterMl": 250 }
   ]
 }
