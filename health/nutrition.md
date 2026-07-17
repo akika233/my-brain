@@ -30,7 +30,7 @@ Adjust portions to hit targets. Weigh protein sources if unsure.
 
 ## How to log
 
-1. **Canvas — text** — type what you ate, click "Add meal to today", overview updates live
+1. **Canvas — text** — type what you ate in Dutch or English (e.g. `meloen 200g`, `kipfilet 120g`), click "Add meal to today"
 2. **Canvas — photo** — attach meal photo, click "Analyze meal photo with AI", attach same photo in the chat that opens
 3. **Tell the AI** — describe meals in chat; it updates `data/diet-log.json`
 4. **Sync** — click "Sync today's log to vault" in the canvas to save totals to GitHub
@@ -50,6 +50,12 @@ Each day in `data/diet-log.json`:
   "notes": ""
 }
 ```
+
+## Text logging tips
+- Use simple names + weight: `meloen 250g`, `rundergehakt 80g`, `magere kwark 150g`
+- Prep words are stripped automatically: `gestoomde broccoli 300g` works
+- Food data lives in `data/food-db.json` (sourced from DekaMarkt product pages, per 100g)
+- Missing item? Tell the AI the DekaMarkt product name — it can add it to the database
 
 ## Rules
 - Hit protein first — everything else flexes around it

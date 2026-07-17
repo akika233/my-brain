@@ -15,6 +15,7 @@ Any AI tool connecting to this repo should read this first.
 ## Data folder
 - data/reminders.json — array of {date, message, label} objects
 - data/diet-log.json — daily nutrition tracking (calories, macros, meals)
+- data/food-db.json — DekaMarkt-sourced food nutrition for canvas meal text matching
 - data/progression.json — weight milestones and InBody check-ins
 - data/ is for structured/machine-readable files (JSON, CSV)
 - All other content uses markdown (.md)
