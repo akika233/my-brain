@@ -4,7 +4,7 @@ Structured data — reminders, lists, trackers (JSON)
 
 ## Files
 - `diet-log.json` — daily nutrition (calories, protein, carbs, fat, water, meals)
-- `food-db.json` — DekaMarkt-sourced food nutrition for canvas text logging (NL + EN keywords)
+- `food-db.json` — DekaMarkt-sourced food nutrition for canvas + Telegram bot text logging (NL + EN keywords)
 - `progression.json` — weight milestones and InBody check-in dates
 - `reminders.json` — reminders list
 

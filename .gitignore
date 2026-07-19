@@ -1,5 +1,8 @@
 # Local secrets — never commit these
 .env
+telegram-bot/.env
+telegram-bot/.venv/
+telegram-bot/__pycache__/
 
 # Hevy API cache (local only)
 health/hevy-*.json

@@ -26,7 +26,9 @@ Workout data is synced from the [Hevy app](https://www.hevyapp.com/).
 
 ## Notes
 
+- Last sync: **2026-07-20** — 2 workouts, 4 routines → `health/hevy-workouts.json` + [[gym-log]]
+- Re-sync anytime: `python data/sync-hevy.py` (use `telegram-bot\.venv` if needed)
 - The AI can fetch your Hevy workout history when you ask about training progress
 - Hevy API docs: [https://api.hevyapp.com/docs](https://api.hevyapp.com/docs)
 
-**Section:** [[health]] 
+**Section:** [[health]]

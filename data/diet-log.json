@@ -21,6 +21,19 @@
       "notes": "Partial day log synced from goal-progression canvas. ~26g protein remaining to hit 95g target."
     },
     {
+      "date": "2026-07-15",
+      "calories": 786,
+      "protein_g": 37,
+      "carbs_g": 122,
+      "fat_g": 18,
+      "water_ml": null,
+      "meals": [
+        "2 eggs + half a carrot + cereal with milk 250g",
+        "Pasta 250g"
+      ],
+      "notes": "Estimates: 2 eggs ~100g (132 kcal / 12g P); half carrot ~40g (16 kcal); cereal+milk 250g (310 kcal / 11g P); pasta 250g cooked (328 kcal / 13g P)."
+    },
+    {
       "date": "2026-07-16",
       "calories": 1274,
       "protein_g": 46,
@@ -34,7 +47,33 @@
         "Melon ~200g"
       ],
       "notes": "Estimates: iced tea ~126 kcal; noodle dish ~700 kcal / 28g P; sandwich ~380 kcal / 16g P; melon ~68 kcal. Pilates Open Level 1 (1h). Protein ~49g under target; carbs over."
+    },
+    {
+      "date": "2026-07-17",
+      "calories": 96,
+      "protein_g": 3,
+      "carbs_g": 10,
+      "fat_g": 4,
+      "water_ml": 285,
+      "meals": [
+        "egg 1g, 1carrot",
+        "Lunch"
+      ],
+      "notes": ""
+    },
+    {
+      "date": "2026-07-19",
+      "calories": 1162,
+      "protein_g": 58,
+      "carbs_g": 127,
+      "fat_g": 45,
+      "water_ml": 0,
+      "meals": [
+        "jul18 4 spring roll",
+        "Egg 100g",
+        "Lunch/Dinner"
+      ],
+      "notes": ""
     }
   ]
 }
-

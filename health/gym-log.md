@@ -1,22 +1,35 @@
 # Gym Log
 
-## July 14, 2026 — Upper A (old chest routine)
+_Synced from Hevy on 2026-07-20. Raw JSON: `health/hevy-workouts.json` (local only)._
 
-First logged session. Used as baseline for routine starting weights.
+## 2026-07-17 — Back & Core B
 
-| Exercise | Weight | Reps |
-|---|---|---|
-| Bench Press (Barbell) | 20 kg | 8 × 3 |
-| Lat Pulldown (Cable) | 25–30 kg | 10–12 |
-| Face Pull | 7.5–10 kg | 15 |
-| Seated Chest Flys (Cable) | 10–15 kg | 10–15 |
-| Plank | — | 40–72 sec |
+| Exercise | Sets |
+|---|---|
+| Decline Crunch | 12 · 12 · 12 |
+| Reverse Grip Lat Pulldown (Cable) | 25 kg × 10 · 25 kg × 12 · 25 kg × 12 |
+| Seated Cable Row - V Grip (Cable) | 25 kg × 10 · 20 kg × 10 · 20 kg × 12 |
+| Ab Wheel | 3 · 5 · 5 |
+| Cable Twist (Up to down) | 7.5 kg × 12 · 7.5 kg × 12 · 7.5 kg × 12 |
+| Plank | 50s · 50s · 60s |
 
-## July 16, 2026 — Pilates Open Level 1
+## 2026-07-16 — Pilates Open Level 1
 
-- 1 hour class (open level 1)
+- 1 hour class (not in Hevy)
 
-**See also:** [[workout-routine]], [[body-composition]]
+## 2026-07-14 — Upper A - Chest Focus
+
+First logged Hevy session (old chest routine — baseline).
+
+| Exercise | Sets |
+|---|---|
+| Bench Press (Barbell) | 20 kg × 8 · 20 kg × 8 · 20 kg × 8 |
+| Rope Straight Arm Pulldown | 7.5 kg × 10 · 10 kg × 10 · 7.5 kg × 12 · 7.5 kg × 10 |
+| Lat Pulldown (Cable) | 25 kg × 10 · 30 kg × 10 · 25 kg × 12 |
+| Seated Chest Flys (Cable) | 15 kg × 15 · 15 kg × 10 · 10 kg × 12 · 10 kg × 12 |
+| Face Pull | 7.5 kg × 15 · 10 kg × 15 · 10 kg × 15 |
+| Plank | 72s · 63s · 40s |
+
+**See also:** [[workout-routine]], [[body-composition]], [[hevy-integration]]
 
 **Section:** [[health]]
-

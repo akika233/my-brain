@@ -20,6 +20,10 @@ Any AI tool connecting to this repo should read this first.
 - data/ is for structured/machine-readable files (JSON, CSV)
 - All other content uses markdown (.md)
 
+## Telegram bot
+- `telegram-bot/` — phone logger for diet + InBody (writes the JSON files above)
+- Setup: see `telegram-bot/README.md`
+
 ## Rules
 - New information gets saved to the most relevant folder
 - Journal entries use YYYY-MM-DD.md naming (e.g. 2026-05-28.md)

@@ -30,10 +30,11 @@ Adjust portions to hit targets. Weigh protein sources if unsure.
 
 ## How to log
 
-1. **Canvas — text** — type what you ate in Dutch or English (e.g. `meloen 200g`, `kipfilet 120g`), click "Add meal to today"
-2. **Canvas — photo** — attach meal photo, click "Analyze meal photo with AI", attach same photo in the chat that opens
-3. **Tell the AI** — describe meals in chat; it updates `data/diet-log.json`
-4. **Sync** — click "Sync today's log to vault" in the canvas to save totals to GitHub
+1. **Telegram bot** — send what you ate (free text or `food 120g`); bot estimates macros and writes `data/diet-log.json`. Photos need `OPENAI_API_KEY`. See `telegram-bot/README.md`. Also `/inbody`.
+2. **Canvas — text** — type what you ate in Dutch or English (e.g. `meloen 200g`, `kipfilet 120g`), click "Add meal to today"
+3. **Canvas — photo** — attach meal photo, click "Analyze meal photo with AI", attach same photo in the chat that opens
+4. **Tell the AI** — describe meals in chat; it updates `data/diet-log.json`
+5. **Sync** — click "Sync today's log to vault" in the canvas to save totals to GitHub
 
 ## Logging format
 
