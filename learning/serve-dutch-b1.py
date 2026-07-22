@@ -164,6 +164,30 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, body, "application/json; charset=utf-8")
             return
 
+        if path == "/api/transcript":
+            qs = parse_qs(parsed.query)
+            folder = (qs.get("folder") or [""])[0]
+            track = (qs.get("track") or [""])[0]
+            refresh = (qs.get("refresh") or ["0"])[0] in ("1", "true", "yes")
+            if not folder or not track:
+                self._send(400, b'{"error":"folder and track required"}', "application/json")
+                return
+            target = safe_materials_path(f"{folder}/{track}")
+            if not target:
+                self._send(404, b'{"error":"track not found"}', "application/json")
+                return
+            try:
+                # import locally so server still starts if deps missing until needed
+                from transcript_ai import analyze_file
+
+                data = analyze_file(target, folder, track, use_cache=not refresh)
+                body = json.dumps(data, ensure_ascii=False).encode("utf-8")
+                self._send(200, body, "application/json; charset=utf-8")
+            except Exception as e:
+                err = json.dumps({"error": str(e)}, ensure_ascii=False).encode("utf-8")
+                self._send(500, err, "application/json; charset=utf-8")
+            return
+
         if path.startswith("/materials/"):
             rel = path[len("/materials/") :]
             target = safe_materials_path(rel)
@@ -188,7 +212,7 @@ def main() -> None:
         print(f"WARNING: materials folder not found:\n  {MATERIALS}")
     else:
         idx = build_index()
-        print(f"Materials OK — {len(idx['pdfs'])} PDFs, {sum(a['count'] for a in idx['audio'])} tracks")
+        print(f"Materials OK - {len(idx['pdfs'])} PDFs, {sum(a['count'] for a in idx['audio'])} tracks")
 
     if not SITE.exists():
         raise SystemExit(f"Missing site file: {SITE}")

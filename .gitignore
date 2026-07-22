@@ -7,6 +7,9 @@ telegram-bot/__pycache__/
 # Hevy API cache (local only)
 health/hevy-*.json
 
+# Dutch B1 audio transcript cache (local only — may contain book dialogue)
+learning/transcripts-cache/
+
 # OS files
 .DS_Store
 Thumbs.db
