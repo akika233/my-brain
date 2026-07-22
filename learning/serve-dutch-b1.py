@@ -23,7 +23,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 ROOT = Path(__file__).resolve().parent
 REPO = ROOT.parent
 SITE = ROOT / "dutch-b1-planner.html"
-MATERIALS = Path(r"C:\Users\akika\OneDrive\Desktop\Contact 2 (B1)")
+MATERIALS = Path(r"C:\Users\akika\OneDrive\Documents\OneDrive\Documents\Contact 2 (B1)")
 HOST = "0.0.0.0"  # allow phone / other devices on same Wi‑Fi
 PORT = 8765
 

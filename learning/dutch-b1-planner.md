@@ -2,7 +2,7 @@
 
 **Goal:** Finish *Contact! 2* and reach solid **B1** in speaking, reading, writing, and listening.  
 **Window:** **22 Jul 2026 → 22 Oct 2026** (12 weeks)  
-**Materials:** `C:\Users\akika\OneDrive\Desktop\Contact 2 (B1)`
+**Materials:** `C:\Users\akika\OneDrive\Documents\OneDrive\Documents\Contact 2 (B1)`
 
 | File / folder | Use |
 |---|---|
@@ -156,7 +156,7 @@ Use when tired of the book — still counts as listening/reading.
 5. If you miss a night: fold the missed block into the next slot (don’t skip speaking/listening)  
 6. Log each night in [[dutch-b1-log]]
 
-**Materials path:** `C:\Users\akika\OneDrive\Desktop\Contact 2 (B1)`  
+**Materials path:** `C:\Users\akika\OneDrive\Documents\OneDrive\Documents\Contact 2 (B1)`
 **Progress log:** [[dutch-b1-log]]  
 **Practice site:** run `python learning/serve-dutch-b1.py`
 - PC: http://127.0.0.1:8765/
