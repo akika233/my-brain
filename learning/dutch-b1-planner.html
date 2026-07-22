@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dutch B1 · Contact! 2 Practice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5a6678;
+      --paper: #f7f3eb;
+      --card: #fffdf8;
+      --line: #e2d9cb;
+      --accent: #c45c26;
+      --accent-deep: #8f3d12;
+      --sea: #2f6f6a;
+      --sea-soft: #e4f0ee;
+      --warn: #b8860b;
+      --ok: #2d6a4f;
+      --shadow: 0 12px 40px rgba(26, 35, 50, 0.08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #ffe8d6 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #dceeea 0%, transparent 50%),
+        var(--paper);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+    a { color: var(--accent-deep); }
+    h1, h2, h3 {
+      font-family: "Fraunces", Georgia, serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .wrap { width: min(1180px, calc(100% - 2rem)); margin: 0 auto; }
+    .topnav {
+      position: sticky; top: 0; z-index: 30;
+      backdrop-filter: blur(12px);
+      background: rgba(247, 243, 235, 0.9);
+      border-bottom: 1px solid var(--line);
+    }
+    .topnav .inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem; padding: 0.75rem 0; flex-wrap: wrap;
+    }
+    .brand { font-family: "Fraunces", serif; font-size: 1.15rem; font-weight: 700; }
+    .brand span { color: var(--accent); }
+    .tabs { display: flex; gap: 0.35rem; }
+    .tab {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 0.45rem 0.95rem;
+      font: inherit;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+    .tab.active {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: #fffdf8;
+    }
+    .view { display: none; padding-bottom: 3rem; }
+    .view.active { display: block; }
+
+    .hero {
+      padding: 2.4rem 0 1.4rem;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 1.5rem;
+      align-items: end;
+    }
+    @media (max-width: 860px) { .hero { grid-template-columns: 1fr; } }
+    .eyebrow {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--sea); margin-bottom: 0.55rem;
+    }
+    .hero h1 { font-size: clamp(2rem, 4.5vw, 3rem); margin: 0 0 0.7rem; }
+    .lead { margin: 0; color: var(--muted); max-width: 40ch; }
+    .meta { display: grid; gap: 0.65rem; }
+    .pill {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 14px; padding: 0.85rem 1rem; box-shadow: var(--shadow);
+    }
+    .pill strong {
+      display: block; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); margin-bottom: 0.15rem;
+    }
+    .pill b { font-family: "Fraunces", serif; font-size: 1.05rem; }
+
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.88rem; color: var(--muted); font-weight: 600; margin-bottom: 0.35rem;
+    }
+    .progress-bar {
+      background: #e8dfd2; border-radius: 999px; height: 10px; overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .progress-bar > i {
+      display: block; height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--sea), var(--accent));
+      transition: width 0.35s ease;
+    }
+
+    section { padding: 1.2rem 0 2rem; scroll-margin-top: 70px; }
+    section h2 { font-size: 1.7rem; margin: 0 0 0.3rem; }
+    .sub { color: var(--muted); margin: 0 0 1.2rem; }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; }
+    @media (max-width: 860px) { .grid-3 { grid-template-columns: 1fr; } }
+    .night {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 1.15rem; box-shadow: var(--shadow);
+      position: relative; overflow: hidden;
+    }
+    .night::before {
+      content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--accent);
+    }
+    .night.tue::before { background: var(--sea); }
+    .night.thu::before { background: var(--warn); }
+    .night h3 { margin: 0 0 0.2rem; font-size: 1.25rem; }
+    .time { font-size: 0.82rem; font-weight: 700; color: var(--accent-deep); margin-bottom: 0.85rem; }
+    .night.tue .time { color: var(--sea); }
+    .night.thu .time { color: #8a6708; }
+    .block {
+      background: var(--paper); border-radius: 12px;
+      padding: 0.75rem 0.85rem; margin-bottom: 0.55rem;
+    }
+    .block:last-child { margin-bottom: 0; }
+    .block small {
+      display: block; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem; margin-bottom: 0.2rem;
+    }
+    .skills { display: flex; flex-wrap: wrap; gap: 0.45rem; margin-top: 1rem; }
+    .chip {
+      background: var(--sea-soft); color: var(--sea); border-radius: 999px;
+      padding: 0.3rem 0.7rem; font-size: 0.8rem; font-weight: 700;
+    }
+
+    .chapters { display: grid; gap: 0.55rem; }
+    .chapter {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 0.8rem; align-items: start;
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 0.85rem 1rem;
+    }
+    .chapter.done { background: #f0f7f3; border-color: #c7e0d3; }
+    .chapter.done .title { text-decoration: line-through; opacity: 0.7; }
+    .num {
+      width: 1.9rem; height: 1.9rem; border-radius: 50%; display: grid; place-items: center;
+      font-family: "Fraunces", serif; font-weight: 700; background: #f0e6d8; color: var(--accent-deep);
+    }
+    .chapter.done .num { background: var(--ok); color: #fff; }
+    .title { font-weight: 700; }
+    .focus { color: var(--muted); font-size: 0.88rem; }
+    .chapter input { width: 1.15rem; height: 1.15rem; accent-color: var(--ok); margin-top: 0.3rem; cursor: pointer; }
+
+    .month {
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 1.2rem; box-shadow: var(--shadow); margin-bottom: 0.9rem;
+    }
+    .month header {
+      display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+      align-items: baseline; margin-bottom: 0.85rem;
+    }
+    .month header h3 { margin: 0; font-size: 1.3rem; }
+    .badge {
+      background: #f3e4d8; color: var(--accent-deep); font-weight: 700;
+      font-size: 0.75rem; padding: 0.28rem 0.6rem; border-radius: 999px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 0.55rem 0.4rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+    .checks { list-style: none; padding: 0; margin: 0.9rem 0 0; display: grid; gap: 0.4rem; }
+    .checks li {
+      display: flex; gap: 0.55rem; align-items: flex-start;
+      background: var(--paper); border-radius: 10px; padding: 0.5rem 0.7rem;
+    }
+    .checks input { margin-top: 0.15rem; accent-color: var(--ok); cursor: pointer; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+    @media (max-width: 860px) { .two-col { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 1.15rem; box-shadow: var(--shadow);
+    }
+    .card ol, .card ul { margin: 0.45rem 0 0; padding-left: 1.1rem; }
+    .path {
+      font-family: ui-monospace, "Cascadia Code", monospace; font-size: 0.8rem;
+      background: #1a2332; color: #f7f3eb; padding: 0.75rem 0.9rem; border-radius: 12px;
+      overflow-x: auto; margin-top: 0.7rem;
+    }
+    .reset {
+      border: 1px solid var(--line); background: transparent; color: var(--muted);
+      border-radius: 999px; padding: 0.35rem 0.8rem; font: inherit; font-size: 0.8rem;
+      font-weight: 600; cursor: pointer;
+    }
+    footer {
+      padding: 1.5rem 0 2.5rem; color: var(--muted); font-size: 0.88rem;
+      border-top: 1px solid var(--line);
+    }
+
+    /* Practice layout */
+    .banner {
+      margin: 1.2rem 0;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      background: #fff4e8;
+      border: 1px solid #efd2b5;
+      color: var(--accent-deep);
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .banner.ok {
+      background: var(--sea-soft);
+      border-color: #b7d5cf;
+      color: var(--sea);
+    }
+    .practice-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 1rem;
+      min-height: 70vh;
+    }
+    @media (max-width: 960px) {
+      .practice-grid { grid-template-columns: 1fr; }
+    }
+    .sidebar {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      max-height: calc(100vh - 110px);
+      position: sticky;
+      top: 70px;
+      overflow: auto;
+    }
+    @media (max-width: 960px) {
+      .sidebar { position: static; max-height: none; }
+    }
+    .sidebar h3 { margin: 0; font-size: 1.05rem; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 0.4rem 0.75rem;
+      font: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn.active, .btn:hover { border-color: var(--accent); color: var(--accent-deep); }
+    .btn.primary {
+      background: var(--ink);
+      color: #fffdf8;
+      border-color: var(--ink);
+    }
+    select, textarea {
+      width: 100%;
+      font: inherit;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0.55rem 0.7rem;
+      background: #fff;
+      color: var(--ink);
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    .track-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 0.2rem;
+    }
+    .track {
+      text-align: left;
+      border: 1px solid transparent;
+      background: var(--paper);
+      border-radius: 8px;
+      padding: 0.45rem 0.55rem;
+      font: inherit;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .track:hover, .track.active {
+      border-color: var(--sea);
+      background: var(--sea-soft);
+    }
+    .stage {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 70vh;
+    }
+    .stage-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--line);
+      background: #fbf7f0;
+    }
+    .stage-toolbar strong { font-family: "Fraunces", serif; }
+    .pdf-frame {
+      flex: 1;
+      width: 100%;
+      min-height: 65vh;
+      border: 0;
+      background: #ece7de;
+    }
+    .player-bar {
+      border-top: 1px solid var(--line);
+      padding: 0.85rem 1rem;
+      background: #1a2332;
+      color: #f7f3eb;
+    }
+    .player-bar .now {
+      font-size: 0.85rem;
+      margin-bottom: 0.45rem;
+      opacity: 0.9;
+    }
+    audio { width: 100%; }
+    .timer {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <div class="wrap inner">
+      <div class="brand">Nederlands <span>B1</span></div>
+      <div class="tabs">
+        <button class="tab active" data-view="plan" type="button">Plan</button>
+        <button class="tab" data-view="practice" type="button">Practice</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- PLAN VIEW -->
+  <div class="view active" id="view-plan">
+    <header class="wrap hero">
+      <div>
+        <div class="eyebrow">Contact! 2 · 12 weeks</div>
+        <h1>Learn Dutch B1 in three months</h1>
+        <p class="lead">Speaking, reading, writing, listening — Mon / Tue / Thu 21:00–23:00. Use the Practice tab to open your books and audio.</p>
+      </div>
+      <div class="meta">
+        <div class="pill"><strong>Window</strong><b>22 Jul → 22 Oct 2026</b></div>
+        <div class="pill"><strong>Nights</strong><b>Mon · Tue · Thu · 21:00–23:00</b></div>
+        <div class="pill"><strong>Volume</strong><b>6 hours / week</b></div>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="progress-label"><span>Chapter progress</span><span id="progressText">0 / 8</span></div>
+      <div class="progress-bar"><i id="progressFill"></i></div>
+    </div>
+
+    <section>
+      <div class="wrap">
+        <h2>Weekly mix</h2>
+        <p class="sub">Each night is two hours.</p>
+        <div class="grid-3">
+          <article class="night mon">
+            <h3>Monday</h3>
+            <div class="time">21:00 – 23:00</div>
+            <div class="block"><small>21:00 – 22:00</small><strong>Listening + reading</strong><br />Tekstboek + CD · note 10–15 words</div>
+            <div class="block"><small>22:00 – 23:00</small><strong>Speaking</strong><br />Shadow, monologue, record</div>
+          </article>
+          <article class="night tue">
+            <h3>Tuesday</h3>
+            <div class="time">21:00 – 23:00</div>
+            <div class="block"><small>21:00 – 22:00</small><strong>Grammar + werkboek</strong><br />Exercises · check answers</div>
+            <div class="block"><small>22:00 – 23:00</small><strong>Vocab + short speaking</strong><br />Reuse Monday words aloud</div>
+          </article>
+          <article class="night thu">
+            <h3>Thursday</h3>
+            <div class="time">21:00 – 23:00</div>
+            <div class="block"><small>21:00 – 22:00</small><strong>Writing</strong><br />80–150 words · correct with Cursor</div>
+            <div class="block"><small>22:00 – 23:00</small><strong>Listening + speaking lab</strong><br />Re-listen without transcript</div>
+          </article>
+        </div>
+        <div class="skills">
+          <span class="chip">Listening · Mon + Thu</span>
+          <span class="chip">Reading · Mon</span>
+          <span class="chip">Writing · Thu</span>
+          <span class="chip">Speaking · every night</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <div style="display:flex;justify-content:space-between;align-items:end;gap:1rem;flex-wrap:wrap;">
+          <div>
+            <h2>Chapters</h2>
+            <p class="sub" style="margin:0;">Tick when A+B+C are done. Saved in this browser.</p>
+          </div>
+          <button class="reset" type="button" id="resetProgress">Reset progress</button>
+        </div>
+        <div class="chapters" id="chapterList" style="margin-top:1.1rem;"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>12-week timeline</h2>
+        <p class="sub">~1.5 weeks per chapter.</p>
+        <article class="month">
+          <header><h3>Month 1 — Foundations</h3><span class="badge">22 Jul – 18 Aug · H1–H3</span></header>
+          <table>
+            <thead><tr><th>Week</th><th>Dates</th><th>Parts</th><th>Milestone</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>22–28 Jul</td><td>H1 A + B</td><td>2-min intro monologue</td></tr>
+              <tr><td>2</td><td>29 Jul – 4 Aug</td><td>H1 C → H2 A</td><td>Finish H1</td></tr>
+              <tr><td>3</td><td>5–11 Aug</td><td>H2 B + C</td><td>Asking-meaning role-play</td></tr>
+              <tr><td>4</td><td>12–18 Aug</td><td>H3 A + B</td><td>Advice email</td></tr>
+            </tbody>
+          </table>
+          <ul class="checks" data-group="m1"></ul>
+        </article>
+        <article class="month">
+          <header><h3>Month 2 — Expand</h3><span class="badge">19 Aug – 15 Sep · H3–H6</span></header>
+          <table>
+            <thead><tr><th>Week</th><th>Dates</th><th>Parts</th><th>Milestone</th></tr></thead>
+            <tbody>
+              <tr><td>5</td><td>19–25 Aug</td><td>H3 C → H4 A</td><td>Suggestions / passief</td></tr>
+              <tr><td>6</td><td>26 Aug – 1 Sep</td><td>H4 B + C</td><td>“Als we nou eens…”</td></tr>
+              <tr><td>7</td><td>2–8 Sep</td><td>H5 A + B</td><td>Ask for explanation</td></tr>
+              <tr><td>8</td><td>9–15 Sep</td><td>H5 C → H6 A</td><td>Relative clauses</td></tr>
+            </tbody>
+          </table>
+          <ul class="checks" data-group="m2"></ul>
+        </article>
+        <article class="month">
+          <header><h3>Month 3 — Integrate</h3><span class="badge">16 Sep – 22 Oct · H6–H8</span></header>
+          <table>
+            <thead><tr><th>Week</th><th>Dates</th><th>Parts</th><th>Milestone</th></tr></thead>
+            <tbody>
+              <tr><td>9</td><td>16–22 Sep</td><td>H6 B + C</td><td>Justify a real choice</td></tr>
+              <tr><td>10</td><td>23–29 Sep</td><td>H7 A + B</td><td>Habits discussion</td></tr>
+              <tr><td>11</td><td>30 Sep – 6 Oct</td><td>H7 C → H8 A</td><td>Note-taking</td></tr>
+              <tr><td>12</td><td>7–13 Oct</td><td>H8 B + C</td><td>3-min presentation</td></tr>
+              <tr><td>Buffer</td><td>14–22 Oct</td><td>Review</td><td>Mock B1 day</td></tr>
+            </tbody>
+          </table>
+          <ul class="checks" data-group="m3"></ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap two-col">
+        <div class="card">
+          <h3>Speaking</h3>
+          <ol>
+            <li>Shadow the CD</li>
+            <li>Record a monologue</li>
+            <li>Correct with Cursor</li>
+            <li>Role-play both sides</li>
+          </ol>
+        </div>
+        <div class="card">
+          <h3>Rules</h3>
+          <ol>
+            <li>Protect Mon / Tue / Thu 21:00–23:00</li>
+            <li>Never skip listening on Mon or Thu</li>
+            <li>Speak every session</li>
+            <li>One chapter part fully done before the next</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- PRACTICE VIEW -->
+  <div class="view" id="view-practice">
+    <div class="wrap">
+      <div class="banner" id="serverBanner">Loading…</div>
+
+      <div class="practice-grid">
+        <aside class="sidebar">
+          <div>
+            <h3>Session</h3>
+            <div class="btn-row" style="margin-top:0.5rem;">
+              <button class="btn" type="button" data-night="mon">Mon</button>
+              <button class="btn" type="button" data-night="tue">Tue</button>
+              <button class="btn" type="button" data-night="thu">Thu</button>
+            </div>
+            <p class="sub" id="nightHint" style="margin:0.55rem 0 0;font-size:0.85rem;"></p>
+          </div>
+
+          <div>
+            <h3>Load from phone / PC</h3>
+            <p class="sub" style="margin:0.4rem 0 0.55rem;font-size:0.82rem;">
+              On GitHub Pages, pick your Contact 2 files from OneDrive / Files (not uploaded to the cloud).
+            </p>
+            <div class="btn-row">
+              <label class="btn primary" style="cursor:pointer;">
+                PDF book
+                <input type="file" id="pickPdf" accept="application/pdf,.pdf" hidden />
+              </label>
+              <label class="btn" style="cursor:pointer;">
+                Audio files
+                <input type="file" id="pickAudio" accept="audio/*,.mp3" multiple hidden />
+              </label>
+              <label class="btn" style="cursor:pointer;">
+                Audio folder
+                <input type="file" id="pickAudioDir" accept="audio/*,.mp3" webkitdirectory multiple hidden />
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <h3>Book</h3>
+            <div class="btn-row" style="margin-top:0.5rem;" id="pdfButtons"></div>
+          </div>
+
+          <div>
+            <h3>Audio folder</h3>
+            <select id="audioFolder" style="margin-top:0.5rem;"></select>
+            <div class="track-list" id="trackList" style="margin-top:0.55rem;"></div>
+          </div>
+
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h3>Timer</h3>
+              <span class="timer" id="timerDisplay">00:00</span>
+            </div>
+            <div class="btn-row" style="margin-top:0.45rem;">
+              <button class="btn primary" type="button" id="timerStart">Start</button>
+              <button class="btn" type="button" id="timerPause">Pause</button>
+              <button class="btn" type="button" id="timerReset">Reset</button>
+            </div>
+          </div>
+
+          <div>
+            <h3>Session notes</h3>
+            <textarea id="sessionNotes" placeholder="Words, phrases, mistakes…" style="margin-top:0.45rem;"></textarea>
+            <button class="btn" type="button" id="saveNotes" style="margin-top:0.45rem;">Save notes</button>
+          </div>
+        </aside>
+
+        <div class="stage">
+          <div class="stage-toolbar">
+            <strong id="pdfTitle">Open a book</strong>
+            <a id="pdfOpenTab" href="#" target="_blank" rel="noopener">Open in new tab</a>
+          </div>
+          <iframe class="pdf-frame" id="pdfFrame" title="Contact 2 PDF"></iframe>
+          <div class="player-bar">
+            <div class="now" id="nowPlaying">No track selected</div>
+            <audio id="audioPlayer" controls preload="metadata"></audio>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="wrap">
+      Cloud site = planner + practice UI. Contact! 2 PDFs/audio stay on your device (OneDrive) — not published to GitHub.
+      <div class="path">C:\Users\akika\OneDrive\Desktop\Contact 2 (B1)</div>
+    </div>
+  </footer>
+
+  <script>
+    const CHAPTERS = [
+      { id: 1, title: "Gisteren, vandaag, morgen", focus: "Self, plans · bijzin / indirecte rede" },
+      { id: 2, title: "Wat bedoelt u precies?", focus: "Asking meaning · senses" },
+      { id: 3, title: "Iedereen is anders", focus: "Advice · comparisons" },
+      { id: 4, title: "Als we nou eens …", focus: "Suggestions · passief" },
+      { id: 5, title: "Klare taal", focus: "Explanation · relative clauses" },
+      { id: 6, title: "Keuzes, keuzes!", focus: "Choices · justifying" },
+      { id: 7, title: "Eenmaal, andermaal …", focus: "Habits · opinion stress" },
+      { id: 8, title: "Over en uit", focus: "Structure · summarizing" },
+    ];
+    const CHECKPOINTS = {
+      m1: ["H1–H2 done", "H3 A–B done", "4 writing pieces", "2-min weekly monologue"],
+      m2: ["H3–H5 done", "H6 A started", "Dialogues without reading first", "120-word opinion"],
+      m3: ["All 8 chapters done", "Mock B1 day passed", "50-phrase bank"],
+    };
+    const NIGHTS = {
+      mon: "Monday · Listening + reading, then speaking (shadow / monologue).",
+      tue: "Tuesday · Grammar + werkboek, then vocab speaking.",
+      thu: "Thursday · Writing first hour, then listening review + speaking lab.",
+    };
+    const STORAGE_KEY = "dutch-b1-planner-v1";
+    const NOTES_KEY = "dutch-b1-notes-v1";
+
+    /* ----- tabs ----- */
+    document.querySelectorAll(".tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("view-" + btn.dataset.view).classList.add("active");
+        if (btn.dataset.view === "practice") initPractice();
+      });
+    });
+
+    /* ----- plan progress ----- */
+    function loadState() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { chapters: {}, checks: {} }; }
+      catch { return { chapters: {}, checks: {} }; }
+    }
+    function saveState(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    function renderPlan() {
+      const state = loadState();
+      const list = document.getElementById("chapterList");
+      list.innerHTML = "";
+      let doneCount = 0;
+      CHAPTERS.forEach((ch) => {
+        const done = !!state.chapters[ch.id];
+        if (done) doneCount += 1;
+        const row = document.createElement("label");
+        row.className = "chapter" + (done ? " done" : "");
+        row.innerHTML = `<div class="num">${ch.id}</div><div><div class="title">${ch.title}</div><div class="focus">${ch.focus}</div></div><input type="checkbox" data-chapter="${ch.id}" ${done ? "checked" : ""} />`;
+        list.appendChild(row);
+      });
+      document.getElementById("progressFill").style.width = (doneCount / CHAPTERS.length) * 100 + "%";
+      document.getElementById("progressText").textContent = `${doneCount} / ${CHAPTERS.length}`;
+
+      Object.entries(CHECKPOINTS).forEach(([group, items]) => {
+        const ul = document.querySelector(`.checks[data-group="${group}"]`);
+        if (!ul) return;
+        ul.innerHTML = "";
+        items.forEach((text, i) => {
+          const key = `${group}-${i}`;
+          const li = document.createElement("li");
+          li.innerHTML = `<input type="checkbox" data-check="${key}" ${state.checks[key] ? "checked" : ""} /><span>${text}</span>`;
+          ul.appendChild(li);
+        });
+      });
+    }
+
+    document.addEventListener("change", (e) => {
+      const state = loadState();
+      if (e.target.matches("[data-chapter]")) {
+        state.chapters[e.target.dataset.chapter] = e.target.checked;
+        saveState(state);
+        renderPlan();
+      }
+      if (e.target.matches("[data-check]")) {
+        state.checks[e.target.dataset.check] = e.target.checked;
+        saveState(state);
+      }
+    });
+    document.getElementById("resetProgress").addEventListener("click", () => {
+      if (confirm("Reset all chapter and checkpoint ticks?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderPlan();
+      }
+    });
+    renderPlan();
+
+    /* ----- practice ----- */
+    let materials = null; // { mode:'server'|'local', pdfs:[{name,url}], audio:[{folder,tracks:[{name,url}], count}] }
+    let practiceReady = false;
+    let timerSec = 0;
+    let timerId = null;
+    let currentFolder = "";
+    const objectUrls = [];
+
+    function ensureMaterialsShell() {
+      if (!materials) {
+        materials = { mode: "local", pdfs: [], audio: [], exists: true };
+      }
+    }
+
+    function rememberUrl(url) {
+      objectUrls.push(url);
+      return url;
+    }
+
+    async function initPractice() {
+      const banner = document.getElementById("serverBanner");
+      // Always wire file pickers (cloud + local)
+      wirePickers();
+
+      if (practiceReady && materials && materials.mode === "server") return;
+
+      try {
+        const res = await fetch("/api/index");
+        if (!res.ok) throw new Error("no api");
+        const idx = await res.json();
+        if (!idx.exists) throw new Error("missing folder");
+        materials = {
+          mode: "server",
+          exists: true,
+          pdfs: idx.pdfs.map((name) => ({
+            name,
+            url: "/materials/" + encodeURIComponent(name),
+          })),
+          audio: idx.audio.map((a) => ({
+            folder: a.folder,
+            count: a.count,
+            tracks: a.tracks.map((t) => ({
+              name: t,
+              url: "/materials/" + encodeURIComponent(a.folder) + "/" + encodeURIComponent(t),
+            })),
+          })),
+        };
+        banner.className = "banner ok";
+        banner.textContent = `PC server connected · ${materials.pdfs.length} PDFs · ${materials.audio.reduce((n, a) => n + a.count, 0)} tracks`;
+        setupPracticeUI();
+        practiceReady = true;
+      } catch (err) {
+        ensureMaterialsShell();
+        banner.className = "banner ok";
+        banner.innerHTML = `Cloud mode · use <strong>PDF book</strong> / <strong>Audio</strong> buttons to open Contact 2 from OneDrive or Files on this phone. Timer & notes work offline.`;
+        setupPracticeUI();
+        practiceReady = true;
+      }
+    }
+
+    function wirePickers() {
+      const pdfInput = document.getElementById("pickPdf");
+      const audioInput = document.getElementById("pickAudio");
+      const dirInput = document.getElementById("pickAudioDir");
+      if (pdfInput.dataset.wired) return;
+      pdfInput.dataset.wired = "1";
+
+      pdfInput.addEventListener("change", () => {
+        const file = pdfInput.files && pdfInput.files[0];
+        if (!file) return;
+        ensureMaterialsShell();
+        materials.mode = "local";
+        const url = rememberUrl(URL.createObjectURL(file));
+        // replace same name or add
+        materials.pdfs = materials.pdfs.filter((p) => p.name !== file.name);
+        materials.pdfs.push({ name: file.name, url });
+        setupPracticeUI();
+        const btn = [...document.querySelectorAll("#pdfButtons .btn")].find((b) => b.textContent === shortPdfLabel(file.name));
+        openPdfEntry(materials.pdfs[materials.pdfs.length - 1], btn);
+        document.getElementById("serverBanner").className = "banner ok";
+        document.getElementById("serverBanner").textContent = `Loaded PDF: ${file.name}`;
+      });
+
+      function ingestAudioFiles(fileList) {
+        const files = [...fileList].filter((f) => /\.mp3$/i.test(f.name) || (f.type || "").startsWith("audio/"));
+        if (!files.length) return;
+        ensureMaterialsShell();
+        materials.mode = "local";
+        const groups = {};
+        files.forEach((f) => {
+          const parts = (f.webkitRelativePath || f.name).split(/[/\\]/);
+          const folder = parts.length > 1 ? parts[parts.length - 2] : "Uploaded audio";
+          if (!groups[folder]) groups[folder] = [];
+          groups[folder].push({
+            name: parts[parts.length - 1],
+            url: rememberUrl(URL.createObjectURL(f)),
+          });
+        });
+        Object.entries(groups).forEach(([folder, tracks]) => {
+          tracks.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+          const existing = materials.audio.find((a) => a.folder === folder);
+          if (existing) {
+            const map = new Map(existing.tracks.map((t) => [t.name, t]));
+            tracks.forEach((t) => map.set(t.name, t));
+            existing.tracks = [...map.values()].sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+            existing.count = existing.tracks.length;
+          } else {
+            materials.audio.push({ folder, tracks, count: tracks.length });
+          }
+        });
+        setupPracticeUI();
+        const total = materials.audio.reduce((n, a) => n + a.count, 0);
+        document.getElementById("serverBanner").className = "banner ok";
+        document.getElementById("serverBanner").textContent = `Loaded audio · ${total} tracks`;
+      }
+
+      audioInput.addEventListener("change", () => ingestAudioFiles(audioInput.files || []));
+      dirInput.addEventListener("change", () => ingestAudioFiles(dirInput.files || []));
+    }
+
+    function shortPdfLabel(name) {
+      const labels = {
+        "Contact2_TekstBoek.pdf": "Tekstboek",
+        "Contact2_WerkBoek.pdf": "Werkboek",
+        "Contact_2_Oplossingen_Tekstboek.pdf": "Oplossingen",
+        "Contact_2_Handleiding.pdf": "Handleiding",
+      };
+      return labels[name] || name.replace(/\.pdf$/i, "");
+    }
+
+    function setupPracticeUI() {
+      if (!materials) return;
+      const pdfButtons = document.getElementById("pdfButtons");
+      pdfButtons.innerHTML = "";
+      materials.pdfs.forEach((entry) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn";
+        btn.textContent = shortPdfLabel(entry.name);
+        btn.addEventListener("click", () => openPdfEntry(entry, btn));
+        pdfButtons.appendChild(btn);
+      });
+
+      const folderSelect = document.getElementById("audioFolder");
+      const prev = currentFolder;
+      folderSelect.innerHTML = "";
+      materials.audio.forEach((a, i) => {
+        const opt = document.createElement("option");
+        opt.value = a.folder;
+        opt.textContent = `${a.folder} (${a.count})`;
+        folderSelect.appendChild(opt);
+        if (i === 0 && !currentFolder) currentFolder = a.folder;
+      });
+      if (prev && materials.audio.some((a) => a.folder === prev)) {
+        currentFolder = prev;
+        folderSelect.value = prev;
+      }
+      folderSelect.onchange = () => {
+        currentFolder = folderSelect.value;
+        renderTracks();
+      };
+      renderTracks();
+
+      if (materials.pdfs.length && !document.getElementById("pdfFrame").src) {
+        openPdfEntry(materials.pdfs[0], pdfButtons.querySelector("button"));
+      }
+
+      const day = new Date().getDay();
+      const map = { 1: "mon", 2: "tue", 4: "thu" };
+      setNight(map[day] || "mon");
+    }
+
+    function openPdfEntry(entry, btn) {
+      document.querySelectorAll("#pdfButtons .btn").forEach((b) => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      document.getElementById("pdfFrame").src = entry.url;
+      document.getElementById("pdfTitle").textContent = entry.name;
+      document.getElementById("pdfOpenTab").href = entry.url;
+    }
+
+    function renderTracks() {
+      const pack = (materials && materials.audio || []).find((a) => a.folder === currentFolder);
+      const list = document.getElementById("trackList");
+      list.innerHTML = "";
+      if (!pack) return;
+      pack.tracks.forEach((track) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "track";
+        btn.textContent = track.name || track;
+        btn.addEventListener("click", () => playTrackEntry(pack.folder, track, btn));
+        list.appendChild(btn);
+      });
+    }
+
+    function playTrackEntry(folder, track, btn) {
+      document.querySelectorAll(".track").forEach((t) => t.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      const url = track.url || ("/materials/" + encodeURIComponent(folder) + "/" + encodeURIComponent(track.name || track));
+      const player = document.getElementById("audioPlayer");
+      player.src = url;
+      player.play().catch(() => {});
+      document.getElementById("nowPlaying").textContent = folder + " · " + (track.name || track);
+    }
+
+    function setNight(key) {
+      document.querySelectorAll("[data-night]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.night === key);
+      });
+      document.getElementById("nightHint").textContent = NIGHTS[key] || "";
+      if (!materials || !materials.pdfs.length) return;
+      const want = key === "tue" ? "Werkboek" : "Tekstboek";
+      const btn = [...document.querySelectorAll("#pdfButtons .btn")].find((b) => b.textContent === want)
+        || document.querySelector("#pdfButtons .btn");
+      const entry = materials.pdfs.find((p) => shortPdfLabel(p.name) === (btn && btn.textContent)) || materials.pdfs[0];
+      if (entry) openPdfEntry(entry, btn);
+      if (materials.audio.length) {
+        const prefer = key === "tue" ? "werkboek" : "tekstboek";
+        const pack = materials.audio.find((a) => a.folder.toLowerCase().includes(prefer)) || materials.audio[0];
+        currentFolder = pack.folder;
+        document.getElementById("audioFolder").value = pack.folder;
+        renderTracks();
+      }
+    }
+
+    document.querySelectorAll("[data-night]").forEach((btn) => {
+      btn.addEventListener("click", () => setNight(btn.dataset.night));
+    });
+
+    /* timer */
+    function paintTimer() {
+      const m = String(Math.floor(timerSec / 60)).padStart(2, "0");
+      const s = String(timerSec % 60).padStart(2, "0");
+      document.getElementById("timerDisplay").textContent = `${m}:${s}`;
+    }
+    document.getElementById("timerStart").addEventListener("click", () => {
+      if (timerId) return;
+      timerId = setInterval(() => { timerSec += 1; paintTimer(); }, 1000);
+    });
+    document.getElementById("timerPause").addEventListener("click", () => {
+      clearInterval(timerId); timerId = null;
+    });
+    document.getElementById("timerReset").addEventListener("click", () => {
+      clearInterval(timerId); timerId = null; timerSec = 0; paintTimer();
+    });
+
+    /* notes */
+    document.getElementById("sessionNotes").value = localStorage.getItem(NOTES_KEY) || "";
+    document.getElementById("saveNotes").addEventListener("click", () => {
+      localStorage.setItem(NOTES_KEY, document.getElementById("sessionNotes").value);
+      const btn = document.getElementById("saveNotes");
+      btn.textContent = "Saved";
+      setTimeout(() => { btn.textContent = "Save notes"; }, 1200);
+    });
+
+    if (location.protocol.startsWith("http")) {
+      initPractice();
+    }
+  </script>
+</body>
+</html>
