@@ -7,6 +7,7 @@ Things I'm studying or practicing
 - [[dutch-b1-planner]] — Dutch B1 with *Contact! 2* (3 months: Jul–Oct 2026)
 - [[dutch-b1-log]] — session + chapter checklist
 - **Self-contained learning module:** `learning/dutch-b1-learn.html` — open directly in any browser, no server needed
+  - **Phone:** https://akika233.github.io/dutch-b1-site/dutch-b1-learn.html
   - All 8 chapters built-in: vocab flashcards + TTS audio, grammar, reading, listening, speaking, writing
   - Dutch TTS for every word, sentence, prompt and sample answer
   - Speech recognition for speaking practice
