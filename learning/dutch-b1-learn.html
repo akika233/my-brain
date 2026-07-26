@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Dutch B1 · Contact! 2 Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#1a2332;--muted:#5a6678;--paper:#f7f3eb;--card:#fffdf8;--line:#e2d9cb;
+  --accent:#c45c26;--sea:#2f6f6a;--warn:#b8860b;--ok:#2d6a4f;--red:#c0392b;
+  --sea-soft:#e4f0ee;--r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Manrope",system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.55;min-height:100vh}
+button,select,input,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{font-family:"Fraunces",serif;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+a{color:var(--accent)}
+
+/* ── topbar ── */
+.topbar{position:sticky;top:0;z-index:40;background:var(--ink);color:#fff;padding:.6rem 1rem;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.topbar h1{font-size:1.1rem;color:#fff;white-space:nowrap}
+.ch-tabs{display:flex;gap:.3rem;flex-wrap:wrap;flex:1}
+.ch-tab{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff;border-radius:999px;padding:.28rem .75rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s}
+.ch-tab:hover{background:rgba(255,255,255,.2)}
+.ch-tab.active{background:var(--accent);border-color:var(--accent)}
+
+/* ── module nav ── */
+.mod-nav{display:flex;gap:.5rem;flex-wrap:wrap;padding:.75rem 1rem;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:49px;z-index:30}
+.mod-btn{display:flex;align-items:center;gap:.35rem;border:1px solid var(--line);background:transparent;border-radius:999px;padding:.38rem .9rem;font-size:.82rem;font-weight:700;cursor:pointer;color:var(--muted);transition:.15s}
+.mod-btn:hover{border-color:var(--sea);color:var(--sea)}
+.mod-btn.active{background:var(--sea);border-color:var(--sea);color:#fff}
+.mod-icon{font-size:.95rem}
+
+/* ── layout ── */
+.wrap{max-width:860px;margin:0 auto;padding:1.2rem 1rem 3rem}
+.panel{display:none}.panel.active{display:block}
+
+/* ── chapter header ── */
+.ch-header{padding:1.2rem 0 .75rem}
+.ch-eyebrow{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.3rem}
+.ch-header h2{font-size:1.7rem;margin-bottom:.35rem}
+.ch-focus{color:var(--muted);font-size:.92rem}
+
+/* ── cards ── */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1.1rem 1.2rem;margin-bottom:.85rem;box-shadow:0 4px 16px rgba(26,35,50,.05)}
+.card-sm{padding:.75rem .95rem}
+
+/* ── buttons ── */
+.btn{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:.42rem 1rem;font-size:.85rem;font-weight:700;cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--ink)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:#a04b1e}
+.btn-sea{background:var(--sea);border-color:var(--sea);color:#fff}
+.btn-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:.65rem}
+.btn-sm{padding:.3rem .7rem;font-size:.78rem}
+.btn-icon{padding:.38rem .6rem;font-size:1rem;line-height:1;border-radius:10px}
+
+/* ── VOCAB ── */
+.vocab-controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.9rem}
+.vocab-progress{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-bottom:.85rem}
+.vocab-progress-fill{height:100%;background:var(--sea);transition:width .4s}
+.vocab-stat{font-size:.8rem;color:var(--muted);margin-bottom:.5rem}
+.flashcard{perspective:900px;cursor:pointer;user-select:none}
+.flashcard-inner{position:relative;width:100%;min-height:220px;transition:transform .45s;transform-style:preserve-3d}
+.flashcard.flipped .flashcard-inner{transform:rotateY(180deg)}
+.fc-face{position:absolute;width:100%;min-height:220px;backface-visibility:hidden;border-radius:var(--r);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:1.8rem;text-align:center;background:var(--card)}
+.fc-back{transform:rotateY(180deg);background:#f4f7fb}
+.fc-nl{font-family:"Fraunces",serif;font-size:1.9rem;margin-bottom:.45rem}
+.fc-cat{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.9rem}
+.fc-hint{font-size:.82rem;color:var(--muted);font-style:italic}
+.fc-en{font-size:1.3rem;font-weight:700;margin-bottom:.55rem}
+.fc-ex{font-size:.92rem;color:var(--ink);font-style:italic;margin-bottom:.3rem}
+.fc-ex-en{font-size:.88rem;color:var(--muted)}
+.vocab-nav{display:flex;justify-content:space-between;align-items:center;margin-top:.85rem}
+
+/* ── GRAMMAR ── */
+.rule-card{margin-bottom:1.2rem}
+.rule-title{font-size:1.05rem;font-weight:700;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+.rule-badge{background:#ffe8d6;color:var(--accent);font-size:.72rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;text-transform:uppercase}
+.pattern-box{background:#1a2332;color:#f7f3eb;border-radius:10px;padding:.65rem 1rem;font-family:monospace;font-size:.9rem;margin:.55rem 0}
+.ex-table{width:100%;border-collapse:collapse;margin:.5rem 0}
+.ex-table td{padding:.4rem .6rem;border:1px solid var(--line);font-size:.92rem}
+.ex-table td:first-child{font-weight:600;background:#f8f5f0;width:52%}
+.ex-table td em{color:var(--accent)}
+/* exercises */
+.exercise{border-left:3px solid var(--sea);padding:.65rem .85rem;margin-bottom:.7rem;background:#f8fdfc}
+.exercise h4{font-size:.9rem;font-weight:700;margin-bottom:.5rem}
+.ex-item{margin-bottom:.55rem}
+.ex-item .stem{font-size:.93rem;margin-bottom:.3rem}
+.option-btn{display:inline-block;border:1px solid var(--line);background:#fff;border-radius:8px;padding:.3rem .7rem;margin:.2rem;font-size:.85rem;cursor:pointer;transition:.15s}
+.option-btn:hover:not(:disabled){border-color:var(--sea);color:var(--sea)}
+.option-btn.correct{background:#e8f8ef;border-color:var(--ok);color:var(--ok);font-weight:700}
+.option-btn.wrong{background:#fde8e8;border-color:var(--red);color:var(--red)}
+.fillblank-input{border:1px solid var(--line);border-radius:8px;padding:.3rem .6rem;width:120px;margin:0 .3rem}
+
+/* ── READING / LISTENING ── */
+.text-body{font-size:1.02rem;line-height:1.75;color:var(--ink)}
+.text-para{margin-bottom:1rem}
+.text-en-para{font-size:.9rem;color:var(--muted);font-style:italic;margin-bottom:.9rem;border-left:3px solid var(--line);padding-left:.6rem}
+.qcard{background:#f8f5f0;border-radius:12px;padding:.85rem 1rem;margin-bottom:.6rem}
+.qcard strong{font-size:.9rem;display:block;margin-bottom:.35rem}
+.qcard .answer{font-size:.88rem;color:var(--sea);display:none}
+.qcard.revealed .answer{display:block}
+.listen-controls{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.speed-btn{padding:.28rem .65rem;font-size:.78rem;border-radius:8px}
+.sent-row{display:flex;gap:.6rem;align-items:flex-start;padding:.45rem 0;border-bottom:1px dashed var(--line)}
+.sent-row:last-child{border:0}
+.sent-nl{flex:1;font-size:.97rem}
+.sent-en{font-size:.88rem;color:var(--muted);flex:1;font-style:italic}
+.hidden-text{filter:blur(4px);pointer-events:none;user-select:none}
+
+/* ── SPEAKING ── */
+.speak-prompt-box{border-left:4px solid var(--accent);padding:.8rem 1rem;background:#fff9f5;border-radius:0 12px 12px 0;margin-bottom:.9rem;font-size:1.02rem}
+.speak-prompt-en{color:var(--muted);font-size:.9rem;margin-top:.3rem;font-style:italic}
+.useful-phrases{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0}
+.phrase-chip{background:var(--sea-soft);color:var(--sea);border:1px solid #c8e0de;border-radius:999px;padding:.2rem .65rem;font-size:.8rem;cursor:pointer}
+.phrase-chip:hover{background:#c8e0de}
+.sample-answer{border-top:1px dashed var(--line);padding-top:.85rem;margin-top:.85rem}
+.sample-nl{font-size:.97rem;line-height:1.75;white-space:pre-wrap;margin:.4rem 0}
+.sample-en{font-size:.88rem;color:var(--muted);font-style:italic;white-space:pre-wrap}
+.rec-btn{display:flex;align-items:center;gap:.45rem;padding:.55rem 1.1rem;border-radius:999px;font-size:.9rem;font-weight:700;border:2px solid var(--accent);background:#fff;cursor:pointer;transition:.15s}
+.rec-btn.listening{background:var(--accent);color:#fff;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(196,92,38,.3)}50%{box-shadow:0 0 0 8px rgba(196,92,38,0)}}
+.rec-result{margin-top:.65rem;padding:.65rem .9rem;background:#f4f7fb;border-radius:12px;font-size:.93rem;min-height:3rem}
+
+/* ── WRITING ── */
+.writing-prompt{font-size:1.05rem;line-height:1.65;margin-bottom:.85rem}
+.writing-area{width:100%;min-height:180px;border:1px solid var(--line);border-radius:12px;padding:.85rem;resize:vertical;background:#fff;font-size:.97rem;line-height:1.7}
+.writing-area:focus{outline:none;border-color:var(--sea)}
+.word-count{font-size:.8rem;color:var(--muted);text-align:right;margin:.3rem 0 .6rem}
+.word-count.ok{color:var(--ok);font-weight:700}
+.writing-tip{font-size:.88rem;background:#fffbf0;border:1px solid #f0e6c0;border-radius:10px;padding:.6rem .85rem;margin-bottom:.65rem;color:#6b5000}
+.saved-indicator{font-size:.8rem;color:var(--ok);margin-left:.5rem;opacity:0;transition:.3s}
+.saved-indicator.show{opacity:1}
+
+/* ── progress dots ── */
+.prog-row{display:flex;gap:.3rem;flex-wrap:wrap;margin:.35rem 0}
+.prog-dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.prog-dot.known{background:var(--sea)}
+.prog-dot.active{background:var(--accent)}
+
+/* ── responsive ── */
+@media(max-width:600px){
+  .topbar{padding:.5rem .7rem;gap:.5rem}
+  .ch-tabs{gap:.2rem}
+  .ch-tab{padding:.22rem .55rem;font-size:.72rem}
+  .fc-nl{font-size:1.5rem}
+  .wrap{padding:.85rem .7rem 2.5rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ── top nav ── -->
+<div class="topbar">
+  <h1>Dutch B1</h1>
+  <div class="ch-tabs" id="chTabs"></div>
+</div>
+
+<!-- ── module nav ── -->
+<div class="mod-nav" id="modNav">
+  <button class="mod-btn active" data-mod="vocab">  <span class="mod-icon">🃏</span> Vocab</button>
+  <button class="mod-btn" data-mod="grammar"><span class="mod-icon">📐</span> Grammar</button>
+  <button class="mod-btn" data-mod="reading"><span class="mod-icon">📖</span> Reading</button>
+  <button class="mod-btn" data-mod="listening"><span class="mod-icon">🎧</span> Listening</button>
+  <button class="mod-btn" data-mod="speaking"><span class="mod-icon">🎤</span> Speaking</button>
+  <button class="mod-btn" data-mod="writing"><span class="mod-icon">✍️</span> Writing</button>
+</div>
+
+<div class="wrap">
+  <!-- chapter heading -->
+  <div class="ch-header">
+    <div class="ch-eyebrow" id="chEyebrow"></div>
+    <h2 id="chTitle"></h2>
+    <div class="ch-focus" id="chFocus"></div>
+  </div>
+
+  <!-- ── VOCAB panel ── -->
+  <div class="panel active" id="panel-vocab">
+    <div class="vocab-controls">
+      <button class="btn btn-sm" id="vcShuffle">🔀 Shuffle</button>
+      <button class="btn btn-sm" id="vcUnknown">⭐ Unknown only</button>
+      <button class="btn btn-sm" id="vcAll">All</button>
+      <button class="btn btn-sm" id="vcReset">Reset known</button>
+    </div>
+    <div class="vocab-stat"><span id="vcKnownCount">0</span> / <span id="vcTotal">0</span> known &nbsp;·&nbsp; card <span id="vcPos">1</span></div>
+    <div class="prog-row" id="progDots"></div>
+    <div class="vocab-progress"><div class="vocab-progress-fill" id="vcFill"></div></div>
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="flashcard-inner" id="fcInner">
+        <div class="fc-face fc-front">
+          <div class="fc-cat" id="fcCat"></div>
+          <div class="fc-nl" id="fcNl"></div>
+          <div class="fc-hint">tap to reveal</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-en" id="fcEn"></div>
+          <div class="fc-ex" id="fcEx"></div>
+          <div class="fc-ex-en" id="fcExEn"></div>
+        </div>
+      </div>
+    </div>
+    <div class="vocab-nav">
+      <button class="btn" onclick="vcNav(-1)">← Prev</button>
+      <div class="btn-row" style="gap:.4rem">
+        <button class="btn btn-sm btn-icon" id="speakWordBtn" onclick="speakCurrentWord()" title="Hear pronunciation">🔊</button>
+        <button class="btn btn-sm btn-icon" onclick="speakExample()" title="Hear example sentence">▶ Example</button>
+        <button class="btn btn-sm" style="background:#e8f8ef;border-color:#2d6a4f;color:#2d6a4f" onclick="markKnown()">✓ Known</button>
+        <button class="btn btn-sm" style="background:#fde8e8;border-color:#c0392b;color:#c0392b" onclick="markUnknown()">✗ Again</button>
+      </div>
+      <button class="btn" onclick="vcNav(1)">Next →</button>
+    </div>
+  </div>
+
+  <!-- ── GRAMMAR panel ── -->
+  <div class="panel" id="panel-grammar">
+    <div id="grammarContent"></div>
+  </div>
+
+  <!-- ── READING panel ── -->
+  <div class="panel" id="panel-reading">
+    <div id="readingContent"></div>
+  </div>
+
+  <!-- ── LISTENING panel ── -->
+  <div class="panel" id="panel-listening">
+    <div id="listeningContent"></div>
+  </div>
+
+  <!-- ── SPEAKING panel ── -->
+  <div class="panel" id="panel-speaking">
+    <div id="speakingContent"></div>
+  </div>
+
+  <!-- ── WRITING panel ── -->
+  <div class="panel" id="panel-writing">
+    <div id="writingContent"></div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════
+// CONTENT DATA — all 8 Contact! 2 chapters
+// ════════════════════════════════════════════════════════════════════
+const CHAPTERS = [
+{
+  id:1, title:"Gisteren, vandaag, morgen",
+  focus:"Plannen · ambities · bijzinnen · indirecte rede",
+  vocab:[
+    {nl:"de ambitie",en:"ambition",ex:"Ik heb de ambitie om arts te worden.",exEn:"I have the ambition to become a doctor."},
+    {nl:"het plan",en:"plan / intention",ex:"Wat zijn jouw plannen voor de toekomst?",exEn:"What are your plans for the future?"},
+    {nl:"de toekomst",en:"future",ex:"De toekomst is onzeker, maar ik ben optimistisch.",exEn:"The future is uncertain, but I'm optimistic."},
+    {nl:"het verleden",en:"past",ex:"In het verleden werkte hij als kok.",exEn:"In the past he worked as a cook."},
+    {nl:"het doel",en:"goal / aim",ex:"Mijn doel is om vloeiend Nederlands te spreken.",exEn:"My goal is to speak Dutch fluently."},
+    {nl:"de carrière",en:"career",ex:"Ze wil een carrière in de geneeskunde.",exEn:"She wants a career in medicine."},
+    {nl:"de opleiding",en:"education / training",ex:"Hij volgt een opleiding tot leraar.",exEn:"He is doing teacher training."},
+    {nl:"de ervaring",en:"experience",ex:"Heb je werkervaring in de zorg?",exEn:"Do you have work experience in healthcare?"},
+    {nl:"verwachten",en:"to expect",ex:"Ik verwacht dat het moeilijk wordt.",exEn:"I expect it to be difficult."},
+    {nl:"hopen",en:"to hope",ex:"We hopen dat je snel beter wordt.",exEn:"We hope you get better soon."},
+    {nl:"van plan zijn",en:"to intend / to plan",ex:"Ik ben van plan om te gaan studeren.",exEn:"I plan to study."},
+    {nl:"slagen (voor)",en:"to pass (an exam)",ex:"Hij is geslaagd voor zijn rijexamen.",exEn:"He passed his driving test."},
+    {nl:"bereiken",en:"to achieve / to reach",ex:"Ze heeft haar doel bereikt.",exEn:"She achieved her goal."},
+    {nl:"bijdragen aan",en:"to contribute to",ex:"Iedereen kan bijdragen aan een betere samenleving.",exEn:"Everyone can contribute to a better society."},
+    {nl:"veranderen",en:"to change",ex:"Veel dingen zijn veranderd in tien jaar.",exEn:"A lot has changed in ten years."},
+    {nl:"verbeteren",en:"to improve",ex:"Ik wil mijn Nederlands verbeteren.",exEn:"I want to improve my Dutch."},
+    {nl:"geloven (dat)",en:"to believe (that)",ex:"Ik geloof dat ik het kan.",exEn:"I believe that I can do it."},
+    {nl:"dromen van",en:"to dream of",ex:"Ze droomt van een huis in de bergen.",exEn:"She dreams of a house in the mountains."},
+    {nl:"overtuigd zijn",en:"to be convinced",ex:"Ik ben ervan overtuigd dat dit lukt.",exEn:"I am convinced this will succeed."},
+    {nl:"vooruitkomen",en:"to get ahead / progress",ex:"Door hard werken kom je vooruit.",exEn:"By working hard, you get ahead."},
+  ],
+  grammar:{
+    points:[
+      {
+        title:"Bijzinnen — werkwoord achteraan",
+        badge:"Bijzin",
+        explanation:"In een bijzin staat het werkwoord altijd aan het <em>eind</em>. Veelgebruikte voegwoorden: <strong>dat, omdat, terwijl, als, toen, zodat, hoewel, wanneer, voordat, nadat</strong>.",
+        pattern:"HOOFDZIN + VOEGWOORD + onderwerp … + WERKWOORD",
+        examples:[
+          {nl:"Ik weet <em>dat hij morgen komt</em>.", en:"I know <em>that he is coming tomorrow</em>."},
+          {nl:"Ze werkt hard <em>omdat ze wil slagen</em>.", en:"She works hard <em>because she wants to succeed</em>."},
+          {nl:"Hij luistert muziek <em>terwijl hij kookt</em>.", en:"He listens to music <em>while he cooks</em>."},
+          {nl:"<em>Als je hard werkt</em>, kom je verder.", en:"<em>If you work hard</em>, you will get further."},
+        ]
+      },
+      {
+        title:"Indirecte rede",
+        badge:"Rapporteren",
+        explanation:"Gebruik <strong>dat</strong> + bijzin om te rapporteren wat iemand zei. Tijden verschuiven (presens → verleden).",
+        pattern:"Hij zegt/zei DAT + onderwerp … + WERKWOORD (achteraan)",
+        examples:[
+          {nl:"Direct: \"Ik ga morgen naar Utrecht.\"", en:"Direct: \"I'm going to Utrecht tomorrow.\""},
+          {nl:"Indirect: Hij <em>zegt dat</em> hij morgen naar Utrecht <em>gaat</em>.", en:"Indirect: He <em>says that</em> he is going to Utrecht tomorrow."},
+          {nl:"Ze <em>vertelde dat</em> ze haar diploma <em>had gehaald</em>.", en:"She <em>told us that</em> she had obtained her diploma."},
+        ]
+      }
+    ],
+    exercises:[
+      {
+        id:"h1ex1",
+        instruction:"Kies het juiste voegwoord.",
+        items:[
+          {stem:"Ik weet ___ hij morgen terugkomt.",options:["dat","omdat","terwijl"],answer:0},
+          {stem:"Ze studeert hard ___ ze wil slagen.",options:["dat","omdat","toen"],answer:1},
+          {stem:"___ het regent, blijven we binnen.",options:["Omdat","Als","Dat"],answer:1},
+          {stem:"Hij luistert naar muziek ___ hij werkt.",options:["als","dat","terwijl"],answer:2},
+        ]
+      }
+    ]
+  },
+  reading:{
+    title:"Mijn toekomstplannen",
+    paras:[
+      "Mijn naam is Lena en ik woon al drie jaar in Nederland. Ik werk als verpleegkundige in een groot ziekenhuis in Amsterdam. Mijn werk is zwaar, maar ik vind het erg zinvol.",
+      "Ik heb grote plannen voor de toekomst. Ik wil graag mijn Nederlands verbeteren, zodat ik beter kan communiceren met patiënten en collega's. Ik geloof dat goede communicatie heel belangrijk is in de zorg.",
+      "Over vijf jaar hoop ik een specialisatie te doen, waarschijnlijk in de ouderenzorg. Ik ben van plan om volgend jaar met die opleiding te beginnen. Mijn doel is om een goede specialist te worden die patiënten echt kan helpen.",
+      "Mijn familie woont nog in Polen. Ze vragen soms of ik ooit terugkeer. Eerlijk gezegd weet ik dat nog niet. Ik voel me hier thuis, maar ik mis mijn familie ook. Maar voor nu ben ik blij dat ik hier ben.",
+    ],
+    parasEn:[
+      "My name is Lena and I have been living in the Netherlands for three years. I work as a nurse in a large hospital in Amsterdam. My work is tough, but I find it very meaningful.",
+      "I have big plans for the future. I really want to improve my Dutch, so I can communicate better with patients and colleagues. I believe that good communication is very important in healthcare.",
+      "In five years I hope to do a specialization, probably in elderly care. I plan to start that training next year. My goal is to become a good specialist who can really help patients.",
+      "My family still lives in Poland. They sometimes ask if I will ever return. Honestly, I don't know yet. I feel at home here, but I also miss my family. But for now I am happy to be here.",
+    ],
+    questions:[
+      {q:"Wat is het beroep van Lena?",a:"Ze is verpleegkundige."},
+      {q:"Waarom wil ze haar Nederlands verbeteren?",a:"Om beter te kunnen communiceren met patiënten en collega's."},
+      {q:"Wat wil ze over vijf jaar doen?",a:"Een specialisatie doen, waarschijnlijk in de ouderenzorg."},
+      {q:"Woont haar familie ook in Nederland?",a:"Nee, haar familie woont in Polen."},
+    ]
+  },
+  listening:{
+    title:"Gesprek over plannen",
+    sents:[
+      {nl:"Wat zijn jouw plannen voor de toekomst?",en:"What are your plans for the future?"},
+      {nl:"Ik ben van plan om volgend jaar te gaan studeren.",en:"I plan to start studying next year."},
+      {nl:"Dat klinkt goed! Wat wil je studeren?",en:"That sounds good! What do you want to study?"},
+      {nl:"Ik wil verpleegkunde studeren omdat ik graag met mensen werk.",en:"I want to study nursing because I enjoy working with people."},
+      {nl:"Geloof je dat het moeilijk wordt?",en:"Do you think it will be difficult?"},
+      {nl:"Ja, maar ik ben ervan overtuigd dat ik het aankan.",en:"Yes, but I'm convinced I can handle it."},
+      {nl:"Ik weet zeker dat je het gaat redden!",en:"I'm sure you will manage!"},
+    ]
+  },
+  speaking:{
+    prompts:[
+      {
+        title:"Stel jezelf voor",
+        type:"Monologue · 1-2 min",
+        prompt:"Stel jezelf voor. Vertel wie je bent, wat je doet, en wat je plannen zijn voor de komende vijf jaar.",
+        promptEn:"Introduce yourself. Tell who you are, what you do, and what your plans are for the next five years.",
+        phrases:["Ik ben van plan om…","Mijn doel is…","Ik hoop dat…","Ik verwacht dat…","Over vijf jaar wil ik…"],
+        sampleNl:"Mijn naam is ... en ik woon in Nederland. Op dit moment werk ik als ... en leer ik elke dag Nederlands. Mijn doel is om vloeiend Nederlands te spreken, zodat ik beter kan communiceren op het werk. Ik ben van plan om volgend jaar een cursus te doen. Over vijf jaar hoop ik een vaste baan te hebben en me hier echt thuis te voelen.",
+        sampleEn:"My name is ... and I live in the Netherlands. Currently I work as ... and I study Dutch every day. My goal is to speak Dutch fluently so I can communicate better at work. I plan to do a course next year. In five years I hope to have a permanent job and really feel at home here.",
+      }
+    ]
+  },
+  writing:{
+    prompt:"Schrijf over jouw plannen voor de komende vijf jaar. Gebruik bijzinnen met dat, omdat, als en terwijl. (80–120 woorden)",
+    minWords:80,
+    tip:"Gebruik voegwoorden zoals dat, omdat, terwijl, als om bijzinnen te maken. Vergeet niet: werkwoord aan het einde van de bijzin!",
+    phrases:["Ik ben van plan om te…","Mijn doel is…","Ik hoop dat…","Ik geloof dat…","Ik verwacht dat…","Als alles goed gaat,…","Omdat ik wil…","Over vijf jaar…"]
+  }
+},
+{
+  id:2, title:"Wat bedoelt u precies?",
+  focus:"Betekenis · zintuigen · uitleg vragen · verduidelijken",
+  vocab:[
+    {nl:"bedoelen",en:"to mean / to intend",ex:"Wat bedoelt u precies?",exEn:"What exactly do you mean?"},
+    {nl:"betekenen",en:"to mean (a word/sign)",ex:"Wat betekent het woord 'gezellig'?",exEn:"What does the word 'gezellig' mean?"},
+    {nl:"verduidelijken",en:"to clarify",ex:"Kunt u dat verduidelijken met een voorbeeld?",exEn:"Could you clarify that with an example?"},
+    {nl:"uitleggen",en:"to explain",ex:"De docent legt de grammatica rustig uit.",exEn:"The teacher explains the grammar calmly."},
+    {nl:"begrijpen",en:"to understand",ex:"Ik begrijp het niet goed. Kunt u het herhalen?",exEn:"I don't understand it well. Could you repeat it?"},
+    {nl:"het zintuig",en:"sense (organ)",ex:"We hebben vijf zintuigen: zien, horen, ruiken, proeven en voelen.",exEn:"We have five senses: sight, hearing, smell, taste and touch."},
+    {nl:"zien",en:"to see",ex:"Ik zie hem elke dag op kantoor.",exEn:"I see him at the office every day."},
+    {nl:"horen",en:"to hear",ex:"Hoor jij die muziek ook?",exEn:"Do you hear that music too?"},
+    {nl:"ruiken",en:"to smell",ex:"Het ruikt heerlijk in de keuken!",exEn:"It smells wonderful in the kitchen!"},
+    {nl:"proeven",en:"to taste",ex:"Wil je de soep even proeven?",exEn:"Do you want to taste the soup?"},
+    {nl:"voelen",en:"to feel / to touch",ex:"Ik voel me niet goed vandaag.",exEn:"I don't feel well today."},
+    {nl:"beschrijven",en:"to describe",ex:"Kun je de man beschrijven die je zag?",exEn:"Can you describe the man you saw?"},
+    {nl:"concreet",en:"concrete / specific",ex:"Kun je een concreet voorbeeld geven?",exEn:"Can you give a concrete example?"},
+    {nl:"het voorbeeld",en:"example",ex:"Geef een voorbeeld van een bijzin.",exEn:"Give an example of a subordinate clause."},
+    {nl:"met andere woorden",en:"in other words",ex:"Met andere woorden: je bent te laat.",exEn:"In other words: you are late."},
+    {nl:"dat wil zeggen",en:"that is to say",ex:"Hij is zelfstandig, dat wil zeggen hij heeft geen baas.",exEn:"He is self-employed, that is to say he has no boss."},
+    {nl:"als ik het goed begrijp",en:"if I understand correctly",ex:"Als ik het goed begrijp, bedoelt u dat ik moet stoppen.",exEn:"If I understand correctly, you mean I should stop."},
+    {nl:"bevestigen",en:"to confirm",ex:"Kunt u dat bevestigen?",exEn:"Can you confirm that?"},
+    {nl:"herhalen",en:"to repeat",ex:"Kunt u dat herhalen? Ik verstond het niet.",exEn:"Could you repeat that? I didn't understand."},
+    {nl:"aanraken",en:"to touch",ex:"Raak het schilderij niet aan!",exEn:"Don't touch the painting!"},
+  ],
+  grammar:{
+    points:[
+      {
+        title:"Zintuigen + infinitief",
+        badge:"Perceptie",
+        explanation:"Na zintuigwerkwoorden (zien, horen, voelen, ruiken) + object + <strong>infinitief</strong> (zonder 'te').",
+        pattern:"Ik ZIE / HOOR / VOEL / RUIK + object + INFINITIEF",
+        examples:[
+          {nl:"Ik zie hem <em>lopen</em>.", en:"I see him walking."},
+          {nl:"Ik hoor haar <em>zingen</em>.", en:"I hear her singing."},
+          {nl:"Ik voel het <em>trillen</em>.", en:"I feel it vibrating."},
+          {nl:"Ik ruik eten <em>bakken</em>.", en:"I smell food frying."},
+        ]
+      },
+      {
+        title:"Uitleg vragen & controleren",
+        badge:"Communicatie",
+        explanation:"Gebruik deze zinnen om uitleg te vragen, te controleren of te bevestigen.",
+        pattern:"",
+        examples:[
+          {nl:"Wat bedoelt u precies?", en:"What exactly do you mean?"},
+          {nl:"Kunt u dat uitleggen met een voorbeeld?", en:"Could you explain that with an example?"},
+          {nl:"Als ik het goed begrijp, bedoelt u dat…", en:"If I understand correctly, you mean that…"},
+          {nl:"Met andere woorden: …?", en:"In other words: …?"},
+          {nl:"Kunt u dat herhalen, alstublieft?", en:"Could you repeat that, please?"},
+        ]
+      }
+    ],
+    exercises:[
+      {
+        id:"h2ex1",
+        instruction:"Welk zintuig gebruik je? Kies het juiste werkwoord.",
+        items:[
+          {stem:"___ jij die muziek ook? Het klinkt prachtig!",options:["Proef","Hoor","Ruik"],answer:1},
+          {stem:"Ik ___ altijd de geur van koffie 's ochtends.",options:["zie","voel","ruik"],answer:2},
+          {stem:"Hij ___ haar elke dag naar school lopen.",options:["ziet","ruikt","proeft"],answer:0},
+          {stem:"___ jij die wijn eens even? Lekker?",options:["Voel","Proef","Zie"],answer:1},
+        ]
+      }
+    ]
+  },
+  reading:{
+    title:"Hoe wij de wereld ervaren",
+    paras:[
+      "Wij ervaren de wereld met onze vijf zintuigen: zien, horen, ruiken, proeven en voelen. Maar wist je dat iedereen dat op een andere manier doet?",
+      "Sommige mensen verwerken informatie vooral visueel. Zij onthouden het best wat ze zien. Ze zeggen dingen als 'Ik zie wat je bedoelt' of 'Dat is duidelijk voor me'. Anderen leren juist beter door te luisteren. Voor hen is het prettig als je iets hardop uitlegt.",
+      "Soms begrijp je iets niet goed. Dan is het belangrijk om om uitleg te vragen. Je kunt zeggen: 'Wat bedoelt u precies?' of 'Kunt u dat uitleggen met een voorbeeld?' Als iemand iets uitlegt, kun je controleren of je het goed begrepen hebt: 'Als ik het goed begrijp, bedoelt u dat…'",
+      "In het dagelijks leven gebruiken we ook zintuiglijke taal. We 'ruiken' dat er problemen zijn, we 'voelen' aan dat iets niet klopt. Deze uitdrukkingen helpen ons de wereld beter te beschrijven.",
+    ],
+    parasEn:[
+      "We experience the world with our five senses: sight, hearing, smell, taste and touch. But did you know that everyone does this in a different way?",
+      "Some people process information primarily visually. They remember best what they see. They say things like 'I see what you mean' or 'That's clear to me'. Others learn better by listening. For them it's pleasant when you explain something out loud.",
+      "Sometimes you don't understand something well. Then it's important to ask for an explanation. You can say: 'What do you mean exactly?' or 'Could you explain that with an example?' When someone explains something, you can check if you understood correctly: 'If I understand correctly, you mean that…'",
+      "In daily life we also use sensory language. We 'smell' that there are problems, we 'feel' that something is off. These expressions help us describe the world better.",
+    ],
+    questions:[
+      {q:"Hoeveel zintuigen noemt de tekst?",a:"Vijf: zien, horen, ruiken, proeven en voelen."},
+      {q:"Hoe onthouden visuele mensen informatie het best?",a:"Door het te zien."},
+      {q:"Wat kun je zeggen als je iets niet begrijpt?",a:"'Wat bedoelt u precies?' of 'Kunt u dat uitleggen met een voorbeeld?'"},
+    ]
+  },
+  listening:{
+    title:"Bij de dokter",
+    sents:[
+      {nl:"Goedemorgen. U bent mevrouw De Vries?",en:"Good morning. You are Mrs De Vries?"},
+      {nl:"Ja, klopt. Ik heb al een week lang hoofdpijn.",en:"Yes, that's right. I've had a headache for a week."},
+      {nl:"Kunt u beschrijven waar u precies pijn voelt?",en:"Can you describe where exactly you feel pain?"},
+      {nl:"Aan de linkerkant, boven mijn oog. Het klopt soms.",en:"On the left side, above my eye. It sometimes throbs."},
+      {nl:"Als ik het goed begrijp, heeft u een kloppende pijn links?",en:"If I understand correctly, you have a throbbing pain on the left?"},
+      {nl:"Precies. En het wordt erger als ik naar licht kijk.",en:"Exactly. And it gets worse when I look at light."},
+      {nl:"Ik begrijp het. Ik ga een paar vragen stellen om het te verduidelijken.",en:"I understand. I'm going to ask a few questions to clarify."},
+    ]
+  },
+  speaking:{
+    prompts:[
+      {
+        title:"Iets verduidelijken",
+        type:"Role-play",
+        prompt:"Je begrijpt een instructie op het werk niet. Vraag om uitleg en controleer of je het goed hebt begrepen.",
+        promptEn:"You don't understand a work instruction. Ask for clarification and check if you understood correctly.",
+        phrases:["Wat bedoelt u precies?","Kunt u dat uitleggen?","Als ik het goed begrijp…","Met andere woorden…","Kunt u een voorbeeld geven?"],
+        sampleNl:"Excuseer, ik begrijp niet goed wat u bedoelt. Kunt u dat uitleggen met een voorbeeld? Als ik het goed begrijp, moet ik eerst het formulier invullen en daarna sturen. Klopt dat? En aan wie moet ik het sturen — aan u of aan de afdeling HR?",
+        sampleEn:"Excuse me, I don't understand well what you mean. Could you explain that with an example? If I understand correctly, I need to fill in the form first and then send it. Is that right? And who should I send it to — to you or to the HR department?",
+      }
+    ]
+  },
+  writing:{
+    prompt:"Beschrijf een plek die je goed kent: wat zie, hoor, ruik en voel je daar? Hoe maakt die plek je gevoel? (80–120 woorden)",
+    minWords:80,
+    tip:"Gebruik zintuigwerkwoorden: ik zie / hoor / ruik / voel / proef. Voeg details toe om de plek levendig te beschrijven.",
+    phrases:["Ik zie…","Ik hoor…","Ik ruik…","Het voelt als…","Het ruikt naar…","Wat me het meest opvalt is…","Ik voel me er…"]
+  }
+},
+{
+  id:3, title:"Iedereen is anders",
+  focus:"Eigenschappen · vergelijken · advies geven · gewoontes",
+  vocab:[
+    {nl:"de eigenschap",en:"characteristic / quality",ex:"Geduld is een belangrijke eigenschap voor leraren.",exEn:"Patience is an important quality for teachers."},
+    {nl:"betrouwbaar",en:"reliable / trustworthy",ex:"Ze is een betrouwbare collega.",exEn:"She is a reliable colleague."},
+    {nl:"geduldig",en:"patient",ex:"Hij is heel geduldig met kinderen.",exEn:"He is very patient with children."},
+    {nl:"ongeduldig",en:"impatient",ex:"Ik word ongeduldig als ik lang moet wachten.",exEn:"I get impatient when I have to wait a long time."},
+    {nl:"eerlijk",en:"honest",ex:"Wees eerlijk — wat vind je er echt van?",exEn:"Be honest — what do you really think of it?"},
+    {nl:"zorgzaam",en:"caring",ex:"Mijn moeder is heel zorgzaam.",exEn:"My mother is very caring."},
+    {nl:"vergelijken",en:"to compare",ex:"Als je de twee landen vergelijkt, zie je grote verschillen.",exEn:"If you compare the two countries, you see big differences."},
+    {nl:"meer ... dan",en:"more ... than",ex:"Hij werkt meer dan zijn collega.",exEn:"He works more than his colleague."},
+    {nl:"minder ... dan",en:"less ... than",ex:"Dit huis is kleiner dan het vorige.",exEn:"This house is smaller than the previous one."},
+    {nl:"net zo ... als",en:"just as ... as",ex:"Ze is net zo slim als haar zus.",exEn:"She is just as smart as her sister."},
+    {nl:"aanraden",en:"to recommend",ex:"Ik raad je aan om meer rust te nemen.",exEn:"I recommend you to rest more."},
+    {nl:"adviseren",en:"to advise",ex:"De dokter adviseerde hem te stoppen met roken.",exEn:"The doctor advised him to stop smoking."},
+    {nl:"ik zou … aanraden",en:"I would recommend … to",ex:"Ik zou jou aanraden om eerder op te staan.",exEn:"I would recommend you to get up earlier."},
+    {nl:"de gewoonte",en:"habit / custom",ex:"Het is een slechte gewoonte om te laat te komen.",exEn:"It's a bad habit to arrive late."},
+    {nl:"gewend zijn aan",en:"to be used to",ex:"Ik ben gewend aan hard werken.",exEn:"I am used to working hard."},
+    {nl:"hetzelfde",en:"the same (thing)",ex:"We doen niet allemaal hetzelfde.",exEn:"We don't all do the same thing."},
+    {nl:"anders dan",en:"different from",ex:"Hij denkt heel anders dan ik.",exEn:"He thinks very differently from me."},
+    {nl:"in vergelijking met",en:"compared to",ex:"In vergelijking met vorig jaar gaat het beter.",exEn:"Compared to last year things are going better."},
+    {nl:"over het algemeen",en:"in general",ex:"Over het algemeen ben ik tevreden met mijn werk.",exEn:"In general I am satisfied with my work."},
+    {nl:"sterker nog",en:"moreover / what's more",ex:"Hij spreekt goed Nederlands. Sterker nog, hij is bijna vloeiend.",exEn:"He speaks good Dutch. What's more, he is almost fluent."},
+  ],
+  grammar:{
+    points:[
+      {
+        title:"Vergelijken: comparatief",
+        badge:"Vergelijken",
+        explanation:"Voeg <strong>-er</strong> toe aan korte bijvoeglijke naamwoorden. Lange woorden: <strong>meer/minder</strong>. Onregelmatig: goed→beter, veel→meer, weinig→minder.",
+        pattern:"adj + -er + DAN  /  meer/minder + adj + DAN",
+        examples:[
+          {nl:"Hij is <em>groter</em> dan zijn broer.", en:"He is taller than his brother."},
+          {nl:"Dit boek is <em>interessanter</em> dan dat.", en:"This book is more interesting than that one."},
+          {nl:"Ze werkt <em>harder</em> dan haar collega.", en:"She works harder than her colleague."},
+          {nl:"Dit is <em>meer</em> dan genoeg.", en:"This is more than enough."},
+        ]
+      },
+      {
+        title:"Advies geven",
+        badge:"Advies",
+        explanation:"Gebruik <strong>zou(den) moeten/kunnen</strong>, <strong>ik raad je aan om</strong>, <strong>het is beter om</strong>.",
+        pattern:"Ik zou + INFINITIEF / Ik raad je aan om te + INF",
+        examples:[
+          {nl:"Ik zou meer slapen als ik jou was.", en:"I would sleep more if I were you."},
+          {nl:"Je <em>kunt beter</em> vroeg beginnen.", en:"You'd better start early."},
+          {nl:"Ik <em>raad je aan om</em> een arts te raadplegen.", en:"I recommend you to consult a doctor."},
+          {nl:"Het is <em>beter om</em> geen suiker te eten.", en:"It is better not to eat sugar."},
+        ]
+      }
+    ],
+    exercises:[
+      {
+        id:"h3ex1",
+        instruction:"Maak de vergelijkingszin compleet.",
+        items:[
+          {stem:"Amsterdam is groot, maar Londen is ___ Amsterdam.",options:["groter dan","meer groot dan","groot als"],answer:0},
+          {stem:"Hij is ___ zijn zus. Ze zijn even lang.",options:["net zo lang als","langer dan","minder lang dan"],answer:0},
+          {stem:"Dit is ___ goed nieuws! (meer dan goed)",options:["beter","goed","meer goed"],answer:0},
+          {stem:"Ik heb ___ tijd dan jij, dus ik kom later.",options:["meer","minder","net zo veel"],answer:1},
+        ]
+      }
+    ]
+  },
+  reading:{
+    title:"Mensen zijn verschillend",
+    paras:[
+      "Mensen zijn heel verschillend. Wat voor de één makkelijk is, is voor de ander moeilijk. Neem stiptheid: sommige mensen zijn altijd op tijd, terwijl anderen voortdurend te laat komen.",
+      "Youssef is een vriend van me. Hij is betrouwbaar, geduldig en heel sociaal. Hij herinnert altijd iedereen zijn verjaardag en helpt meteen als je hem vraagt. Maar hij kan soms heel langzaam beslissingen nemen.",
+      "Mijn collega Kirsten is precies het tegenovergestelde. Ze is snel, direct en efficiënt. Ze neemt in vijf minuten beslissingen die anderen een week kosten. Maar ze heeft soms te weinig geduld voor anderen.",
+      "Wie is beter? Eigenlijk zijn beide stijlen waardevol. In sommige situaties heb je iemand als Kirsten nodig, in andere een Youssef. De kunst is te begrijpen hoe jijzelf bent, en anderen te respecteren die anders zijn.",
+    ],
+    parasEn:[
+      "People are very different. What is easy for one person is difficult for another. Take punctuality: some people are always on time, while others are constantly late.",
+      "Youssef is a friend of mine. He is reliable, patient and very sociable. He always remembers everyone's birthday and helps immediately when you ask him. But he can sometimes make decisions very slowly.",
+      "My colleague Kirsten is exactly the opposite. She is fast, direct and efficient. She makes in five minutes decisions that cost others a week. But she sometimes has too little patience for others.",
+      "Who is better? Actually both styles are valuable. In some situations you need someone like Kirsten, in others a Youssef. The art is to understand how you yourself are, and to respect others who are different.",
+    ],
+    questions:[
+      {q:"Noem twee positieve eigenschappen van Youssef.",a:"Betrouwbaar, geduldig, sociaal (kies 2)."},
+      {q:"Wat is een nadeel van Kirsten?",a:"Ze heeft soms te weinig geduld voor anderen."},
+      {q:"Wat is de conclusie van de tekst?",a:"Beide stijlen zijn waardevol. Respecteer mensen die anders zijn."},
+    ]
+  },
+  listening:{
+    title:"Advies over een nieuwe baan",
+    sents:[
+      {nl:"Ik weet niet of ik een nieuwe baan moet zoeken.",en:"I don't know whether I should look for a new job."},
+      {nl:"Waarom twijfel je? Vertel eens.",en:"Why are you hesitating? Tell me."},
+      {nl:"Mijn huidige baan is saai, maar de nieuwe baan is ver weg.",en:"My current job is boring, but the new job is far away."},
+      {nl:"Ik zou je aanraden om de voor- en nadelen op te schrijven.",en:"I would recommend you to write down the pros and cons."},
+      {nl:"Dat is een goed idee. Maar ik vind reizen vervelender dan werken.",en:"That's a good idea. But I find travelling more annoying than working."},
+      {nl:"Dan is het beter om te wachten op een baan dichter bij huis.",en:"Then it's better to wait for a job closer to home."},
+      {nl:"Je hebt gelijk. Ik ga meer nadenken voordat ik beslis.",en:"You are right. I'll think more before I decide."},
+    ]
+  },
+  speaking:{
+    prompts:[
+      {
+        title:"Vergelijk twee mensen",
+        type:"Compare · 1 min",
+        prompt:"Vergelijk twee mensen die je kent (bijv. collega's of familieleden). Beschrijf hun eigenschappen en wat jij liever hebt.",
+        promptEn:"Compare two people you know (e.g. colleagues or family). Describe their qualities and what you prefer.",
+        phrases:["… is geduldig/direct/zorgzaam","… is meer … dan","… is net zo … als","Ik vind … prettiger omdat…","Aan de andere kant…"],
+        sampleNl:"Ik ken twee heel verschillende collega's. Sam is heel direct en werkt snel. Hij is efficiënter dan de rest van het team. Maar hij is minder geduldig dan Lisa. Lisa luistert beter en neemt meer tijd voor anderen. Ik werk liever met Lisa, omdat de sfeer prettiger is. Maar van Sam leer ik om sneller beslissingen te nemen.",
+        sampleEn:"I know two very different colleagues. Sam is very direct and works quickly. He is more efficient than the rest of the team. But he is less patient than Lisa. Lisa listens better and takes more time for others. I prefer working with Lisa, because the atmosphere is more pleasant. But from Sam I learn to make decisions faster.",
+      }
+    ]
+  },
+  writing:{
+    prompt:"Geef advies aan een vriend die moeite heeft met tijdbeheer. Gebruik vergelijkingen en adviserende zinnen. (80–120 woorden)",
+    minWords:80,
+    tip:"Gebruik 'ik zou ... aanraden om', 'het is beter om', 'je kunt beter'. Vergeet ook comparatieven niet: meer/minder ... dan.",
+    phrases:["Ik zou je aanraden om…","Het is beter om…","Je kunt beter…","In vergelijking met vroeger…","Over het algemeen…","Probeer eens om…"]
+  }
+},
+{
+  id:4, title:"Als we nou eens…",
+  focus:"Voorstellen · suggesties · passief · reacties",
+  vocab:[
+    {nl:"het voorstel",en:"proposal / suggestion",ex:"Heb je een voorstel voor het uitje?",exEn:"Do you have a suggestion for the outing?"},
+    {nl:"suggereren",en:"to suggest",ex:"Ik suggereer dat we naar Rotterdam gaan.",exEn:"I suggest we go to Rotterdam."},
+    {nl:"instemmen",en:"to agree / to concur",ex:"Iedereen stemt in met het plan.",exEn:"Everyone agrees with the plan."},
+    {nl:"afwijzen",en:"to reject / to turn down",ex:"Hij wees het voorstel af.",exEn:"He rejected the proposal."},
+    {nl:"het bezwaar",en:"objection",ex:"Ik heb geen bezwaar. Prima idee!",exEn:"I have no objection. Great idea!"},
+    {nl:"als we nou eens…",en:"what if we… / how about we…",ex:"Als we nou eens samen gaan eten?",exEn:"What if we go out for dinner together?"},
+    {nl:"wat dacht je van…?",en:"how about…? / what about…?",ex:"Wat dacht je van een museum bezoek?",exEn:"How about a museum visit?"},
+    {nl:"dat lijkt me goed",en:"that sounds good to me",ex:"Een kookcursus? Dat lijkt me goed!",exEn:"A cooking class? That sounds good to me!"},
+    {nl:"zullen we…?",en:"shall we…?",ex:"Zullen we morgen vroeg beginnen?",exEn:"Shall we start early tomorrow?"},
+    {nl:"meedoen",en:"to join in / to participate",ex:"Doe je mee met de cursus?",exEn:"Are you joining the course?"},
+    {nl:"afspreken",en:"to arrange / to agree to meet",ex:"Laten we voor volgende week afspreken.",exEn:"Let's arrange to meet next week."},
+    {nl:"organiseren",en:"to organize",ex:"Wie organiseert het feest?",exEn:"Who is organizing the party?"},
+    {nl:"uitvoeren",en:"to carry out / to execute",ex:"We voeren het plan morgen uit.",exEn:"We will carry out the plan tomorrow."},
+    {nl:"worden + deelwoord",en:"passive: is being + done",ex:"Het huis wordt gerenoveerd.",exEn:"The house is being renovated."},
+    {nl:"er wordt…",en:"there is/are … being …",ex:"Er wordt hard gewerkt.",exEn:"There is a lot of work being done. / People are working hard."},
+    {nl:"ik weet het niet zo",en:"I'm not sure about that",ex:"Een camping? Ik weet het niet zo.",exEn:"A camping trip? I'm not so sure about that."},
+    {nl:"ik zie er wat in",en:"I think it has potential / I like the idea",ex:"Een kookcursus? Ik zie er wel wat in.",exEn:"A cooking class? I see potential in that."},
+    {nl:"dat is een idee",en:"that's an idea",ex:"Naar het strand? Dat is een idee!",exEn:"To the beach? That's an idea!"},
+    {nl:"het alternatief",en:"alternative",ex:"Als dat niet lukt, wat is dan het alternatief?",exEn:"If that doesn't work, what is the alternative?"},
+    {nl:"compromis sluiten",en:"to reach a compromise",ex:"We sloten een compromis: vrijdag 17:00.",exEn:"We reached a compromise: Friday at 5pm."},
+  ],
+  grammar:{
+    points:[
+      {
+        title:"Passief: worden + voltooid deelwoord",
+        badge:"Passief",
+        explanation:"Passief = iets <em>wordt gedaan</em> (niet wie het doet). Gebruik <strong>wordt/worden</strong> (tegenwoordig) of <strong>werd/werden</strong> (verleden) + volt. deelwoord.",
+        pattern:"Er wordt/worden + VOLT. DEELWOORD  /  Iets wordt + VOLT. DEELWOORD",
+        examples:[
+          {nl:"Actief: Ze bouwen een nieuw kantoor.", en:"Active: They are building a new office."},
+          {nl:"Passief: Er wordt een nieuw kantoor <em>gebouwd</em>.", en:"Passive: A new office is being built."},
+          {nl:"Het formulier wordt <em>ingevuld</em>.", en:"The form is being filled in."},
+          {nl:"Vroeger werd er veel gerookt.", en:"In the past there was a lot of smoking."},
+        ]
+      },
+      {
+        title:"Suggesties doen",
+        badge:"Functietaal",
+        explanation:"B1-functies voor het doen van voorstellen en het reageren erop.",
+        pattern:"",
+        examples:[
+          {nl:"Als we nou eens naar Artis gaan?", en:"What if we go to Artis?"},
+          {nl:"Wat dacht je van een kookcursus?", en:"How about a cooking class?"},
+          {nl:"Zullen we een enquête sturen?", en:"Shall we send a survey?"},
+          {nl:"Dat lijkt me een goed idee!", en:"That sounds like a good idea to me!"},
+          {nl:"Ik weet het niet zo… Misschien iets anders?", en:"I'm not so sure… Maybe something else?"},
+        ]
+      }
+    ],
+    exercises:[
+      {
+        id:"h4ex1",
+        instruction:"Actief of passief? Kies de juiste vorm.",
+        items:[
+          {stem:"Het nieuwe gebouw ___ volgende maand geopend.",options:["wordt","is","maakt"],answer:0},
+          {stem:"Er ___ hard gewerkt in ons team.",options:["worden","wordt","zijn"],answer:1},
+          {stem:"Vroeger ___ de brieven met de hand geschreven.",options:["worden","werd","zijn"],answer:1},
+          {stem:"De vergadering ___ om 9 uur gehouden.",options:["zijn","wordt","is"],answer:1},
+        ]
+      }
+    ]
+  },
+  reading:{
+    title:"Een uitje organiseren",
+    paras:[
+      "Het was weer die tijd van het jaar: het team moest een afdelingsuitje organiseren. Iedereen had zijn eigen ideeën.",
+      "'Als we nou eens naar Artis gaan?' stelde Kim voor. 'Dat is leuk voor iedereen, ook voor de mensen met kinderen.' 'Ik weet het niet zo', zei Mark. 'Artis is misschien wat kinderachtig voor een team van volwassenen. Wat dacht je van een kookcursus?'",
+      "'Dat lijkt me een goed idee!' reageerde Vera enthousiast. 'Maar niet iedereen kookt graag', merkte Priya op. 'Ik stel voor dat we eerst vragen wat de anderen willen. Dan kunnen we een democratische beslissing nemen.'",
+      "Uiteindelijk stuurden ze een enquête naar het hele team. De kookcursus won met groot verschil. Twee weken later stonden ze samen in een professionele keuken pasta te maken. Het werd een onvergetelijke avond.",
+    ],
+    parasEn:[
+      "It was that time of year again: the team had to organize a department outing. Everyone had their own ideas.",
+      "'What if we go to Artis?' Kim suggested. 'That's fun for everyone, including people with children.' 'I'm not so sure,' said Mark. 'Artis might be a bit childish for a team of adults. How about a cooking class?'",
+      "'That sounds like a good idea to me!' Vera responded enthusiastically. 'But not everyone likes to cook,' Priya noted. 'I suggest we first ask what the others want. Then we can make a democratic decision.'",
+      "In the end they sent a survey to the whole team. The cooking class won by a large margin. Two weeks later they stood together in a professional kitchen making pasta. It became an unforgettable evening.",
+    ],
+    questions:[
+      {q:"Wat was Kim's voorstel?",a:"Naar Artis gaan."},
+      {q:"Waarom vond Mark Artis geen goed idee?",a:"Te kinderachtig voor volwassenen."},
+      {q:"Hoe heeft het team het probleem opgelost?",a:"Ze stuurden een enquête naar het hele team."},
+    ]
+  },
+  listening:{
+    title:"Een vergadering plannen",
+    sents:[
+      {nl:"We moeten een vergadering plannen. Wanneer kan iedereen?",en:"We need to plan a meeting. When can everyone make it?"},
+      {nl:"Als we nou eens donderdag om tien uur doen?",en:"What if we do Thursday at ten?"},
+      {nl:"Donderdag? Ik weet het niet zo. Ik heb dan een afspraak.",en:"Thursday? I'm not so sure. I have an appointment then."},
+      {nl:"Wat dacht je van vrijdag? Dan is het rustiger.",en:"How about Friday? It's quieter then."},
+      {nl:"Vrijdag werkt voor mij. Dat lijkt me een goed idee.",en:"Friday works for me. That sounds good to me."},
+      {nl:"Prima. De vergadering wordt dan om negen uur gehouden.",en:"Fine. The meeting will then be held at nine."},
+      {nl:"Afgesproken. Ik stuur een agenda.",en:"Agreed. I'll send an agenda."},
+    ]
+  },
+  speaking:{
+    prompts:[
+      {
+        title:"Een activiteit voorstellen",
+        type:"Groepsgesprek",
+        prompt:"Je team wil iets doen na het werk. Doe drie suggesties en reageer op de bezwaren van je collega's.",
+        promptEn:"Your team wants to do something after work. Make three suggestions and respond to your colleagues' objections.",
+        phrases:["Als we nou eens…","Wat dacht je van…?","Dat lijkt me goed","Ik weet het niet zo","Ik zie er wel wat in"],
+        sampleNl:"Als we nou eens samen naar een restaurant gaan? Er is een nieuw Turks restaurant dat goed is. Of, als dat niet bevalt, wat dacht je van een bowlingavond? Dat is leuk voor iedereen. En anders: zullen we gewoon bij iemand thuis eten? Dat is ook gezellig en niet te duur. Wat vinden jullie?",
+        sampleEn:"What if we go to a restaurant together? There's a new Turkish restaurant that's good. Or, if that doesn't appeal, how about a bowling evening? That's fun for everyone. And otherwise: shall we just eat at someone's home? That's also nice and not too expensive. What do you all think?",
+      }
+    ]
+  },
+  writing:{
+    prompt:"Schrijf een e-mail aan je team om een uitje voor te stellen. Gebruik passieve zinnen en functies om suggesties te doen. (80–120 woorden)",
+    minWords:80,
+    tip:"Gebruik passief: 'er wordt... georganiseerd', 'er wordt... gehouden'. Gebruik ook: 'als we nou eens', 'wat dacht je van', 'ik stel voor dat'.",
+    phrases:["Ik stel voor dat we…","Als we nou eens…","Er wordt… georganiseerd","Wie wil er meedoen?","Laat me weten of…","Ik hoor graag jullie reactie."]
+  }
+},
+{
+  id:5, title:"Klare taal",
+  focus:"Uitleg vragen · geruchten · betrekkelijke bijzinnen (die/dat)",
+  vocab:[
+    {nl:"beweren",en:"to claim / to assert",ex:"Hij beweert dat hij nooit te laat is.",exEn:"He claims he is never late."},
+    {nl:"naar verluidt",en:"reportedly / allegedly",ex:"Naar verluidt gaat het bedrijf fuseren.",exEn:"Reportedly the company is going to merge."},
+    {nl:"het schijnt dat",en:"it seems that / apparently",ex:"Het schijnt dat hij ziek is.",exEn:"It seems that he is ill."},
+    {nl:"men zegt dat",en:"they say that / it is said that",ex:"Men zegt dat het volgende week warmer wordt.",exEn:"They say it will be warmer next week."},
+    {nl:"bevestigen",en:"to confirm",ex:"De directeur heeft het nieuws bevestigd.",exEn:"The director confirmed the news."},
+    {nl:"ontkennen",en:"to deny",ex:"Ze ontkent dat ze de fout heeft gemaakt.",exEn:"She denies making the mistake."},
+    {nl:"het gerucht",en:"rumour",ex:"Dat is maar een gerucht. Ik weet het niet zeker.",exEn:"That is just a rumour. I'm not sure."},
+    {nl:"het bewijs",en:"proof / evidence",ex:"Heb je bewijs voor wat je beweert?",exEn:"Do you have proof of what you claim?"},
+    {nl:"controleren",en:"to check / to verify",ex:"Ik moet dit bericht eerst controleren.",exEn:"I need to check this message first."},
+    {nl:"die (relat. vnw.)",en:"who / which / that (de-words, plural)",ex:"De vrouw die daar staat, is mijn baas.",exEn:"The woman who is standing there is my boss."},
+    {nl:"dat (relat. vnw.)",en:"which / that (het-words)",ex:"Het boek dat ik lees, is heel interessant.",exEn:"The book that I'm reading is very interesting."},
+    {nl:"waarmee",en:"with which",ex:"De pen waarmee ik schrijf, is van jou.",exEn:"The pen with which I write is yours."},
+    {nl:"waarbij",en:"whereby / at which",ex:"De situatie waarbij ik aanwezig was, was moeilijk.",exEn:"The situation at which I was present was difficult."},
+    {nl:"waarvoor",en:"for which / why",ex:"De reden waarvoor hij wegging, is onduidelijk.",exEn:"The reason for which he left is unclear."},
+    {nl:"twijfelen aan",en:"to doubt",ex:"Ik twijfel aan zijn verhaal.",exEn:"I doubt his story."},
+    {nl:"overtuigen",en:"to convince",ex:"Kun jij hem overtuigen?",exEn:"Can you convince him?"},
+    {nl:"ophelderen",en:"to clarify / to shed light on",ex:"Dit onderzoek helpt de situatie op te helderen.",exEn:"This research helps to clarify the situation."},
+    {nl:"naar verluidt",en:"allegedly",ex:"Naar verluidt is hij ontslagen.",exEn:"Allegedly he has been fired."},
+    {nl:"zogenaamd",en:"so-called / supposedly",ex:"Het is een zogenaamde oplossing, maar het werkt niet.",exEn:"It is a so-called solution, but it doesn't work."},
+    {nl:"onderbouwen",en:"to substantiate / to back up",ex:"Kun je je mening onderbouwen met feiten?",exEn:"Can you back up your opinion with facts?"},
+  ],
+  grammar:{
+    points:[
+      {
+        title:"Betrekkelijke bijzinnen: die / dat",
+        badge:"Bijzin",
+        explanation:"<strong>die</strong> = de-woorden + meervoud. <strong>dat</strong> = het-woorden enkelvoud. Bijzin: verb achteraan.",
+        pattern:"[de + ZELFSTANDIG NAAMWOORD] + DIE + … + WERKWOORD\n[het + ZELFSTANDIG NAAMWOORD] + DAT + … + WERKWOORD",
+        examples:[
+          {nl:"De man <em>die</em> daar staat, heet Jan.", en:"The man <em>who</em> is standing there is called Jan."},
+          {nl:"Het boek <em>dat</em> ik lees, is moeilijk.", en:"The book <em>that</em> I'm reading is difficult."},
+          {nl:"De kinderen <em>die</em> spelen, zijn blij.", en:"The children <em>who</em> are playing are happy."},
+          {nl:"Het bedrijf <em>dat</em> gefuseerd is, is groter.", en:"The company <em>that</em> merged is bigger."},
+        ]
+      },
+      {
+        title:"waar + voorzetsel (relatiefzin over dingen)",
+        badge:"Bijzin",
+        explanation:"Als het antecedent een ding/zaak is, gebruik <strong>waar + voorzetsel</strong> (of: <strong>voor/op/aan/mee/door/in + wie</strong> voor personen).",
+        pattern:"het ding + WAAR + VOORZETSEL + … + WERKWOORD",
+        examples:[
+          {nl:"De stoel <em>waarop</em> ik zit, is oud.", en:"The chair <em>on which</em> I'm sitting is old."},
+          {nl:"Het bedrijf <em>waarvoor</em> ik werk, is groot.", en:"The company <em>for which</em> I work is big."},
+          {nl:"De reden <em>waarom</em> hij gaat, weet ik niet.", en:"The reason <em>why</em> he is leaving, I don't know."},
+        ]
+      }
+    ],
+    exercises:[
+      {
+        id:"h5ex1",
+        instruction:"Kies die, dat of waar + voorzetsel.",
+        items:[
+          {stem:"De vrouw ___ naast me zit, is mijn zus.",options:["die","dat","waarvoor"],answer:0},
+          {stem:"Het huis ___ we huren, is oud maar mooi.",options:["die","dat","waarvoor"],answer:1},
+          {stem:"De collega ___ ik werk, is heel aardig.",options:["die","waarmee","dat"],answer:1},
+          {stem:"De kinderen ___ elke dag spelen, zijn gelukkig.",options:["dat","waarvoor","die"],answer:2},
+        ]
+      }
+    ]
+  },
+  reading:{
+    title:"Nieuws of gerucht?",
+    paras:[
+      "In de pauze hoorde Maria een opvallend verhaal van haar collega Bas. 'Heb jij al gehoord? Naar verluidt gaat ons bedrijf fuseren met een Duits bedrijf. Men zegt dat er twintig banen verdwijnen.'",
+      "Maria werd meteen ongerust. Was dit echt waar? Ze besloot het na te gaan in plaats van het door te vertellen.",
+      "Eerst ging ze naar haar teamleider, die zei: 'Ik heb ook geruchten gehoord, maar niets is bevestigd. Wacht op de officiële mededeling.' Daarna zocht ze op het intranet. Er was niets te vinden.",
+      "Een week later stuurde de directie een mail: er waren gesprekken over samenwerking, maar van ontslagen was geen sprake. Het gerucht klopte niet.",
+    ],
+    parasEn:[
+      "During the break Maria heard a striking story from her colleague Bas. 'Have you heard? Reportedly our company is going to merge with a German company. They say twenty jobs will disappear.'",
+      "Maria immediately became worried. Was this really true? She decided to investigate it instead of passing it on.",
+      "First she went to her team leader, who said: 'I've also heard rumours, but nothing is confirmed. Wait for the official announcement.' Then she searched the intranet. There was nothing to find.",
+      "A week later management sent an email: there were discussions about cooperation, but there was no question of dismissals. The rumour was not true.",
+    ],
+    questions:[
+      {q:"Wat was het gerucht?",a:"Fusie met een Duits bedrijf en twintig banen verdwijnen."},
+      {q:"Wat deed Maria in plaats van het gerucht doortellen?",a:"Ze ging het na / onderzocht het."},
+      {q:"Klopte het gerucht uiteindelijk?",a:"Nee, er was samenwerking maar geen ontslagen."},
+    ]
+  },
+  listening:{
+    title:"Is het waar of niet?",
+    sents:[
+      {nl:"Heb jij gehoord dat de supermarkt sluit?",en:"Have you heard that the supermarket is closing?"},
+      {nl:"Nee, echt? Wie heeft dat gezegd?",en:"No, really? Who said that?"},
+      {nl:"Het schijnt dat er problemen zijn met het huurcontract.",en:"It seems there are problems with the rental contract."},
+      {nl:"Maar dat is toch maar een gerucht? Heb je bewijs?",en:"But isn't that just a rumour? Do you have proof?"},
+      {nl:"Nee, maar een collega die er werkt, heeft het verteld.",en:"No, but a colleague who works there told me."},
+      {nl:"Ik zou het eerst controleren voordat je het doorvertelt.",en:"I would check it first before you spread it."},
+      {nl:"Je hebt gelijk. Ik ga het bevestigen bij de eigenaar.",en:"You're right. I'll confirm it with the owner."},
+    ]
+  },
+  speaking:{
+    prompts:[
+      {
+        title:"Een mening onderbouwen",
+        type:"Monologue · 1 min",
+        prompt:"Vertel over iets dat jij hebt gehoord of gelezen dat je niet helemaal geloofde. Hoe heb je het gecheckt?",
+        promptEn:"Tell about something you heard or read that you didn't quite believe. How did you check it?",
+        phrases:["Naar verluidt…","Het schijnt dat…","Ik twijfelde aan…","Ik heb het gecontroleerd door…","Uiteindelijk bleek dat…"],
+        sampleNl:"Ik hoorde dat ons kantoor zou verhuizen naar een andere stad. Naar verluidt was er een beslissing genomen zonder overleg. Ik twijfelde aan dit gerucht, want ik had niets officiëels gezien. Dus ik heb het gecheckt door mijn manager een e-mail te sturen. Uiteindelijk bleek dat het om samenwerking ging met een ander kantoor, niet om een verhuizing.",
+        sampleEn:"I heard that our office would move to another city. Reportedly a decision had been made without consultation. I doubted this rumour, because I hadn't seen anything official. So I checked it by emailing my manager. In the end it turned out to be about cooperation with another office, not a move.",
+      }
+    ]
+  },
+  writing:{
+    prompt:"Schrijf een kort bericht aan een collega om een gerucht te weerleggen of te bevestigen. Gebruik betrekkelijke bijzinnen (die/dat/waar+prep). (80–120 woorden)",
+    minWords:80,
+    tip:"Gebruik 'die/dat' in betrekkelijke bijzinnen: 'de collega die...', 'het nieuws dat...'. Gebruik ook geruchtentaal: 'naar verluidt', 'het schijnt dat'.",
+    phrases:["Naar verluidt…","Het schijnt dat…","Ik heb het gecheckt","Het is bevestigd dat…","Dit is slechts een gerucht","De informatie die ik heb, zegt dat…"]
+  }
+},
+{
+  id:6, title:"Keuzes, keuzes!",
+  focus:"Keuzes maken · motiveren · er/daar + voorzetsel",
+  vocab:[
+    {nl:"de keuze",en:"choice",ex:"Dit is een moeilijke keuze.",exEn:"This is a difficult choice."},
+    {nl:"afwegen",en:"to weigh up",ex:"Ik moet de voor- en nadelen afwegen.",exEn:"I need to weigh up the pros and cons."},
+    {nl:"beslissen",en:"to decide",ex:"Heb je al besloten wat je gaat doen?",exEn:"Have you decided yet what you are going to do?"},
+    {nl:"kiezen voor",en:"to choose / to opt for",ex:"Ze koos voor de baan dichter bij huis.",exEn:"She chose the job closer to home."},
+    {nl:"het voordeel",en:"advantage / pro",ex:"Het voordeel is het hogere salaris.",exEn:"The advantage is the higher salary."},
+    {nl:"het nadeel",en:"disadvantage / con",ex:"Het nadeel is dat ik twee uur moet reizen.",exEn:"The disadvantage is that I have to travel two hours."},
+    {nl:"motiveren",en:"to motivate / to justify",ex:"Kun je je keuze motiveren?",exEn:"Can you justify your choice?"},
+    {nl:"erover nadenken",en:"to think about it",ex:"Ik moet er nog even over nadenken.",exEn:"I need to think about it a bit more."},
+    {nl:"ermee eens zijn",en:"to agree with it",ex:"Ben jij het ermee eens?",exEn:"Do you agree with it?"},
+    {nl:"ervan overtuigd zijn",en:"to be convinced of it",ex:"Ik ben ervan overtuigd dat het de juiste keuze is.",exEn:"I am convinced that it is the right choice."},
+    {nl:"erop ingaan",en:"to respond to it / to go into it",ex:"Kun je erop ingaan? Wat bedoel je precies?",exEn:"Can you elaborate on that? What exactly do you mean?"},
+    {nl:"ervoor zorgen",en:"to ensure / to take care of it",ex:"Ik zorg ervoor dat alles op tijd klaar is.",exEn:"I will ensure that everything is ready on time."},
+    {nl:"eraan denken",en:"to think about it / to remember to",ex:"Vergeet niet eraan te denken!",exEn:"Don't forget to think of it!"},
+    {nl:"erop wijzen",en:"to point it out",ex:"Ik wil erop wijzen dat de deadline al morgen is.",exEn:"I want to point out that the deadline is already tomorrow."},
+    {nl:"daarvoor",en:"for that",ex:"Ik gebruik dit programma daarvoor.",exEn:"I use this program for that."},
+    {nl:"daarin",en:"in that",ex:"Ik geloof daarin.",exEn:"I believe in that."},
+    {nl:"daarmee",en:"with that",ex:"Ben je het daarmee eens?",exEn:"Do you agree with that?"},
+    {nl:"daardoor",en:"because of that / as a result",ex:"Hij miste de bus, daardoor was hij te laat.",exEn:"He missed the bus, so as a result he was late."},
+    {nl:"er spijt van hebben",en:"to regret it",ex:"Ik heb er geen spijt van.",exEn:"I don't regret it."},
+    {nl:"enerzijds…anderzijds",en:"on the one hand…on the other hand",ex:"Enerzijds wil ik meer verdienen, anderzijds wil ik meer vrije tijd.",exEn:"On the one hand I want to earn more, on the other hand I want more free time."},
+  ],
+  grammar:{
+    points:[
+      {
+        title:"er + voorzetsel (pronominal adverb)",
+        badge:"Er/Daar",
+        explanation:"Gebruik <strong>er + voorzetsel</strong> om te verwijzen naar een ding/idee dat al eerder is genoemd. Vormen: <em>erop, erin, ermee, ervan, eraan, ertoe, erdoor, erover, eronder, erbij</em>.",
+        pattern:"Ik denk ER-AAN. / Ik houd ER-VAN. / Ik ben het ER-MEE eens.",
+        examples:[
+          {nl:"Heb jij <em>ervan</em> gehoord? (= van dat nieuws)", en:"Have you heard about it?"},
+          {nl:"Ik houd <em>ervan</em>. (= van dat ding)", en:"I love it."},
+          {nl:"Ik ben het <em>ermee</em> eens.", en:"I agree with it."},
+          {nl:"Ze denkt <em>eraan</em> om te stoppen.", en:"She is thinking about stopping."},
+          {nl:"Hij zorgt <em>ervoor</em> dat alles klopt.", en:"He ensures that everything is correct."},
+        ]
+      },
+      {
+        title:"daar + voorzetsel (voor specifieke verwijzing)",
+        badge:"Er/Daar",
+        explanation:"Gebruik <strong>daar + voorzetsel</strong> als je verwijst naar iets specifieks (= daarvoor, daarin, daarmee, daarvoor, daardoor…).",
+        pattern:"DAARVOOR / DAARIN / DAARMEE / DAARDOORDAT",
+        examples:[
+          {nl:"Ik gebruik deze app <em>daarvoor</em>.", en:"I use this app for that."},
+          {nl:"Ben je het <em>daarmee</em> eens?", en:"Do you agree with that?"},
+          {nl:"Hij was ziek, <em>daardoor</em> miste hij de les.", en:"He was ill, as a result he missed the class."},
+        ]
+      }
+    ],
+    exercises:[
+      {
+        id:"h6ex1",
+        instruction:"Kies er+prep of daar+prep.",
+        items:[
+          {stem:"Ik denk ___ om te verhuizen.",options:["eraan","daarvoor","daarin"],answer:0},
+          {stem:"Ze houdt ___ muziek te luisteren.",options:["daarvoor","ervan","daarmee"],answer:1},
+          {stem:"Hij was moe. ___ kon hij niet werken.",options:["Erdoor","Daarvoor","Daarin"],answer:0},
+          {stem:"Ben je het ___ eens? (met dat voorstel)",options:["ervan","ermee","daarin"],answer:1},
+        ]
+      }
+    ]
+  },
+  reading:{
+    title:"Een moeilijke keuze",
+    paras:[
+      "Nadia stond voor een lastige keuze. Ze had twee baanaanbiedingen gekregen en moest binnenkort beslissen.",
+      "Het eerste aanbod was bij een groot internationaal bedrijf. De functie was uitdagend en het salaris was twintig procent hoger. Maar ze moest wel twee uur per dag reizen en overwerken was de norm.",
+      "Het tweede aanbod was bij een kleiner, lokaal bedrijf. Het salaris was iets lager, maar ze kon thuiswerken en de sfeer leek heel prettig. Bovendien waren er goede groeimogelijkheden.",
+      "Nadia woog beide opties af. Uiteindelijk koos ze voor het kleinere bedrijf. 'Ik heb erover nagedacht', zei ze. 'Geld is belangrijk, maar ik ben ervan overtuigd dat ik die keuze niet ga betreuren.'",
+    ],
+    parasEn:[
+      "Nadia faced a difficult choice. She had received two job offers and had to decide soon.",
+      "The first offer was at a large international company. The position was challenging and the salary was twenty percent higher. But she would have to travel two hours a day and overtime was the norm.",
+      "The second offer was at a smaller, local company. The salary was slightly lower, but she could work from home and the atmosphere seemed very pleasant. Moreover, there were good opportunities for growth.",
+      "Nadia weighed both options. In the end she chose the smaller company. 'I've thought about it,' she said. 'Money is important, but I'm convinced I won't regret that choice.'",
+    ],
+    questions:[
+      {q:"Wat was het voordeel van het grote bedrijf?",a:"Hoger salaris en een uitdagende functie."},
+      {q:"Wat was het nadeel van het grote bedrijf?",a:"Twee uur reizen per dag en veel overwerken."},
+      {q:"Welk bedrijf koos Nadia en waarom?",a:"Het kleinere bedrijf; voor balans en omdat ze thuiswerken kon."},
+    ]
+  },
+  listening:{
+    title:"Welke optie kies je?",
+    sents:[
+      {nl:"Ik moet kiezen tussen twee banen. Kun je me helpen?",en:"I have to choose between two jobs. Can you help me?"},
+      {nl:"Natuurlijk. Wat zijn de voordelen van de eerste baan?",en:"Of course. What are the advantages of the first job?"},
+      {nl:"Het salaris is hoger en de functie is uitdagend.",en:"The salary is higher and the position is challenging."},
+      {nl:"En de nadelen?",en:"And the disadvantages?"},
+      {nl:"Ik moet ver reizen. Daardoor heb ik minder tijd voor mezelf.",en:"I have to travel far. As a result I have less time for myself."},
+      {nl:"Ben je het ermee eens dat balans belangrijk is?",en:"Do you agree that balance is important?"},
+      {nl:"Ja, ik houd ervan om vroeg thuis te zijn. Ik ga voor de tweede baan.",en:"Yes, I love being home early. I'll go for the second job."},
+    ]
+  },
+  speaking:{
+    prompts:[
+      {
+        title:"Een keuze verdedigen",
+        type:"Justify · 1 min",
+        prompt:"Kies tussen twee opties (baan, stad, opleiding). Geef drie argumenten voor jouw keuze en reageer op een tegenwerpingen.",
+        promptEn:"Choose between two options (job, city, course). Give three arguments for your choice and respond to an objection.",
+        phrases:["Enerzijds…, anderzijds…","Ik kies voor … omdat…","Het voordeel is dat…","Ik ben ervan overtuigd dat…","Daarvoor / daardoordat…"],
+        sampleNl:"Ik kies voor de baan dichter bij huis. Enerzijds verdient de andere baan meer, maar anderzijds bespaar ik twee uur reistijd per dag. Ik ben ervan overtuigd dat mijn gezondheid en vrije tijd meer waard zijn. Daarvoor heb ik ook een betere werk-privébalans nodig. Het nadeel is een iets lager salaris, maar ik heb er geen spijt van.",
+        sampleEn:"I choose the job closer to home. On the one hand the other job pays more, but on the other hand I save two hours of commute per day. I am convinced that my health and free time are worth more. For that reason I also need a better work-life balance. The disadvantage is a slightly lower salary, but I don't regret it.",
+      }
+    ]
+  },
+  writing:{
+    prompt:"Schrijf een e-mail aan een vriend/vriendin over een keuze die je hebt gemaakt. Leg uit waarom je die keuze hebt gemaakt met er/daar + voorzetsels. (80–120 woorden)",
+    minWords:80,
+    tip:"Gebruik 'ervan overtuigd zijn', 'eraan denken', 'ervoor zorgen', 'ermee eens zijn' en 'daarvoor / daarmee / daardoordat'.",
+    phrases:["Ik heb besloten om…","Ik ben ervan overtuigd dat…","Ik heb erover nagedacht","Enerzijds…, anderzijds…","Ik zie de voordelen ervan","Ik verwacht er geen spijt van te hebben"]
+  }
+},
+{
+  id:7, title:"Eenmaal, andermaal…",
+  focus:"Gewoontes · stereotypen · nadruk leggen · nuanceren",
+  vocab:[
+    {nl:"het stereotype",en:"stereotype",ex:"Stereotypen zijn vaak te simpel.",exEn:"Stereotypes are often too simplistic."},
+    {nl:"het vooroordeel",en:"prejudice / preconception",ex:"Vooroordelen kunnen mensen schaden.",exEn:"Prejudices can harm people."},
+    {nl:"generaliseren",en:"to generalize",ex:"We mogen niet generaliseren over culturen.",exEn:"We shouldn't generalize about cultures."},
+    {nl:"nuanceren",en:"to nuance / to qualify",ex:"Het is belangrijk om te nuanceren.",exEn:"It is important to nuance."},
+    {nl:"beweren",en:"to claim / to assert",ex:"Hij beweert dat hij altijd gelijk heeft.",exEn:"He claims he is always right."},
+    {nl:"typisch",en:"typical / characteristic",ex:"Is het typisch Nederlands om direct te zijn?",exEn:"Is it typically Dutch to be direct?"},
+    {nl:"eigenaardig",en:"peculiar / characteristic",ex:"Het is eigenaardig hoe mensen op stress reageren.",exEn:"It is peculiar how people react to stress."},
+    {nl:"de gewoonte",en:"habit / custom",ex:"Elke ochtend koffie drinken is mijn gewoonte.",exEn:"Drinking coffee every morning is my habit."},
+    {nl:"gewend zijn aan",en:"to be used to",ex:"Ik ben gewend aan het Nederlandse klimaat.",exEn:"I am used to the Dutch climate."},
+    {nl:"nadruk leggen op",en:"to emphasize / to stress",ex:"Hij legde de nadruk op samenwerking.",exEn:"He emphasized cooperation."},
+    {nl:"beklemtonen",en:"to stress / to emphasize",ex:"Ze beklemtoonde dat de deadline al morgen is.",exEn:"She emphasized that the deadline is already tomorrow."},
+    {nl:"eigenlijk",en:"actually / in fact",ex:"Eigenlijk is dit idee heel goed.",exEn:"Actually this idea is very good."},
+    {nl:"toch",en:"still / yet / though",ex:"Het is koud, maar ik ga toch buiten sporten.",exEn:"It's cold, but I'll exercise outside anyway."},
+    {nl:"wel degelijk",en:"certainly / indeed",ex:"Ik werk wel degelijk hard.",exEn:"I certainly work hard."},
+    {nl:"helemaal niet",en:"not at all",ex:"Dit is helemaal niet moeilijk!",exEn:"This is not difficult at all!"},
+    {nl:"de uitzondering",en:"exception",ex:"Er zijn altijd uitzonderingen op de regel.",exEn:"There are always exceptions to the rule."},
+    {nl:"in het algemeen",en:"in general",ex:"In het algemeen zijn mensen vriendelijk.",exEn:"In general people are friendly."},
+    {nl:"plegen te",en:"to be in the habit of / used to (formal)",ex:"Vroeger placht hij elke dag te wandelen.",exEn:"He used to walk every day."},
+    {nl:"de woordklemtoon",en:"word stress",ex:"In het Nederlands valt de klemtoon op de eerste lettergreep.",exEn:"In Dutch the stress falls on the first syllable."},
+    {nl:"intonatie",en:"intonation",ex:"Goede intonatie maakt je Nederlands natuurlijker.",exEn:"Good intonation makes your Dutch more natural."},
+  ],
+  grammar:{
+    points:[
+      {
+        title:"Nadruk leggen (emphasis)",
+        badge:"Nadruk",
+        explanation:"Verplaats het beklemtoonde woord naar voren, of gebruik <strong>wel degelijk</strong>, <strong>eigenlijk</strong>, <strong>toch</strong>, <strong>helemaal</strong>.",
+        pattern:"WEL DEGELIJK / EIGENLIJK / TOCH / HELEMAAL + niet/wel",
+        examples:[
+          {nl:"<em>Ik</em> doe dat, niet jij.", en:"<em>I</em> am doing that, not you."},
+          {nl:"Hij werkt <em>wel degelijk</em> hard.", en:"He certainly / indeed works hard."},
+          {nl:"<em>Eigenlijk</em> vind ik het prima.", en:"Actually I think it's fine."},
+          {nl:"Het is <em>helemaal niet</em> moeilijk.", en:"It is not difficult at all."},
+          {nl:"Ik ga <em>toch</em>. (contrast)", en:"I'm going anyway / still."},
+        ]
+      },
+      {
+        title:"Gewoontes uitdrukken",
+        badge:"Gewoontes",
+        explanation:"Heden: frequentiewoorden (altijd, soms, nooit). Verleden: <strong>vroeger + imperfectum</strong> of <strong>placht te + infinitief</strong>.",
+        pattern:"VROEGER + werkwoord imperfectum / PLACHT TE + infinitief",
+        examples:[
+          {nl:"<em>Vroeger</em> fietste ik altijd naar school.", en:"I used to cycle to school."},
+          {nl:"Ze <em>placht te</em> elke dag sporten.", en:"She was in the habit of exercising every day."},
+          {nl:"Ik ben <em>gewend aan</em> vroeg opstaan.", en:"I am used to getting up early."},
+        ]
+      }
+    ],
+    exercises:[
+      {
+        id:"h7ex1",
+        instruction:"Kies het juiste nadrukwoord.",
+        items:[
+          {stem:"Ik doe dit ___ met plezier. (zeker wel)",options:["helemaal niet","wel degelijk","eigenlijk"],answer:1},
+          {stem:"Hij is moe, maar hij komt ___.",options:["toch","eigenlijk","helemaal"],answer:0},
+          {stem:"___ vind ik het idee niet slecht.",options:["Toch","Helemaal","Eigenlijk"],answer:2},
+          {stem:"Dit is ___ moeilijk! (voor ontkenning: totaal niet)",options:["toch","eigenlijk","helemaal niet"],answer:2},
+        ]
+      }
+    ]
+  },
+  reading:{
+    title:"Cultuur en gewoontes",
+    paras:[
+      "'De Nederlanders zijn zo direct!' Het is een opmerking die je vaak hoort van mensen die voor het eerst naar Nederland komen. En inderdaad, directheid is een eigenaardigheid die Nederlanders zelf ook erkennen.",
+      "Maar is het altijd zo? Culturele gewoontes zijn complex. Ten eerste zijn er grote regionale verschillen. Menschen in Amsterdam communiceren heel anders dan mensen in Limburg. Ten tweede verandert gedrag afhankelijk van de situatie.",
+      "Stereotypen kunnen nuttig zijn als startpunt, maar ze zijn ook gevaarlijk als je ze te letterlijk neemt. Het probleem is dat ze generaliseren: ze doen alsof iedereen in een groep hetzelfde is.",
+      "De conclusie? Benader mensen als individuen, niet als vertegenwoordigers van hun cultuur. Dat maakt communicatie veel effectiever en respectvoller.",
+    ],
+    parasEn:[
+      "'The Dutch are so direct!' It is a remark you often hear from people who come to the Netherlands for the first time. And indeed, directness is a characteristic that the Dutch themselves also acknowledge.",
+      "But is it always like this? Cultural habits are complex. First there are major regional differences. People in Amsterdam communicate very differently from people in Limburg. Second, behaviour changes depending on the situation.",
+      "Stereotypes can be useful as a starting point, but they are also dangerous if you take them too literally. The problem is that they generalize: they act as if everyone in a group is the same.",
+      "The conclusion? Approach people as individuals, not as representatives of their culture. That makes communication much more effective and respectful.",
+    ],
+    questions:[
+      {q:"Wat is het bekende stereotype over Nederlanders?",a:"Ze zijn direct."},
+      {q:"Noem twee redenen waarom stereotypen misleidend zijn.",a:"Regionale verschillen en situatie-afhankelijk gedrag."},
+      {q:"Wat is het advies van de tekst?",a:"Benader mensen als individuen, niet als vertegenwoordigers van hun cultuur."},
+    ]
+  },
+  listening:{
+    title:"Gewoontes bespreken",
+    sents:[
+      {nl:"Vroeger liep ik elke dag naar het werk.",en:"I used to walk to work every day."},
+      {nl:"Hoe ver was dat? Dat klinkt als een goede gewoonte.",en:"How far was that? That sounds like a good habit."},
+      {nl:"Ongeveer twee kilometer. Ik was er gewend aan.",en:"About two kilometres. I was used to it."},
+      {nl:"En nu? Fiets je dan nu?",en:"And now? Do you cycle now?"},
+      {nl:"Eigenlijk wel, maar soms ga ik toch met de auto.",en:"Actually yes, but sometimes I go by car anyway."},
+      {nl:"Ik vind het wel degelijk belangrijk om te bewegen.",en:"I certainly think it's important to exercise."},
+      {nl:"Je hebt gelijk. Ik ga er morgen mee beginnen!",en:"You're right. I'll start with it tomorrow!"},
+    ]
+  },
+  speaking:{
+    prompts:[
+      {
+        title:"Stereotype bespreken",
+        type:"Opinion · 1 min",
+        prompt:"Kies een stereotype over een nationaliteit of groep. Ben je het ermee eens of niet? Nuanceer je antwoord.",
+        promptEn:"Choose a stereotype about a nationality or group. Do you agree with it or not? Nuance your answer.",
+        phrases:["Men zegt dat…","Dat klopt deels omdat…","Maar eigenlijk…","Wel degelijk…","In het algemeen…","Er zijn altijd uitzonderingen op…"],
+        sampleNl:"Men zegt dat Nederlanders altijd op tijd zijn. Dat klopt deels — op het werk zijn mensen inderdaad punctueel. Maar eigenlijk zijn er ook veel Nederlanders die te laat komen. In het algemeen is het een culturele waarde, maar er zijn wel degelijk uitzonderingen. Het probleem met stereotypen is dat je individuen vergeet.",
+        sampleEn:"They say the Dutch are always on time. That is partly true — at work people are indeed punctual. But actually there are also many Dutch people who are late. In general it is a cultural value, but there are certainly exceptions. The problem with stereotypes is that you forget individuals.",
+      }
+    ]
+  },
+  writing:{
+    prompt:"Beschrijf een gewoonte die je vroeger had en die je nu hebt veranderd. Gebruik 'vroeger', 'gewend zijn aan', 'eigenlijk' en nadrukwoorden. (80–120 woorden)",
+    minWords:80,
+    tip:"Gebruik imperfectum voor vroeger: 'vroeger at ik...', 'ik placht te...', 'ik was gewend aan...'. Gebruik ook nadrukwoorden: eigenlijk, toch, wel degelijk.",
+    phrases:["Vroeger…","Ik was gewend aan…","Maar eigenlijk…","Ik ben er toch mee gestopt","Wel degelijk…","Nu ben ik gewend aan…","Het heeft me geholpen om…"]
+  }
+},
+{
+  id:8, title:"Over en uit",
+  focus:"Structuurwoorden · samenvatten · notities · presenteren",
+  vocab:[
+    {nl:"ten eerste",en:"firstly",ex:"Ten eerste wil ik de resultaten bespreken.",exEn:"Firstly I want to discuss the results."},
+    {nl:"ten tweede",en:"secondly",ex:"Ten tweede is er het budgetprobleem.",exEn:"Secondly there is the budget problem."},
+    {nl:"ten slotte",en:"finally / in conclusion",ex:"Ten slotte wil ik iedereen bedanken.",exEn:"Finally I want to thank everyone."},
+    {nl:"bovendien",en:"moreover / furthermore",ex:"Het is goedkoper. Bovendien is het duurzamer.",exEn:"It's cheaper. Moreover it's more sustainable."},
+    {nl:"daarentegen",en:"on the other hand / in contrast",ex:"Hij is vrolijk. Zijn zus is daarentegen stil.",exEn:"He is cheerful. His sister, on the other hand, is quiet."},
+    {nl:"vervolgens",en:"subsequently / then",ex:"Eerst koken we, vervolgens eten we.",exEn:"First we cook, then we eat."},
+    {nl:"concluderend",en:"in conclusion / to conclude",ex:"Concluderend kan ik zeggen dat het gelukt is.",exEn:"In conclusion I can say that it succeeded."},
+    {nl:"kortom",en:"in short / briefly",ex:"Kortom: het project was een succes.",exEn:"In short: the project was a success."},
+    {nl:"al met al",en:"all in all / on balance",ex:"Al met al ben ik tevreden met het resultaat.",exEn:"All in all I am satisfied with the result."},
+    {nl:"enerzijds…anderzijds",en:"on the one hand…on the other",ex:"Enerzijds is het duur, anderzijds is het de moeite waard.",exEn:"On the one hand it is expensive, on the other it is worth it."},
+    {nl:"samenvatten",en:"to summarize",ex:"Kun je het gesprek even samenvatten?",exEn:"Can you briefly summarize the conversation?"},
+    {nl:"de samenvatting",en:"summary",ex:"Schrijf een samenvatting van maximaal honderd woorden.",exEn:"Write a summary of at most a hundred words."},
+    {nl:"de conclusie",en:"conclusion",ex:"De conclusie is dat we meer personeel nodig hebben.",exEn:"The conclusion is that we need more staff."},
+    {nl:"de inleiding",en:"introduction",ex:"Begin de presentatie met een sterke inleiding.",exEn:"Start the presentation with a strong introduction."},
+    {nl:"het kernpunt",en:"key point",ex:"Wat zijn de kernpunten van het rapport?",exEn:"What are the key points of the report?"},
+    {nl:"aantekenen",en:"to note down",ex:"Ik teken de belangrijkste punten aan.",exEn:"I note down the most important points."},
+    {nl:"presenteren",en:"to present",ex:"Ze presenteert de resultaten volgende week.",exEn:"She presents the results next week."},
+    {nl:"rapporteren",en:"to report",ex:"Hij rapporteert wekelijks aan de directeur.",exEn:"He reports to the director weekly."},
+    {nl:"samenvattend",en:"to summarize / in summary",ex:"Samenvattend: we zijn op de goede weg.",exEn:"To summarize: we are on the right track."},
+    {nl:"het hoofdpunt",en:"main point",ex:"Wat is het hoofdpunt van je betoog?",exEn:"What is the main point of your argument?"},
+  ],
+  grammar:{
+    points:[
+      {
+        title:"Structuurwoorden voor presentaties",
+        badge:"Structuur",
+        explanation:"Gebruik structuurwoorden om je betoog logisch op te bouwen. Ze zijn ingedeeld per functie.",
+        pattern:"",
+        examples:[
+          {nl:"Opsomming: <em>ten eerste, ten tweede, ten slotte</em>", en:"Listing: firstly, secondly, finally"},
+          {nl:"Toevoegen: <em>bovendien, ook, tevens, daarbij</em>", en:"Adding: moreover, also, furthermore, besides"},
+          {nl:"Tegenstelling: <em>maar, echter, daarentegen, toch</em>", en:"Contrast: but, however, on the other hand, still"},
+          {nl:"Gevolg: <em>dus, daarom, daardoor, waardoor</em>", en:"Result: so, therefore, as a result, causing"},
+          {nl:"Samenvatten: <em>kortom, al met al, concluderend</em>", en:"Summary: in short, all in all, in conclusion"},
+        ]
+      },
+      {
+        title:"Samenvatten in het Nederlands",
+        badge:"Functietaal",
+        explanation:"Gebruik deze B1-uitdrukkingen om te samenvatten en te rapporteren.",
+        pattern:"",
+        examples:[
+          {nl:"Het gaat over…", en:"It is about… / It concerns…"},
+          {nl:"De kernpunten zijn…", en:"The key points are…"},
+          {nl:"Concluderend kan ik zeggen dat…", en:"In conclusion I can say that…"},
+          {nl:"Al met al is het resultaat positief.", en:"All in all the result is positive."},
+          {nl:"Kortom: we zijn klaar om te beginnen.", en:"In short: we are ready to begin."},
+        ]
+      }
+    ],
+    exercises:[
+      {
+        id:"h8ex1",
+        instruction:"Kies het juiste structuurwoord.",
+        items:[
+          {stem:"___ wil ik de agenda bespreken, ___ de resultaten.",options:["Ten eerste / vervolgens","Ten slotte / bovendien","Kortom / al met al"],answer:0},
+          {stem:"Het is duur. ___ is het duurzamer.",options:["Daarentegen","Bovendien","Kortom"],answer:1},
+          {stem:"___ ben ik tevreden met het project.",options:["Bovendien","Al met al","Ten eerste"],answer:1},
+          {stem:"Optie A is snel. ___ is optie B goedkoper.",options:["Bovendien","Daarentegen","Ten slotte"],answer:1},
+        ]
+      }
+    ]
+  },
+  reading:{
+    title:"Een goede presentatie geven",
+    paras:[
+      "Goed presenteren is een vaardigheid die je kunt leren. Of je nu een vergadering leidt of een rapport presenteert: een heldere structuur maakt altijd het verschil.",
+      "Ten eerste: begin met een sterke inleiding. Vertel je publiek wat je gaat zeggen en waarom het relevant is. Ten tweede: bouw je presentatie logisch op. Gebruik structuurwoorden als 'vervolgens', 'bovendien' en 'daarentegen'.",
+      "Bovendien is het belangrijk om contact te houden met je publiek. Kijk mensen aan, spreek niet te snel en vraag of alles duidelijk is.",
+      "Ten slotte: eindig met een duidelijke conclusie. Samenvattend: een goede presentatie draait om voorbereiding, structuur en communicatie. Al met al is het niet zo ingewikkeld als het lijkt.",
+    ],
+    parasEn:[
+      "Presenting well is a skill that can be learned. Whether you are leading a meeting or presenting a report: a clear structure always makes the difference.",
+      "Firstly: start with a strong introduction. Tell your audience what you are going to say and why it is relevant. Secondly: build your presentation logically. Use structure words like 'subsequently', 'moreover' and 'on the other hand'.",
+      "Moreover it is important to maintain contact with your audience. Make eye contact, don't speak too fast and ask if everything is clear.",
+      "Finally: end with a clear conclusion. To summarize: a good presentation is about preparation, structure and communication. All in all it is not as complicated as it seems.",
+    ],
+    questions:[
+      {q:"Wat is het eerste punt van een goede presentatie?",a:"Een sterke inleiding."},
+      {q:"Waarom zijn concrete voorbeelden nuttig?",a:"Abstracte informatie is moeilijk te onthouden."},
+      {q:"Hoe sluit je een presentatie af?",a:"Met een duidelijke conclusie; samenvatting van de kernpunten."},
+    ]
+  },
+  listening:{
+    title:"Een vergadering samenvatten",
+    sents:[
+      {nl:"Kan iemand de vergadering samenvatten voor degenen die er niet bij waren?",en:"Can someone summarize the meeting for those who were not there?"},
+      {nl:"Ja, ik doe dat wel. Ten eerste hebben we het budget besproken.",en:"Yes, I'll do that. Firstly we discussed the budget."},
+      {nl:"Vervolgens hebben we besloten om twee nieuwe medewerkers aan te nemen.",en:"Subsequently we decided to hire two new employees."},
+      {nl:"En ten slotte is er een nieuwe deadline vastgesteld: 1 september.",en:"And finally a new deadline was set: 1 September."},
+      {nl:"Kortom: het was een productieve vergadering.",en:"In short: it was a productive meeting."},
+      {nl:"Al met al zijn we op de goede weg.",en:"All in all we are on the right track."},
+      {nl:"Concluderend: iedereen is het eens met het plan.",en:"In conclusion: everyone agrees with the plan."},
+    ]
+  },
+  speaking:{
+    prompts:[
+      {
+        title:"Iets samenvatten",
+        type:"Present · 1 min",
+        prompt:"Vat een tekst of een vergadering samen in één minuut. Gebruik structuurwoorden. Begin met 'Het gaat over…'",
+        promptEn:"Summarize a text or a meeting in one minute. Use structure words. Begin with 'It is about…'",
+        phrases:["Het gaat over…","Ten eerste…","Vervolgens…","Bovendien…","Ten slotte…","Concluderend…","Al met al…","Kortom:…"],
+        sampleNl:"Het gaat over hoe je een goede presentatie geeft. Ten eerste is een sterke inleiding belangrijk. Vervolgens moet je een logische structuur gebruiken met structuurwoorden. Bovendien is contact met het publiek essentieel. Ten slotte sluit je af met een duidelijke conclusie. Al met al is de boodschap: voorbereiding en structuur maken het verschil. Kortom: oefening baart kunst.",
+        sampleEn:"It is about how to give a good presentation. Firstly a strong introduction is important. Subsequently you should use a logical structure with structural words. Moreover contact with the audience is essential. Finally you conclude with a clear conclusion. All in all the message is: preparation and structure make the difference. In short: practice makes perfect.",
+      }
+    ]
+  },
+  writing:{
+    prompt:"Schrijf een korte samenvatting (80–120 woorden) van het hoofdstuk of een tekst die je kent. Gebruik minstens 5 structuurwoorden.",
+    minWords:80,
+    tip:"Gebruik minstens 5 structuurwoorden: ten eerste, vervolgens, bovendien, daarentegen, ten slotte, kortom, al met al, concluderend.",
+    phrases:["Het gaat over…","Ten eerste…","Vervolgens…","Bovendien…","Ten slotte…","Kortom:…","Al met al…","Concluderend kan ik zeggen dat…"]
+  }
+}
+];
+
+// ════════════════════════════════════════════════════════════════════
+// APP STATE
+// ════════════════════════════════════════════════════════════════════
+let currentChIdx  = 0;
+let currentMod    = "vocab";
+let vcDeck        = [];
+let vcPos         = 0;
+let vcFlipped     = false;
+let vcShowUnknown = false;
+const knownSets   = {}; // keyed by chapter id
+
+function getKnown(chId){
+  if(!knownSets[chId]){
+    const stored = localStorage.getItem("known_"+chId);
+    knownSets[chId] = stored ? new Set(JSON.parse(stored)) : new Set();
+  }
+  return knownSets[chId];
+}
+function saveKnown(chId){ localStorage.setItem("known_"+chId, JSON.stringify([...getKnown(chId)])); }
+
+function currentChapter(){ return CHAPTERS[currentChIdx]; }
+
+// ════════════════════════════════════════════════════════════════════
+// TTS
+// ════════════════════════════════════════════════════════════════════
+let dutchVoice = null;
+function loadVoices(){
+  const voices = speechSynthesis.getVoices();
+  dutchVoice = voices.find(v=>/^nl-NL/i.test(v.lang) && /nederland|dutch/i.test(v.name))
+    || voices.find(v=>/^nl-NL/i.test(v.lang))
+    || voices.find(v=>/^nl/i.test(v.lang))
+    || null;
+}
+if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+
+function speak(text, rate=1.0){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang  = "nl-NL";
+  u.rate  = rate;
+  if(dutchVoice){ u.voice = dutchVoice; }
+  speechSynthesis.speak(u);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// CHAPTER SELECT
+// ════════════════════════════════════════════════════════════════════
+function buildChTabs(){
+  const el = document.getElementById("chTabs");
+  CHAPTERS.forEach((ch,i)=>{
+    const b=document.createElement("button");
+    b.className="ch-tab"+(i===0?" active":"");
+    b.textContent="H"+ch.id;
+    b.title=ch.title;
+    b.onclick=()=>selectChapter(i);
+    el.appendChild(b);
+  });
+}
+
+function selectChapter(idx){
+  currentChIdx=idx;
+  document.querySelectorAll(".ch-tab").forEach((b,i)=>b.classList.toggle("active",i===idx));
+  buildHeader();
+  resetVocabDeck();
+  renderCurrentModule();
+}
+
+function buildHeader(){
+  const ch=currentChapter();
+  document.getElementById("chEyebrow").textContent="Hoofdstuk "+ch.id+" / 8";
+  document.getElementById("chTitle").textContent=ch.title;
+  document.getElementById("chFocus").textContent=ch.focus;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// MODULE SELECT
+// ════════════════════════════════════════════════════════════════════
+function setupModTabs(){
+  document.querySelectorAll(".mod-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll(".mod-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      currentMod=btn.dataset.mod;
+      document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+      document.getElementById("panel-"+currentMod).classList.add("active");
+      renderCurrentModule();
+    };
+  });
+}
+
+function renderCurrentModule(){
+  if(currentMod==="vocab"){ updateVocabUI(); }
+  else if(currentMod==="grammar"){ renderGrammar(); }
+  else if(currentMod==="reading"){ renderReading(); }
+  else if(currentMod==="listening"){ renderListening(); }
+  else if(currentMod==="speaking"){ renderSpeaking(); }
+  else if(currentMod==="writing"){ renderWriting(); }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// VOCAB
+// ════════════════════════════════════════════════════════════════════
+function resetVocabDeck(){
+  const ch=currentChapter();
+  vcDeck=[...ch.vocab.map((v,i)=>({...v,origIdx:i}))];
+  vcPos=0; vcFlipped=false; vcShowUnknown=false;
+  if(currentMod==="vocab") updateVocabUI();
+}
+
+function shuffleDeck(){
+  for(let i=vcDeck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[vcDeck[i],vcDeck[j]]=[vcDeck[j],vcDeck[i]];}
+  vcPos=0; vcFlipped=false; updateVocabUI();
+}
+
+function filterUnknown(){
+  const ch=currentChapter();
+  const known=getKnown(ch.id);
+  vcShowUnknown=true;
+  vcDeck=ch.vocab.map((v,i)=>({...v,origIdx:i})).filter(v=>!known.has(v.nl));
+  if(!vcDeck.length){ vcDeck=[...ch.vocab.map((v,i)=>({...v,origIdx:i}))]; alert("All words are marked as known! Great job!"); }
+  vcPos=0; vcFlipped=false; updateVocabUI();
+}
+
+function updateVocabUI(){
+  const ch=currentChapter();
+  const known=getKnown(ch.id);
+  if(!vcDeck.length || vcDeck[0].origIdx===undefined) resetVocabDeck();
+
+  const total=vcDeck.length;
+  const knownCount=vcDeck.filter(v=>known.has(v.nl)).length;
+
+  document.getElementById("vcTotal").textContent=total;
+  document.getElementById("vcKnownCount").textContent=knownCount;
+  document.getElementById("vcPos").textContent=vcPos+1;
+  document.getElementById("vcFill").style.width=(knownCount/total*100)+"%";
+
+  // progress dots
+  const dots=document.getElementById("progDots");
+  dots.innerHTML="";
+  vcDeck.forEach((v,i)=>{
+    const d=document.createElement("span");
+    d.className="prog-dot"+(i===vcPos?" active":known.has(v.nl)?" known":"");
+    dots.appendChild(d);
+  });
+
+  const v=vcDeck[vcPos]||vcDeck[0];
+  document.getElementById("fcNl").textContent=v.nl;
+  document.getElementById("fcEn").textContent=v.en;
+  document.getElementById("fcEx").textContent=v.ex;
+  document.getElementById("fcExEn").textContent=v.exEn;
+  const cat=v.nl.startsWith("de ")||v.nl.startsWith("het ")?"noun":v.nl.includes(" ")&&!v.nl.startsWith("de ")&&!v.nl.startsWith("het ")?"phrase":"verb/adj";
+  document.getElementById("fcCat").textContent=cat;
+
+  const fc=document.getElementById("flashcard");
+  if(vcFlipped) fc.classList.add("flipped");
+  else fc.classList.remove("flipped");
+}
+
+function flipCard(){ vcFlipped=!vcFlipped; updateVocabUI(); }
+
+function vcNav(dir){
+  vcFlipped=false;
+  vcPos=(vcPos+dir+vcDeck.length)%vcDeck.length;
+  updateVocabUI();
+}
+
+function markKnown(){
+  const ch=currentChapter();
+  const v=vcDeck[vcPos];
+  if(v){ getKnown(ch.id).add(v.nl); saveKnown(ch.id); }
+  vcFlipped=false;
+  vcPos=Math.min(vcPos+1,vcDeck.length-1);
+  updateVocabUI();
+}
+
+function markUnknown(){
+  const ch=currentChapter();
+  const v=vcDeck[vcPos];
+  if(v){ getKnown(ch.id).delete(v.nl); saveKnown(ch.id); }
+  vcFlipped=false;
+  vcPos=Math.min(vcPos+1,vcDeck.length-1);
+  updateVocabUI();
+}
+
+function speakCurrentWord(){
+  const v=vcDeck[vcPos];
+  if(v) speak(v.nl, 0.85);
+}
+function speakExample(){
+  const v=vcDeck[vcPos];
+  if(v) speak(v.ex, 0.9);
+}
+
+// vocab controls wiring
+document.getElementById("vcShuffle").onclick=shuffleDeck;
+document.getElementById("vcUnknown").onclick=filterUnknown;
+document.getElementById("vcAll").onclick=resetVocabDeck;
+document.getElementById("vcReset").onclick=()=>{
+  const ch=currentChapter();
+  getKnown(ch.id).clear(); saveKnown(ch.id); updateVocabUI();
+};
+
+// ════════════════════════════════════════════════════════════════════
+// GRAMMAR
+// ════════════════════════════════════════════════════════════════════
+function renderGrammar(){
+  const ch=currentChapter();
+  const {points,exercises}=ch.grammar;
+  let html="";
+  points.forEach(p=>{
+    html+=`<div class="card rule-card">
+      <div class="rule-title"><span class="rule-badge">${p.badge}</span> ${p.title}</div>
+      <p style="font-size:.93rem;margin-bottom:.5rem">${p.explanation}</p>`;
+    if(p.pattern) html+=`<div class="pattern-box">${p.pattern.replace(/\n/g,"<br/>")}</div>`;
+    html+=`<table class="ex-table">`;
+    p.examples.forEach(ex=>{
+      html+=`<tr>
+        <td onclick="speak(this.textContent.replace(/<[^>]+>/g,'').replace(/^[^:]+: /,''),0.9)" style="cursor:pointer" title="Click to hear">🔊 ${ex.nl}</td>
+        <td>${ex.en}</td>
+      </tr>`;
+    });
+    html+=`</table></div>`;
+  });
+
+  exercises.forEach(ex=>{
+    html+=`<div class="exercise" id="ex_${ex.id}">
+      <h4>${ex.instruction}</h4>`;
+    ex.items.forEach((item,idx)=>{
+      html+=`<div class="ex-item">
+        <div class="stem">${idx+1}. ${item.stem}</div>
+        <div>`;
+      item.options.forEach((opt,oi)=>{
+        html+=`<button class="option-btn" data-exid="${ex.id}" data-idx="${idx}" data-opt="${oi}" data-correct="${oi===item.answer}" onclick="checkOpt(this)">${opt}</button>`;
+      });
+      html+=`</div></div>`;
+    });
+    html+=`</div>`;
+  });
+
+  document.getElementById("grammarContent").innerHTML=html;
+}
+
+function checkOpt(btn){
+  const exid=btn.dataset.exid;
+  const idx=btn.dataset.idx;
+  // disable all options for this item
+  document.querySelectorAll(`[data-exid="${exid}"][data-idx="${idx}"]`).forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.correct==="true") b.classList.add("correct");
+    else if(b===btn) b.classList.add("wrong");
+  });
+}
+
+// ════════════════════════════════════════════════════════════════════
+// READING
+// ════════════════════════════════════════════════════════════════════
+function renderReading(){
+  const ch=currentChapter();
+  const r=ch.reading;
+  let showEn=false;
+  let html=`<div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem;flex-wrap:wrap;gap:.5rem">
+      <h3 style="font-size:1.15rem">${r.title}</h3>
+      <div class="btn-row">
+        <button class="btn btn-sm" onclick="speak(document.getElementById('readText').innerText, 0.88)">🔊 Read aloud</button>
+        <button class="btn btn-sm" id="toggleEnBtn" onclick="toggleReadEn()">Show English</button>
+        <button class="btn btn-sm" onclick="speechSynthesis.cancel()">■ Stop</button>
+      </div>
+    </div>
+    <div class="text-body" id="readText">`;
+  r.paras.forEach((p,i)=>{
+    html+=`<p class="text-para">${p}</p>`;
+    html+=`<p class="text-en-para" id="readEn_${i}" style="display:none">${r.parasEn[i]}</p>`;
+  });
+  html+=`</div></div>
+  <div class="card" style="margin-top:.5rem">
+    <h3 style="font-size:1rem;margin-bottom:.7rem">Begrippenvragen</h3>`;
+  r.questions.forEach((q,i)=>{
+    html+=`<div class="qcard" id="qcard_${i}" onclick="this.classList.toggle('revealed')">
+      <strong>${i+1}. ${q.q}</strong>
+      <div class="answer">→ ${q.a}</div>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:.3rem">Tap to reveal answer</div>
+    </div>`;
+  });
+  html+=`</div>`;
+  document.getElementById("readingContent").innerHTML=html;
+
+  window.toggleReadEn=function(){
+    showEn=!showEn;
+    r.paras.forEach((_,i)=>{
+      document.getElementById("readEn_"+i).style.display=showEn?"block":"none";
+    });
+    document.getElementById("toggleEnBtn").textContent=showEn?"Hide English":"Show English";
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════
+// LISTENING
+// ════════════════════════════════════════════════════════════════════
+function renderListening(){
+  const ch=currentChapter();
+  const L=ch.listening;
+  let textHidden=true;
+  let rate=0.9;
+  let html=`<div class="card">
+    <h3 style="font-size:1.15rem;margin-bottom:.85rem">${L.title}</h3>
+    <div class="listen-controls">
+      <button class="btn btn-sm btn-sea" onclick="playFullListening(${JSON.stringify(L.sents.map(s=>s.nl)).replace(/"/g,'&quot;')}, ${rate})">▶ Play all</button>
+      <button class="btn btn-sm" onclick="speechSynthesis.cancel()">■ Stop</button>
+      <span style="font-size:.82rem;color:var(--muted)">Speed:</span>
+      <button class="btn btn-sm speed-btn" onclick="rate=0.7;this.style.fontWeight='700'" title="Slow">🐢 Slow</button>
+      <button class="btn btn-sm speed-btn" onclick="rate=1.0;this.style.fontWeight='700'" title="Normal">▶ Normal</button>
+      <button class="btn btn-sm" id="hideTextBtn" onclick="toggleHideText()">Hide text</button>
+    </div>
+    <div id="listenSents">`;
+  L.sents.forEach((s,i)=>{
+    html+=`<div class="sent-row">
+      <div>
+        <button class="btn btn-sm btn-icon" onclick="speak(${JSON.stringify(s.nl)}, rate)" title="Play">🔊</button>
+      </div>
+      <div class="sent-nl" id="lsNl_${i}">${s.nl}</div>
+      <div class="sent-en">${s.en}</div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+  document.getElementById("listeningContent").innerHTML=html;
+
+  window.playFullListening=function(texts){
+    let i=0;
+    function next(){
+      if(i>=texts.length) return;
+      speechSynthesis.cancel();
+      const u=new SpeechSynthesisUtterance(texts[i]);
+      u.lang="nl-NL"; u.rate=rate;
+      if(dutchVoice) u.voice=dutchVoice;
+      u.onend=()=>{ i++; setTimeout(next,400); };
+      speechSynthesis.speak(u);
+    }
+    next();
+  };
+  window.rate=rate;
+  window.toggleHideText=function(){
+    textHidden=!textHidden;
+    L.sents.forEach((_,i)=>{
+      const el=document.getElementById("lsNl_"+i);
+      if(el) el.classList.toggle("hidden-text",textHidden);
+    });
+    document.getElementById("hideTextBtn").textContent=textHidden?"Show text":"Hide text";
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════
+// SPEAKING
+// ════════════════════════════════════════════════════════════════════
+function renderSpeaking(){
+  const ch=currentChapter();
+  const sp=ch.speaking;
+  let html="";
+  sp.prompts.forEach((p,idx)=>{
+    const pid="sp_"+idx;
+    html+=`<div class="card">
+      <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.55rem;flex-wrap:wrap">
+        <span class="rule-badge">${p.type}</span>
+        <strong style="font-family:Fraunces,serif;font-size:1.05rem">${p.title}</strong>
+      </div>
+      <div class="speak-prompt-box">
+        ${p.prompt}
+        <div class="speak-prompt-en">${p.promptEn}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-sm" onclick="speak(${JSON.stringify(p.prompt)},0.88)">🔊 Read prompt</button>
+        <button class="btn btn-sm btn-sea" id="recBtn_${idx}" onclick="toggleRec(${idx})">🎤 Record myself</button>
+        <button class="btn btn-sm" onclick="speechSynthesis.cancel()">■ Stop</button>
+      </div>
+      <div class="rec-result" id="recResult_${idx}">Press 🎤 and speak Dutch…</div>
+      <div style="margin:.6rem 0 .4rem;font-size:.85rem;font-weight:700;color:var(--muted)">Useful phrases — click to hear:</div>
+      <div class="useful-phrases">`;
+    p.phrases.forEach(ph=>{
+      html+=`<span class="phrase-chip" onclick="speak(${JSON.stringify(ph)},0.88)">${ph}</span>`;
+    });
+    html+=`</div>
+      <div class="sample-answer">
+        <button class="btn btn-sm" onclick="toggleSample('${pid}')">Show sample answer</button>
+        <button class="btn btn-sm" onclick="speak(${JSON.stringify(p.sampleNl)},0.9)">🔊 Read sample</button>
+        <div id="${pid}_sample" style="display:none;margin-top:.7rem">
+          <div class="sample-nl">${p.sampleNl}</div>
+          <div class="sample-en">${p.sampleEn}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById("speakingContent").innerHTML=html;
+
+  window.toggleSample=function(id){
+    const el=document.getElementById(id+"_sample");
+    el.style.display=el.style.display==="none"?"block":"none";
+  };
+  window.toggleRec=function(idx){
+    const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SpeechRecognition){ document.getElementById("recResult_"+idx).textContent="Speech recognition not supported in this browser."; return; }
+    const btn=document.getElementById("recBtn_"+idx);
+    if(btn.classList.contains("listening")){
+      if(window._recog) window._recog.stop();
+      btn.classList.remove("listening"); btn.textContent="🎤 Record myself"; return;
+    }
+    const rec=new SpeechRecognition();
+    window._recog=rec;
+    rec.lang="nl-NL"; rec.continuous=false; rec.interimResults=true;
+    rec.onresult=e=>{
+      let txt=""; for(let i=0;i<e.results.length;i++) txt+=e.results[i][0].transcript;
+      document.getElementById("recResult_"+idx).textContent=txt;
+    };
+    rec.onend=()=>{ btn.classList.remove("listening"); btn.textContent="🎤 Record myself"; };
+    rec.start(); btn.classList.add("listening"); btn.textContent="⏹ Stop";
+    document.getElementById("recResult_"+idx).textContent="🎙 Listening…";
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════
+// WRITING
+// ════════════════════════════════════════════════════════════════════
+function renderWriting(){
+  const ch=currentChapter();
+  const w=ch.writing;
+  const storageKey=`write_${ch.id}`;
+  const saved=localStorage.getItem(storageKey)||"";
+  let html=`<div class="card">
+    <h3 style="font-size:1.1rem;margin-bottom:.65rem">Schrijfopdracht</h3>
+    <div class="writing-prompt">${w.prompt}</div>
+    <div class="writing-tip">💡 Tip: ${w.tip}</div>
+    <div style="margin:.55rem 0 .3rem;font-size:.83rem;font-weight:700;color:var(--muted)">Handige zinnen — klik om te horen:</div>
+    <div class="useful-phrases" style="margin-bottom:.75rem">`;
+  w.phrases.forEach(ph=>{
+    html+=`<span class="phrase-chip" onclick="speak(${JSON.stringify(ph)},0.88)">${ph}</span>`;
+  });
+  html+=`</div>
+    <textarea class="writing-area" id="writeArea" placeholder="Schrijf hier je tekst…" oninput="updateWordCount('${storageKey}','${w.minWords}')">${saved}</textarea>
+    <div class="word-count" id="wordCount">0 woorden (minimum: ${w.minWords})</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveWriting('${storageKey}')">Opslaan</button>
+      <button class="btn" onclick="speak(document.getElementById('writeArea').value, 0.92)">🔊 Lees voor</button>
+      <button class="btn" onclick="speechSynthesis.cancel()">■ Stop</button>
+      <button class="btn" onclick="if(confirm('Wis je tekst?')){document.getElementById('writeArea').value='';updateWordCount('${storageKey}','${w.minWords}')}">Wissen</button>
+      <span class="saved-indicator" id="savedInd">Opgeslagen ✓</span>
+    </div>
+  </div>`;
+  document.getElementById("writingContent").innerHTML=html;
+  updateWordCount(storageKey, w.minWords);
+
+  window.updateWordCount=function(key, min){
+    const txt=document.getElementById("writeArea").value;
+    const wc=txt.trim()?txt.trim().split(/\s+/).length:0;
+    const el=document.getElementById("wordCount");
+    el.textContent=wc+" woorden (minimum: "+min+")";
+    el.className="word-count"+(wc>=min?" ok":"");
+    localStorage.setItem(key, txt);
+  };
+  window.saveWriting=function(key){
+    const txt=document.getElementById("writeArea").value;
+    localStorage.setItem(key, txt);
+    const ind=document.getElementById("savedInd");
+    ind.classList.add("show");
+    setTimeout(()=>ind.classList.remove("show"),1800);
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════════
+buildChTabs();
+setupModTabs();
+buildHeader();
+resetVocabDeck();
+updateVocabUI();
+</script>
+</body>
+</html>
