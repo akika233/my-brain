@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <title>Dutch B1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink:#1a2332; --muted:#5a6678; --paper:#f7f3eb; --card:#fffdf8;
+      --line:#e2d9cb; --accent:#c45c26; --accent-deep:#8f3d12;
+      --sea:#2f6f6a; --sea-soft:#e4f0ee; --ok:#2d6a4f;
+      --shadow:0 4px 20px rgba(26,35,50,.09); --r:16px;
+      --top:52px; --nav:60px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    html,body{height:100%;margin:0;overscroll-behavior:none;}
+    body{
+      font-family:"Manrope",system-ui,sans-serif;
+      color:var(--ink);background:var(--paper);
+      font-size:15px;line-height:1.5;overflow:hidden;
+    }
+    h1,h2,h3,h4{font-family:"Fraunces",Georgia,serif;font-weight:700;
+      line-height:1.2;letter-spacing:-.02em;margin:0 0 .5rem;}
+    a{color:var(--accent-deep);}
+
+    /* TOP BAR */
+    .topbar{
+      position:fixed;top:0;left:0;right:0;z-index:30;
+      height:var(--top);
+      background:rgba(247,243,235,.95);backdrop-filter:blur(10px);
+      border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 1rem;
+    }
+    .brand{font-family:"Fraunces",serif;font-size:1.05rem;font-weight:700;}
+    .brand span{color:var(--accent);}
+    .session-btn{
+      border:1px solid var(--line);background:var(--card);
+      border-radius:999px;padding:.4rem .9rem;
+      font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;color:var(--ink);
+    }
+
+    /* PAGES */
+    .pages{position:fixed;top:var(--top);bottom:var(--nav);left:0;right:0;overflow:hidden;}
+    .page{display:none;height:100%;overflow-y:auto;padding:1rem 1rem .75rem;-webkit-overflow-scrolling:touch;}
+    .page.active{display:block;}
+
+    /* BOTTOM NAV */
+    .bottomnav{
+      position:fixed;bottom:0;left:0;right:0;z-index:30;
+      height:var(--nav);
+      background:rgba(247,243,235,.97);backdrop-filter:blur(10px);
+      border-top:1px solid var(--line);
+      display:grid;grid-template-columns:repeat(3,1fr);
+    }
+    .navbtn{
+      border:0;background:transparent;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:.18rem;font:inherit;font-size:.68rem;font-weight:700;
+      color:var(--muted);cursor:pointer;padding:.2rem 0;
+    }
+    .navbtn svg{width:23px;height:23px;stroke:currentColor;fill:none;
+      stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .navbtn.active{color:var(--accent-deep);}
+
+    /* COMMON */
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:1rem;box-shadow:var(--shadow);}
+    .btn{border:1px solid var(--line);background:var(--paper);color:var(--ink);
+      border-radius:999px;padding:.55rem .95rem;font:inherit;font-size:.85rem;
+      font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem;}
+    .btn.primary{background:var(--ink);color:#fffdf8;border-color:var(--ink);}
+    .btn.sea{background:var(--sea);color:#fff;border-color:var(--sea);}
+    .btn.sm{padding:.35rem .7rem;font-size:.78rem;}
+    .btn-row{display:flex;flex-wrap:wrap;gap:.4rem;}
+    .badge{font-size:.7rem;font-weight:700;padding:.15rem .45rem;border-radius:999px;}
+    .badge.red{background:#ffe4e4;color:#a33;}
+    .badge.green{background:#dff5e4;color:var(--ok);}
+    .muted{color:var(--muted);}
+    .small{font-size:.82rem;}
+    .prog-wrap{background:#e8dfd2;border-radius:999px;height:8px;overflow:hidden;}
+    .prog-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--sea),var(--accent));transition:width .3s;}
+    input[type="password"],input[type="number"],select,textarea{
+      width:100%;font:inherit;border:1px solid var(--line);border-radius:10px;
+      padding:.55rem .7rem;background:#fff;color:var(--ink);}
+    textarea{min-height:85px;resize:vertical;}
+    audio{width:100%;}
+
+    /* PLAN PAGE */
+    .chapter-row{
+      display:grid;grid-template-columns:2rem 1fr 1.3rem;
+      gap:.6rem;align-items:start;
+      background:var(--card);border:1px solid var(--line);
+      border-radius:14px;padding:.8rem .85rem;margin-bottom:.45rem;
+    }
+    .chapter-row.done{background:#f0f7f3;border-color:#c7e0d3;}
+    .chapter-row.done .ch-title{text-decoration:line-through;opacity:.65;}
+    .ch-num{
+      width:1.9rem;height:1.9rem;border-radius:50%;
+      display:grid;place-items:center;
+      font-family:"Fraunces",serif;font-weight:700;
+      background:#f0e6d8;color:var(--accent-deep);font-size:.9rem;
+    }
+    .chapter-row.done .ch-num{background:var(--ok);color:#fff;}
+    .ch-title{font-weight:700;font-size:.95rem;}
+    .ch-focus{color:var(--muted);font-size:.8rem;margin-top:.1rem;}
+    .chapter-row input[type="checkbox"]{width:1.1rem;height:1.1rem;accent-color:var(--ok);cursor:pointer;margin-top:.3rem;}
+
+    /* SPEAK PAGE */
+    .back-btn{display:flex;align-items:center;gap:.3rem;font:inherit;font-size:.85rem;font-weight:700;
+      background:transparent;border:0;color:var(--accent-deep);cursor:pointer;padding:0;margin-bottom:.6rem;}
+    .ch-head{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+      color:var(--muted);padding:.65rem .1rem .2rem;}
+    .topic-item{
+      display:block;width:100%;text-align:left;
+      border:1px solid var(--line);background:var(--card);
+      border-radius:14px;padding:.75rem .9rem;
+      font:inherit;cursor:pointer;color:var(--ink);margin-bottom:.4rem;
+    }
+    .topic-item.active,.topic-item:active{border-color:var(--sea);background:var(--sea-soft);}
+    .ti-title{font-weight:700;font-size:.93rem;display:flex;align-items:center;gap:.4rem;}
+    .ti-sub{font-size:.78rem;color:var(--muted);margin-top:.1rem;}
+    .topic-dot{display:inline-block;width:7px;height:7px;background:var(--ok);border-radius:50%;flex-shrink:0;}
+    .speak-badge{display:inline-block;font-size:.72rem;font-weight:700;text-transform:uppercase;
+      letter-spacing:.05em;padding:.2rem .55rem;border-radius:999px;background:#ffe8d6;color:var(--accent-deep);}
+    .speak-prompt{font-size:1.05rem;line-height:1.55;margin:.45rem 0 .25rem;}
+    .speak-en{color:var(--muted);font-size:.9rem;margin:0 0 .85rem;}
+    .speak-tips{background:#f4f7fb;border-radius:12px;padding:.7rem .85rem;font-size:.88rem;margin-bottom:.85rem;}
+    .speak-tips ul{margin:.3rem 0 0;padding-left:1.1rem;}
+    .speak-sample{border-top:1px dashed var(--line);padding-top:.85rem;margin-top:.3rem;}
+    .speak-sample .nl{font-size:.97rem;line-height:1.7;white-space:pre-wrap;margin:0 0 .45rem;}
+    .speak-sample .en{color:var(--muted);font-size:.88rem;white-space:pre-wrap;}
+    .audio-bar{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.65rem 0;}
+    select.voice-sel{max-width:100%;font-size:.82rem;padding:.4rem .55rem;}
+
+    /* QUIZ PAGE */
+    .filter-row{display:flex;gap:.35rem;overflow-x:auto;padding-bottom:.3rem;
+      scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+    .filter-row::-webkit-scrollbar{display:none;}
+    .fchip{border:1px solid var(--line);background:var(--paper);color:var(--muted);
+      border-radius:999px;padding:.38rem .75rem;font:inherit;font-size:.78rem;
+      font-weight:700;cursor:pointer;white-space:nowrap;}
+    .fchip.active{background:var(--ink);color:#fffdf8;border-color:var(--ink);}
+    .quiz-info{font-size:.82rem;color:var(--muted);display:flex;gap:.4rem;align-items:center;
+      flex-wrap:wrap;margin:.4rem 0;}
+    .flip-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+      box-shadow:var(--shadow);padding:1.35rem;display:flex;flex-direction:column;gap:.7rem;min-height:190px;}
+    .flip-type{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+    .flip-front{font-family:"Fraunces",serif;font-size:1.7rem;line-height:1.2;}
+    .flip-back{color:var(--muted);font-size:1.05rem;border-top:1px dashed var(--line);padding-top:.7rem;}
+    .flip-ex{font-size:.86rem;color:var(--sea);margin-top:.3rem;font-style:italic;}
+    .quiz-actions{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.25rem;}
+    .quiz-actions button{padding:.85rem;border-radius:14px;font-size:.92rem;font-weight:700;}
+    .btn.btn-known{border-color:#5aad80;color:var(--ok);background:#f0f9f4;}
+    .btn.btn-wrong{border-color:#e07070;color:#a33;background:#fff8f8;}
+    .btn.btn-skip{grid-column:1/-1;background:transparent;border-color:var(--line);
+      color:var(--muted);padding:.55rem;border-radius:10px;}
+
+    /* SESSION DRAWER */
+    .backdrop{display:none;position:fixed;inset:0;z-index:40;background:rgba(26,35,50,.35);}
+    .backdrop.open{display:block;}
+    .drawer{
+      position:fixed;bottom:0;left:0;right:0;z-index:50;
+      background:var(--card);border-radius:20px 20px 0 0;
+      border-top:1px solid var(--line);
+      transform:translateY(100%);transition:transform .28s ease;
+      max-height:86vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+    }
+    .drawer.open{transform:translateY(0);}
+    .drawer-handle{width:40px;height:4px;background:var(--line);border-radius:2px;margin:.75rem auto 0;}
+    .drawer-inner{padding:.85rem 1rem 2.5rem;display:flex;flex-direction:column;gap:1.1rem;}
+    .dsec h4{font-size:.9rem;margin-bottom:.5rem;}
+    .dsec{display:flex;flex-direction:column;gap:.45rem;}
+    .night-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;}
+    .night-btn{border:1px solid var(--line);background:var(--paper);border-radius:10px;
+      padding:.6rem .4rem;font:inherit;font-size:.8rem;font-weight:700;
+      cursor:pointer;text-align:center;color:var(--muted);line-height:1.3;}
+    .night-btn.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+    label.file-btn{display:inline-flex;align-items:center;gap:.3rem;
+      border:1px solid var(--line);background:var(--paper);
+      border-radius:999px;padding:.55rem .9rem;
+      font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;}
+    .track-list{display:flex;flex-direction:column;gap:.22rem;max-height:150px;overflow-y:auto;}
+    .track-btn{text-align:left;border:1px solid transparent;background:var(--paper);
+      border-radius:8px;padding:.4rem .6rem;font:inherit;font-size:.78rem;cursor:pointer;}
+    .track-btn.active,.track-btn:active{border-color:var(--sea);background:var(--sea-soft);}
+    .timer-display{font-size:2.8rem;font-weight:700;font-variant-numeric:tabular-nums;
+      font-family:"Fraunces",serif;text-align:center;letter-spacing:-.02em;}
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Nederlands <span>B1</span></div>
+  <button class="session-btn" id="openDrawer" type="button">▼ Session</button>
+</div>
+
+<div class="pages">
+
+  <!-- PLAN -->
+  <div class="page active" id="page-plan">
+    <h2 style="margin-bottom:.2rem;">Study plan</h2>
+    <p class="muted small" style="margin:0 0 .8rem;">Tick a chapter when A+B+C are done.</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem;">
+      <span class="small muted" id="planProgress">0 / 8</span>
+      <button class="btn sm" type="button" id="resetProgress">Reset</button>
+    </div>
+    <div class="prog-wrap" style="margin-bottom:1rem;"><div class="prog-fill" id="progFill"></div></div>
+    <div id="chapterList"></div>
+    <p class="muted small" style="margin:1.2rem 0 0;">Progress saves in this browser automatically.</p>
+  </div>
+
+  <!-- SPEAK -->
+  <div class="page" id="page-speak">
+    <div id="speakList">
+      <h2 style="margin-bottom:.65rem;">Speaking topics</h2>
+      <div id="topicListEl"></div>
+    </div>
+    <div id="speakDetail" style="display:none;">
+      <button class="back-btn" type="button" id="speakBack">← All topics</button>
+      <div id="speakDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="page" id="page-quiz">
+    <div class="filter-row" id="filterRow"></div>
+    <div class="quiz-info" id="quizInfo"></div>
+    <div id="quizCard"></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottomnav">
+  <button class="navbtn active" type="button" data-page="plan">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Plan
+  </button>
+  <button class="navbtn" type="button" data-page="speak">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Speak
+  </button>
+  <button class="navbtn" type="button" data-page="quiz">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    Quiz
+  </button>
+</nav>
+
+<!-- SESSION DRAWER -->
+<div class="backdrop" id="backdrop"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-inner">
+
+    <div class="dsec">
+      <h4>Tonight</h4>
+      <div class="night-grid">
+        <button class="night-btn" type="button" data-night="mon">Mon<br/><span style="font-size:.68rem;font-weight:400;">Listen · Speak</span></button>
+        <button class="night-btn" type="button" data-night="tue">Tue<br/><span style="font-size:.68rem;font-weight:400;">Grammar · Vocab</span></button>
+        <button class="night-btn" type="button" data-night="thu">Thu<br/><span style="font-size:.68rem;font-weight:400;">Writing · Lab</span></button>
+      </div>
+      <p class="small muted" id="nightHint" style="margin:0;"></p>
+    </div>
+
+    <div class="dsec">
+      <h4>PDF book</h4>
+      <div class="btn-row">
+        <label class="file-btn">📂 Open PDF<input type="file" id="pickPdf" accept="application/pdf" hidden /></label>
+        <a id="pdfTabLink" href="#" target="_blank" rel="noopener" class="btn" style="display:none;">Open in tab ↗</a>
+      </div>
+      <p class="small muted" id="pdfStatus" style="margin:0;"></p>
+    </div>
+
+    <div class="dsec">
+      <h4>Audio</h4>
+      <div class="btn-row">
+        <label class="file-btn">🎵 Files<input type="file" id="pickAudio" accept="audio/*,.mp3" multiple hidden /></label>
+        <label class="file-btn">📁 Folder<input type="file" id="pickAudioDir" accept="audio/*,.mp3" webkitdirectory multiple hidden /></label>
+      </div>
+      <select id="audioFolder" style="display:none;margin-top:.35rem;"></select>
+      <div class="track-list" id="trackList" style="margin-top:.35rem;"></div>
+    </div>
+
+    <div class="dsec">
+      <h4>Now playing · <span id="nowPlaying" class="muted" style="font-size:.82rem;">nothing</span></h4>
+      <audio id="audioPlayer" controls preload="metadata"></audio>
+    </div>
+
+    <div class="dsec">
+      <h4>Timer</h4>
+      <div class="timer-display" id="timerDisplay">00:00</div>
+      <div class="btn-row" style="justify-content:center;margin-top:.45rem;">
+        <button class="btn primary" type="button" id="timerStart">Start</button>
+        <button class="btn" type="button" id="timerPause">Pause</button>
+        <button class="btn" type="button" id="timerReset">Reset</button>
+      </div>
+    </div>
+
+    <div class="dsec">
+      <h4>Session notes</h4>
+      <textarea id="sessionNotes" placeholder="Words, mistakes, phrases…"></textarea>
+      <button class="btn" type="button" id="saveNotes" style="align-self:flex-start;">Save notes</button>
+    </div>
+
+    <div class="dsec">
+      <h4>Gemini API key</h4>
+      <p class="small muted" style="margin:0;">Needed to build audio scripts (Transcribe → Dutch + English + colors).</p>
+      <input type="password" id="geminiKey" placeholder="GEMINI_API_KEY" />
+      <div class="btn-row">
+        <button class="btn" type="button" id="saveGeminiKey">Save key</button>
+        <button class="btn primary" type="button" id="buildScript" style="display:none;">Build script ▸</button>
+      </div>
+      <div id="scriptStatus" class="small muted" style="margin:0;"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ========== DATA ==========
+  const CHAPTERS = [
+    {id:1,title:"Gisteren, vandaag, morgen",focus:"Self, plans · bijzin / indirecte rede"},
+    {id:2,title:"Wat bedoelt u precies?",focus:"Asking meaning · senses"},
+    {id:3,title:"Iedereen is anders",focus:"Advice · comparisons"},
+    {id:4,title:"Als we nou eens …",focus:"Suggestions · passief"},
+    {id:5,title:"Klare taal",focus:"Explanation · relative clauses"},
+    {id:6,title:"Keuzes, keuzes!",focus:"Choices · justifying"},
+    {id:7,title:"Eenmaal, andermaal …",focus:"Habits · opinion stress"},
+    {id:8,title:"Over en uit",focus:"Structure · summarizing"},
+  ];
+
+  const SPEAKING_TOPICS = [
+    {id:"h1-monologue",chapter:1,type:"Monologue",title:"Wie ben je & plannen",
+      prompt:"Stel jezelf voor. Vertel wie je bent, wat je doet, en wat je plannen zijn voor de komende vijf jaar. Spreek ongeveer 1–2 minuten.",
+      promptEn:"Introduce yourself: who you are, what you do, and your plans for the next five years (1–2 min).",
+      tips:["Gebruik: ik werk / studeer, ik wil, ik ga …","Voeg redenen toe met omdat / zodat","Eindig met een korte samenvatting"],
+      sampleNl:"Ik heet Alex en ik woon sinds twee jaar in Nederland. Op dit moment werk ik fulltime en leer ik Nederlands, omdat ik hier wil blijven. Over vijf jaar wil ik een stabiele baan hebben en misschien een opleiding doen. Ik ga ook meer Nederlands spreken met collega's, zodat ik me zekerder voel. Verder wil ik meer vrienden maken en af en toe op reis gaan. Kortom: werken, leren en een leven hier opbouwen.",
+      sampleEn:"I'm Alex and I've lived in the Netherlands for two years. I work full-time and study Dutch because I want to stay. In five years I want a stable job and maybe more training. I'll speak more Dutch with colleagues so I feel more confident. I also want more friends and occasional travel. In short: work, learn, and build a life here."},
+    {id:"h1-past-future",chapter:1,type:"Compare",title:"Vroeger vs nu",
+      prompt:"Vergelijk je leven vroeger met je leven nu. Wat is veranderd? Wat blijft hetzelfde?",
+      promptEn:"Compare your life before with now. What changed? What stayed the same?",
+      tips:["Vroeger + imperfectum","Nu + tegenwoordige tijd","Gebruik: terwijl, maar, daarnaast"],
+      sampleNl:"Vroeger woonde ik in een ander land en sprak ik bijna geen Nederlands. Nu woon ik hier en gebruik ik Nederlands elke dag op het werk. Vroeger had ik meer vrije tijd, maar nu heb ik meer doelen. Wat hetzelfde blijft, is dat ik graag sport en met vrienden afspreek. Het grootste verschil is dat ik zelfstandiger ben geworden.",
+      sampleEn:"I used to live abroad and barely spoke Dutch. Now I live here and use Dutch at work every day. I used to have more free time, but now I have clearer goals. I still like sports and meeting friends. The biggest change is that I've become more independent."},
+    {id:"h2-clarify",chapter:2,type:"Role-play",title:"Iets niet begrijpen",
+      prompt:"Je bent bij de dokter / op kantoor. Je begrijpt iets niet. Vraag om uitleg en controleer of je het goed hebt begrepen.",
+      promptEn:"At the doctor / office: you don't understand something. Ask for clarification and check your understanding.",
+      tips:["Wat bedoelt u precies?","Kunt u dat anders zeggen?","Als ik het goed begrijp, …"],
+      sampleNl:"Excuseer, wat bedoelt u precies met 'controle over drie maanden'? Kunt u dat iets langzamer zeggen? Als ik het goed begrijp, moet ik later terugkomen voor een check. Klopt dat? En moet ik daarvoor zelf een afspraak maken, of doen jullie dat?",
+      sampleEn:"Sorry, what exactly do you mean by 'check-up in three months'? Could you say that a bit slower? If I understand correctly, I need to come back later for a check. Is that right? And do I book that myself, or do you?"},
+    {id:"h2-senses",chapter:2,type:"Describe",title:"Zintuigen & gevoel",
+      prompt:"Beschrijf een plek die je kent goed: wat zie, hoor en ruik je daar? Hoe voel je je?",
+      promptEn:"Describe a place you know well: what you see, hear, smell, and how you feel.",
+      tips:["zien / horen / ruiken / voelen","Het lijkt alsof…","Voeg details toe"],
+      sampleNl:"Mijn favoriete plek is een klein park bij mijn huis. Ik zie veel bomen en mensen die wandelen. Ik hoor vogels en soms kinderen die spelen. Het ruikt daar fris, vooral na de regen. Ik voel me rustig als ik daar zit, omdat het stil is en ik even kan nadenken.",
+      sampleEn:"My favorite place is a small park near home. I see trees and people walking. I hear birds and sometimes kids playing. It smells fresh, especially after rain. I feel calm there because it's quiet and I can think."},
+    {id:"h3-advice",chapter:3,type:"Advice",title:"Advies geven",
+      prompt:"Een vriend is gestrest door werk en studie. Geef drie praktische tips en leg uit waarom.",
+      promptEn:"A friend is stressed by work and study. Give three practical tips and explain why.",
+      tips:["Je kunt beter…","Ik zou…","Het helpt als…"],
+      sampleNl:"Ik zou eerst een vaste planning maken, zodat je weet wat belangrijk is. Je kunt beter elke avond één uur vrij houden zonder telefoon, want dan rust je echt uit. Daarnaast helpt het als je met iemand praat over je stress. Tot slot: sport twee keer per week. Dat klinkt simpel, maar het maakt je hoofd leger.",
+      sampleEn:"I'd make a fixed schedule first so you know priorities. Keep one phone-free hour each evening so you really rest. Talking to someone about stress also helps. Finally, exercise twice a week — simple, but it clears your head."},
+    {id:"h3-compare-people",chapter:3,type:"Compare",title:"Mensen vergelijken",
+      prompt:"Vergelijk twee mensen die je kent. Wat doen ze anders? Wat vind jij beter?",
+      promptEn:"Compare two people you know. How do they differ? What do you prefer?",
+      tips:["meer / minder / net zo … als","terwijl / daarentegen","Geef een mening + reden"],
+      sampleNl:"Mijn collega Sam is heel direct, terwijl Lisa meer rustig en diplomatiek is. Sam werkt sneller, maar Lisa luistert beter naar anderen. Ik vind Lisa's stijl prettiger, omdat er minder misverstanden ontstaan. Aan de andere kant leer ik van Sam om sneller beslissingen te nemen.",
+      sampleEn:"My colleague Sam is very direct, while Lisa is calmer and more diplomatic. Sam works faster, but Lisa listens better. I prefer Lisa's style because there are fewer misunderstandings. On the other hand, I learn from Sam to decide faster."},
+    {id:"h4-suggest",chapter:4,type:"Suggestion",title:"Een voorstel doen",
+      prompt:"Jullie team wil iets organiseren na het werk. Doe drie voorstellen en reageer op bezwaren.",
+      promptEn:"Your team wants an after-work activity. Make three suggestions and respond to objections.",
+      tips:["Als we nou eens…","Wat denk je van…?","Dat kan, maar misschien…"],
+      sampleNl:"Als we nou eens samen gaan eten? Dat is makkelijk te organiseren. Wat denk je van een korte wandeling in het park als het weer goed is? Of we kunnen een bordspelavond doen bij iemand thuis. Als dat te laat is, kunnen we het in het weekend plannen. Dan heeft iedereen meer tijd.",
+      sampleEn:"How about dinner together? Easy to organize. Or a short park walk if the weather's good? Or a board-game night at someone's place. If that's too late, we can do weekend — then everyone has more time."},
+    {id:"h4-passive",chapter:4,type:"Opinion",title:"Regels & passief",
+      prompt:"Vertel over regels op je werk of school. Wat mag / moet / wordt verwacht? Gebruik ook passieve zinnen.",
+      promptEn:"Talk about rules at work/school. What is allowed / required / expected? Use some passive sentences.",
+      tips:["er wordt…","je moet / mag","het is verplicht / verboden"],
+      sampleNl:"Op mijn werk wordt van je verwacht dat je op tijd bent. Er mag niet hardop getelefoneerd worden in de open ruimte. Problemen worden eerst met de teamleider besproken. Ik vind dat eerlijk, omdat iedereen dezelfde regels heeft. Alleen de kledingregels zijn soms te streng, vind ik.",
+      sampleEn:"At work you're expected to be on time. Loud phone calls aren't allowed in the open office. Problems are discussed with the team lead first. I think that's fair because everyone has the same rules. Only the dress code is sometimes too strict for me."},
+    {id:"h5-explain",chapter:5,type:"Explain",title:"Iets uitleggen",
+      prompt:"Leg uit hoe iets werkt dat je goed kent (app, sport, je baan). Doe alsof de ander een beginner is.",
+      promptEn:"Explain how something you know well works (app, sport, your job) as if the other person is a beginner.",
+      tips:["Eerst… daarna… ten slotte…","Dat betekent dat…","Een voorbeeld is…"],
+      sampleNl:"Ik leg even uit hoe ik mijn taken organiseer. Eerst schrijf ik alles op in een lijst. Daarna kies ik de drie belangrijkste dingen voor vandaag. Dat betekent dat ik niet alles tegelijk doe. Een voorbeeld is: e-mails eerst, dan een vergadering, en ten slotte een rapport. Zo blijf ik rustig en haalbaar.",
+      sampleEn:"I'll explain how I organize tasks. First I write everything in a list. Then I pick the three most important things for today. That means I don't do everything at once. For example: emails first, then a meeting, finally a report. That keeps me calm and realistic."},
+    {id:"h5-rumor",chapter:5,type:"Opinion",title:"Nieuws & geruchten",
+      prompt:"Je hoort een gerucht over een verandering op het werk. Wat zeg je? Hoe check je of het waar is?",
+      promptEn:"You hear a rumor about a workplace change. What do you say? How do you check if it's true?",
+      tips:["Ik heb gehoord dat…","Klopt dat?","Ik zou eerst…"],
+      sampleNl:"Ik heb gehoord dat we misschien gaan verhuizen naar een ander kantoor. Klopt dat, of is het een gerucht? Ik zou eerst mijn manager vragen, voordat ik het verder vertel. Als het waar is, wil ik weten wanneer en waarom. Zonder feiten ga ik er niet van uit.",
+      sampleEn:"I heard we might move to another office. Is that true, or a rumor? I'd ask my manager first before spreading it. If it's true, I want to know when and why. Without facts, I won't assume it's real."},
+    {id:"h6-choice",chapter:6,type:"Justify",title:"Een keuze verdedigen",
+      prompt:"Je moet kiezen tussen twee banen / opleidingen / steden. Kies er één en geef drie argumenten.",
+      promptEn:"Choose between two jobs / courses / cities. Pick one and give three arguments.",
+      tips:["Aan de ene kant… aan de andere kant…","Daarom kies ik…","Het nadeel is…, maar…"],
+      sampleNl:"Ik kies voor de baan dichter bij huis. Aan de ene kant verdient de andere baan iets meer. Aan de andere kant bespaar ik veel reistijd. Daarom heb ik meer energie voor Nederlands en sport. Het nadeel is een iets lager salaris, maar op lange termijn is mijn gezondheid belangrijker.",
+      sampleEn:"I choose the job closer to home. The other pays a bit more, but I save a lot of commute time. So I have more energy for Dutch and sports. The downside is slightly lower pay, but long-term my health matters more."},
+    {id:"h6-er-daar",chapter:6,type:"Monologue",title:"Wonen & omgeving",
+      prompt:"Vertel over je buurt. Wat vind je ervan? Wat mis je? Wat zou je willen veranderen?",
+      promptEn:"Talk about your neighborhood. Likes, missing things, what you'd change.",
+      tips:["er / daar + voorzetsel","Ik vind het…","Ik zou graag…"],
+      sampleNl:"Ik woon in een rustige buurt. Er is een supermarkt dichtbij en daar kan ik snel boodschappen doen. Wat ik mis, is een goede sportschool. Ik zou graag meer groen willen, zodat je 's avonds leuker kunt wandelen. Over het algemeen voel ik me hier veilig en dat is het belangrijkst.",
+      sampleEn:"I live in a quiet area. There's a supermarket nearby where I can shop quickly. I miss a good gym. I'd like more greenery for nicer evening walks. Overall I feel safe here, and that matters most."},
+    {id:"h7-habit",chapter:7,type:"Opinion",title:"Gewoontes & stereotypen",
+      prompt:"Bespreek een stereotype over Nederlanders of over jouw cultuur. Ben je het ermee eens? Waarom wel/niet?",
+      promptEn:"Discuss a stereotype about Dutch people or your culture. Agree or disagree, and why.",
+      tips:["Men zegt dat…","Dat klopt deels / niet","In mijn ervaring…"],
+      sampleNl:"Men zegt dat Nederlanders altijd direct zijn. Dat klopt deels: op het werk zeggen mensen vaak duidelijk wat ze denken. Maar niet iedereen is zo. In mijn ervaring zijn veel mensen ook beleefd en behulpzaam. Stereotypen zijn te simpel, omdat mensen verschillend zijn.",
+      sampleEn:"People say the Dutch are always direct. That's partly true: at work people often say clearly what they think. But not everyone is like that. In my experience many are also polite and helpful. Stereotypes are too simple because people differ."},
+    {id:"h7-routine",chapter:7,type:"Monologue",title:"Dagelijkse routine",
+      prompt:"Beschrijf je typische doordeweekse dag. Wat zou je willen verbeteren aan je routine?",
+      promptEn:"Describe a typical weekday. What would you improve in your routine?",
+      tips:["Eerst / daarna / 's avonds","Meestal / soms","Ik zou meer…"],
+      sampleNl:"Door de week sta ik om zeven uur op. Daarna werk ik en 's avonds leer ik ongeveer een uur Nederlands. Meestal kook ik zelf, maar soms bestel ik eten. Ik zou meer willen slapen en minder op mijn telefoon zitten voor het slapengaan. Dat zou me helpen om frisser te zijn.",
+      sampleEn:"On weekdays I get up at seven. Then I work, and in the evening I study Dutch for about an hour. I usually cook, but sometimes I order food. I'd like to sleep more and use my phone less before bed — that would help me feel fresher."},
+    {id:"h8-summary",chapter:8,type:"Present",title:"Samenvatten & presenteren",
+      prompt:"Vat een nieuwsbericht of een tekst uit je boek samen in ongeveer één minuut. Geef daarna je mening.",
+      promptEn:"Summarize a news item or textbook text in about one minute, then give your opinion.",
+      tips:["Het gaat over…","Belangrijk is dat…","Mijn mening is… omdat…"],
+      sampleNl:"Het gaat over netwerken: contacten leggen en onderhouden. Belangrijk is dat netwerken geven en nemen is, en dat vertrouwen de basis vormt. Je kunt overal netwerken, ook online via LinkedIn. Mijn mening is dat dit nuttig is, omdat goede contacten je helpen bij werk én privé. Maar het moet echt zijn, niet alleen 'handig'.",
+      sampleEn:"It's about networking: making and keeping contacts. The key is give-and-take, and trust as the base. You can network anywhere, including LinkedIn. I think it's useful because good contacts help with work and private life — but it should be genuine, not only 'useful'."},
+    {id:"h8-notes",chapter:8,type:"Role-play",title:"Iets doorgeven",
+      prompt:"Je mist een vergadering. Bel een collega: vraag wat er is besproken en noteer de actiepunten hardop.",
+      promptEn:"You missed a meeting. Call a colleague: ask what was discussed and say the action points out loud.",
+      tips:["Kun je kort samenvatten…?","Dus ik moet…","Heb ik het goed?"],
+      sampleNl:"Hoi, ik kon de vergadering niet bijwonen. Kun je kort samenvatten wat er is besloten? Dus ik moet voor vrijdag de cijfers mailen, klopt dat? En de volgende afspraak is maandag om tien uur. Heb ik het goed? Super, dank je wel. Ik zet het meteen in mijn agenda.",
+      sampleEn:"Hi, I couldn't attend the meeting. Can you briefly summarize what was decided? So I need to email the numbers by Friday, right? And the next meeting is Monday at ten. Did I get that right? Great, thanks — I'll put it in my calendar now."},
+  ];
+
+  const VOCAB_CARDS = [
+    {id:"h1-1",chapter:1,type:"phrase",nl:"van plan zijn om te",en:"to be planning to / to intend to",example:"Ik ben van plan om Nederlands te leren."},
+    {id:"h1-2",chapter:1,type:"vocab",nl:"vroeger",en:"in the past / used to (time expression)",example:"Vroeger woonde ik in Rotterdam."},
+    {id:"h1-3",chapter:1,type:"vocab",nl:"inmiddels",en:"by now / in the meantime",example:"Inmiddels spreek ik beter Nederlands."},
+    {id:"h1-4",chapter:1,type:"vocab",nl:"sindsdien",en:"since then",example:"We zijn vrienden. Sindsdien bellen we elke week."},
+    {id:"h1-5",chapter:1,type:"grammar",nl:"omdat + werkwoord achteraan",en:"because → verb goes to end of clause",example:"Ik leer Nederlands omdat ik hier wil blijven."},
+    {id:"h1-6",chapter:1,type:"grammar",nl:"zodat + werkwoord achteraan",en:"so that (purpose) → verb to end",example:"Ik oefen elke dag zodat ik beter wordt."},
+    {id:"h1-7",chapter:1,type:"vocab",nl:"de toekomst",en:"the future",example:"Wat zijn je plannen voor de toekomst?"},
+    {id:"h1-8",chapter:1,type:"phrase",nl:"Ik ben van plan om … te …",en:"I'm planning to …",example:"Ik ben van plan om een cursus te doen."},
+    {id:"h1-9",chapter:1,type:"vocab",nl:"overmorgen",en:"the day after tomorrow",example:"De afspraak is overmorgen om twee uur."},
+    {id:"h1-10",chapter:1,type:"grammar",nl:"terwijl",en:"while / whereas (simultaneous or contrasting actions)",example:"Terwijl ik kookte, belde hij."},
+    {id:"h2-1",chapter:2,type:"phrase",nl:"Wat bedoelt u precies?",en:"What do you mean exactly?",example:"Ik begrijp het niet. Wat bedoelt u precies?"},
+    {id:"h2-2",chapter:2,type:"phrase",nl:"Kunt u dat herhalen?",en:"Could you repeat that?",example:"Sorry, kunt u dat herhalen? Ik verstond het niet."},
+    {id:"h2-3",chapter:2,type:"phrase",nl:"Als ik het goed begrijp…",en:"If I understand correctly…",example:"Als ik het goed begrijp, moet ik morgen terugkomen."},
+    {id:"h2-4",chapter:2,type:"phrase",nl:"Kunt u dat anders zeggen?",en:"Could you say that differently?",example:"Kunt u dat anders zeggen? Dat woord ken ik niet."},
+    {id:"h2-5",chapter:2,type:"vocab",nl:"ruiken naar",en:"to smell of / smell like",example:"Het ruikt hier naar koffie."},
+    {id:"h2-6",chapter:2,type:"vocab",nl:"smaken naar",en:"to taste like",example:"Dit smaak naar citroen."},
+    {id:"h2-7",chapter:2,type:"vocab",nl:"het geluid",en:"the sound / the noise",example:"Ik hoor een raar geluid."},
+    {id:"h2-8",chapter:2,type:"vocab",nl:"bedoelen",en:"to mean (what someone intends)",example:"Wat bedoel je daarmee?"},
+    {id:"h2-9",chapter:2,type:"vocab",nl:"begrijpen",en:"to understand",example:"Ik begrijp het niet goed."},
+    {id:"h2-10",chapter:2,type:"phrase",nl:"Klopt dat?",en:"Is that right? / Is that correct?",example:"Dus ik moet morgen komen. Klopt dat?"},
+    {id:"h3-1",chapter:3,type:"phrase",nl:"Je kunt beter…",en:"You'd better… / It's better to…",example:"Je kunt beter vroeg gaan slapen."},
+    {id:"h3-2",chapter:3,type:"phrase",nl:"Ik zou… (+ infinitief)",en:"I would… (conditional advice)",example:"Ik zou een dokter bellen als ik jou was."},
+    {id:"h3-3",chapter:3,type:"phrase",nl:"Het helpt als…",en:"It helps if…",example:"Het helpt als je elke dag oefent."},
+    {id:"h3-4",chapter:3,type:"grammar",nl:"meer … dan",en:"more … than (comparative)",example:"Hij werkt meer dan ik."},
+    {id:"h3-5",chapter:3,type:"grammar",nl:"net zo … als",en:"just as … as (equal comparison)",example:"Ze is net zo slim als haar broer."},
+    {id:"h3-6",chapter:3,type:"vocab",nl:"het nadeel",en:"the disadvantage",example:"Het nadeel is dat het duur is."},
+    {id:"h3-7",chapter:3,type:"vocab",nl:"het voordeel",en:"the advantage",example:"Het voordeel is dat je veel tijd bespaart."},
+    {id:"h3-8",chapter:3,type:"phrase",nl:"Aan de andere kant…",en:"On the other hand…",example:"Aan de andere kant is het gezonder."},
+    {id:"h3-9",chapter:3,type:"vocab",nl:"vergelijken (met)",en:"to compare (with)",example:"Ik vergelijk mijn werk met dat van collega's."},
+    {id:"h3-10",chapter:3,type:"vocab",nl:"anders dan",en:"different from",example:"Mijn aanpak is anders dan die van jou."},
+    {id:"h4-1",chapter:4,type:"phrase",nl:"Als we nou eens…?",en:"How about we…? / What if we…?",example:"Als we nou eens een picknick doen?"},
+    {id:"h4-2",chapter:4,type:"phrase",nl:"Wat denk je van…?",en:"What do you think of…?",example:"Wat denk je van een filmavond?"},
+    {id:"h4-3",chapter:4,type:"grammar",nl:"worden + voltooid deelwoord",en:"passive voice: to be + past participle",example:"Het raam wordt elke dag gepoetst."},
+    {id:"h4-4",chapter:4,type:"grammar",nl:"er wordt … (passief)",en:"impersonal passive: there is/are … (being done)",example:"Er wordt hier niet gerookt."},
+    {id:"h4-5",chapter:4,type:"vocab",nl:"verplicht zijn",en:"to be required / obliged",example:"Je bent verplicht om op tijd te zijn."},
+    {id:"h4-6",chapter:4,type:"vocab",nl:"verboden zijn",en:"to be prohibited / forbidden",example:"Roken is hier verboden."},
+    {id:"h4-7",chapter:4,type:"vocab",nl:"afspreken",en:"to arrange / agree to meet",example:"We spreken af om zeven uur."},
+    {id:"h4-8",chapter:4,type:"phrase",nl:"Dat kan, maar…",en:"That's possible, but…",example:"Dat kan, maar misschien is zaterdag beter."},
+    {id:"h4-9",chapter:4,type:"vocab",nl:"organiseren",en:"to organize",example:"Wie organiseert het feestje?"},
+    {id:"h4-10",chapter:4,type:"phrase",nl:"Stel je voor dat…",en:"Imagine that… / Suppose that…",example:"Stel je voor dat je vrij bent dit weekend."},
+    {id:"h5-1",chapter:5,type:"phrase",nl:"Eerst… daarna… ten slotte…",en:"First… then… finally… (sequencing)",example:"Eerst lees je de tekst, daarna maak je de oefeningen."},
+    {id:"h5-2",chapter:5,type:"phrase",nl:"Dat betekent dat…",en:"That means that…",example:"Dat betekent dat je op tijd moet zijn."},
+    {id:"h5-3",chapter:5,type:"phrase",nl:"Een voorbeeld is…",en:"An example is…",example:"Een voorbeeld is wanneer je iemand niet begrijpt."},
+    {id:"h5-4",chapter:5,type:"grammar",nl:"die (relatief voornaamwoord, de-woord)",en:"who / which / that — relative pronoun for de-words",example:"De man die daar staat, is mijn baas."},
+    {id:"h5-5",chapter:5,type:"grammar",nl:"dat (relatief voornaamwoord, het-woord)",en:"that / which — relative pronoun for het-words",example:"Het boek dat ik lees, is interessant."},
+    {id:"h5-6",chapter:5,type:"phrase",nl:"Met andere woorden…",en:"In other words…",example:"Met andere woorden: je moet eerder beginnen."},
+    {id:"h5-7",chapter:5,type:"vocab",nl:"verduidelijken",en:"to clarify",example:"Kunt u dat verduidelijken?"},
+    {id:"h5-8",chapter:5,type:"vocab",nl:"het verschil (tussen)",en:"the difference (between)",example:"Wat is het verschil tussen 'zeggen' en 'vertellen'?"},
+    {id:"h5-9",chapter:5,type:"phrase",nl:"Samengevat…",en:"To summarize… / In short…",example:"Samengevat: dit is de beste aanpak."},
+    {id:"h5-10",chapter:5,type:"vocab",nl:"uitleggen",en:"to explain",example:"Kun jij uitleggen hoe dit werkt?"},
+    {id:"h6-1",chapter:6,type:"phrase",nl:"Aan de ene kant… aan de andere kant…",en:"On the one hand… on the other hand…",example:"Aan de ene kant goedkoop, aan de andere kant ver weg."},
+    {id:"h6-2",chapter:6,type:"phrase",nl:"Daarom kies ik voor…",en:"That's why I choose…",example:"Daarom kies ik voor de baan dichter bij huis."},
+    {id:"h6-3",chapter:6,type:"vocab",nl:"uiteindelijk",en:"ultimately / in the end / eventually",example:"Uiteindelijk heb ik gekozen voor de opleiding."},
+    {id:"h6-4",chapter:6,type:"vocab",nl:"afwegen",en:"to weigh up (pros and cons)",example:"Ik moet de opties goed afwegen."},
+    {id:"h6-5",chapter:6,type:"grammar",nl:"er + voorzetsel (erover, erin, erop…)",en:"pronominal adverb replacing prepositional phrase",example:"Ik denk erover na. (= over het probleem)"},
+    {id:"h6-6",chapter:6,type:"phrase",nl:"de voorkeur geven aan",en:"to prefer / give preference to",example:"Ik geef de voorkeur aan thuiswerken."},
+    {id:"h6-7",chapter:6,type:"vocab",nl:"doorslaggevend",en:"decisive / determining",example:"De reistijd is doorslaggevend voor mij."},
+    {id:"h6-8",chapter:6,type:"phrase",nl:"maar op lange termijn…",en:"but in the long run…",example:"Het is duur, maar op lange termijn loont het."},
+    {id:"h6-9",chapter:6,type:"vocab",nl:"een keuze maken",en:"to make a choice / decision",example:"Je moet nu een keuze maken."},
+    {id:"h6-10",chapter:6,type:"grammar",nl:"daar + voorzetsel (daarmee, daarin, daarvoor…)",en:"pronominal adverb for 'it/that + preposition'",example:"Ik ben het daarmee eens."},
+    {id:"h7-1",chapter:7,type:"phrase",nl:"Men zegt dat…",en:"People say that… / It is said that…",example:"Men zegt dat Nederlanders erg direct zijn."},
+    {id:"h7-2",chapter:7,type:"phrase",nl:"In mijn ervaring…",en:"In my experience…",example:"In mijn ervaring zijn mensen hier heel vriendelijk."},
+    {id:"h7-3",chapter:7,type:"vocab",nl:"gewoonlijk",en:"usually / normally / as a rule",example:"Gewoonlijk eet ik om zes uur."},
+    {id:"h7-4",chapter:7,type:"vocab",nl:"af en toe",en:"occasionally / now and then",example:"Af en toe ga ik naar het theater."},
+    {id:"h7-5",chapter:7,type:"phrase",nl:"Dat klopt (deels).",en:"That's (partly) true / correct.",example:"Dat klopt deels. Niet iedereen is zo."},
+    {id:"h7-6",chapter:7,type:"phrase",nl:"Ik ben het (niet) eens met…",en:"I (don't) agree with…",example:"Ik ben het niet eens met dat stereotype."},
+    {id:"h7-7",chapter:7,type:"phrase",nl:"Sterker nog…",en:"Even more so… / What's more… / In fact…",example:"Hij werkt hard. Sterker nog, hij werkt elk weekend."},
+    {id:"h7-8",chapter:7,type:"vocab",nl:"het stereotype",en:"the stereotype",example:"Stereotypen zijn vaak te simpel."},
+    {id:"h7-9",chapter:7,type:"vocab",nl:"zoals gewoonlijk",en:"as usual",example:"Zoals gewoonlijk was hij de eerste op kantoor."},
+    {id:"h7-10",chapter:7,type:"phrase",nl:"Dat is typisch…",en:"That's typical of…",example:"Dat is typisch Nederlands: direct zijn."},
+    {id:"h8-1",chapter:8,type:"phrase",nl:"Het gaat over…",en:"It's about… (introducing a topic)",example:"Het gaat over netwerken en contacten leggen."},
+    {id:"h8-2",chapter:8,type:"phrase",nl:"Belangrijk is dat…",en:"What's important is that…",example:"Belangrijk is dat je eerlijk bent."},
+    {id:"h8-3",chapter:8,type:"phrase",nl:"Mijn mening is… omdat…",en:"My opinion is… because…",example:"Mijn mening is dat dit nuttig is, omdat je er veel van leert."},
+    {id:"h8-4",chapter:8,type:"phrase",nl:"Kortom…",en:"In short… / To summarize…",example:"Kortom: dit is de beste aanpak."},
+    {id:"h8-5",chapter:8,type:"phrase",nl:"Ten eerste… ten tweede…",en:"Firstly… secondly…",example:"Ten eerste is het goedkoop. Ten tweede is het snel."},
+    {id:"h8-6",chapter:8,type:"phrase",nl:"Vervolgens…",en:"Then / Subsequently / Next…",example:"Vervolgens bespreek ik de resultaten."},
+    {id:"h8-7",chapter:8,type:"phrase",nl:"Tot slot…",en:"Finally / To conclude…",example:"Tot slot wil ik jullie bedanken."},
+    {id:"h8-8",chapter:8,type:"phrase",nl:"Concluderend…",en:"In conclusion…",example:"Concluderend kan ik zeggen dat het goed gaat."},
+    {id:"h8-9",chapter:8,type:"vocab",nl:"samenvatten",en:"to summarize",example:"Kunt u dat samenvatten in één zin?"},
+    {id:"h8-10",chapter:8,type:"phrase",nl:"Een punt dat ik wil maken is…",en:"A point I want to make is…",example:"Een punt dat ik wil maken is dat communicatie cruciaal is."},
+  ];
+
+  const NIGHTS = {
+    mon:"Monday · Listening + reading (Tekstboek), then speaking: shadow, monologue, record.",
+    tue:"Tuesday · Grammar + werkboek exercises, then vocab speaking.",
+    thu:"Thursday · Writing first hour, then listening review + speaking lab.",
+  };
+
+  // ========== HELPERS ==========
+  function esc(s){
+    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  }
+
+  // ========== NAVIGATION ==========
+  document.querySelectorAll(".navbtn[data-page]").forEach(btn=>{
+    btn.addEventListener("click",()=>showPage(btn.dataset.page));
+  });
+  function showPage(page){
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    document.querySelectorAll(".navbtn").forEach(b=>b.classList.remove("active"));
+    const pg=document.getElementById("page-"+page);
+    if(pg) pg.classList.add("active");
+    const nb=document.querySelector(`.navbtn[data-page="${page}"]`);
+    if(nb) nb.classList.add("active");
+    if(page==="quiz") renderQuizPage();
+    if(page==="speak") renderSpeakPage();
+  }
+
+  // ========== DRAWER ==========
+  const backdrop=document.getElementById("backdrop");
+  const drawer=document.getElementById("drawer");
+  function openDrawer(){drawer.classList.add("open");backdrop.classList.add("open");}
+  function closeDrawer(){drawer.classList.remove("open");backdrop.classList.remove("open");}
+  document.getElementById("openDrawer").addEventListener("click",openDrawer);
+  backdrop.addEventListener("click",closeDrawer);
+  // swipe-down to close
+  let drawerY0=0;
+  drawer.addEventListener("touchstart",e=>{drawerY0=e.touches[0].clientY;},{passive:true});
+  drawer.addEventListener("touchend",e=>{
+    if(e.changedTouches[0].clientY-drawerY0>60) closeDrawer();
+  },{passive:true});
+
+  // ========== PLAN ==========
+  const PLAN_KEY="dutch-b1-planner-v1";
+  function loadPlan(){try{return JSON.parse(localStorage.getItem(PLAN_KEY))||{chapters:{}};}catch{return{chapters:{}};}}
+  function savePlan(s){localStorage.setItem(PLAN_KEY,JSON.stringify(s));}
+
+  function renderPlan(){
+    const s=loadPlan();
+    const list=document.getElementById("chapterList");
+    list.innerHTML="";
+    let done=0;
+    CHAPTERS.forEach(ch=>{
+      const d=!!s.chapters[ch.id];
+      if(d) done++;
+      const row=document.createElement("label");
+      row.className="chapter-row"+(d?" done":"");
+      row.innerHTML=`<div class="ch-num">${ch.id}</div><div><div class="ch-title">${esc(ch.title)}</div><div class="ch-focus">${esc(ch.focus)}</div></div><input type="checkbox" data-ch="${ch.id}" ${d?"checked":""} />`;
+      list.appendChild(row);
+    });
+    document.getElementById("progFill").style.width=(done/CHAPTERS.length*100)+"%";
+    document.getElementById("planProgress").textContent=`${done} / ${CHAPTERS.length} chapters`;
+  }
+
+  document.addEventListener("change",e=>{
+    if(e.target.matches("[data-ch]")){
+      const s=loadPlan();
+      s.chapters[e.target.dataset.ch]=e.target.checked;
+      savePlan(s);
+      renderPlan();
+    }
+  });
+  document.getElementById("resetProgress").addEventListener("click",()=>{
+    if(confirm("Reset chapter progress?")) {localStorage.removeItem(PLAN_KEY);renderPlan();}
+  });
+  renderPlan();
+
+  // ========== SPEAK ==========
+  const SPEAK_DONE="dutch-b1-speak-done-v1";
+  function loadSpeakDone(){try{return JSON.parse(localStorage.getItem(SPEAK_DONE))||{};}catch{return{};}}
+  function markSpeakDone(id){const d=loadSpeakDone();d[id]=Date.now();localStorage.setItem(SPEAK_DONE,JSON.stringify(d));}
+
+  let speakListBuilt=false;
+  function renderSpeakPage(){
+    if(speakListBuilt) return;
+    speakListBuilt=true;
+    const done=loadSpeakDone();
+    const box=document.getElementById("topicListEl");
+    box.innerHTML="";
+    CHAPTERS.forEach(ch=>{
+      const topics=SPEAKING_TOPICS.filter(t=>t.chapter===ch.id);
+      if(!topics.length) return;
+      const head=document.createElement("div");
+      head.className="ch-head";
+      head.textContent=`H${ch.id} · ${ch.title}`;
+      box.appendChild(head);
+      topics.forEach(t=>{
+        const btn=document.createElement("button");
+        btn.type="button";
+        btn.className="topic-item";
+        btn.dataset.id=t.id;
+        btn.innerHTML=`<div class="ti-title">${esc(t.title)}${done[t.id]?'<span class="topic-dot" title="Practiced"></span>':''}</div><div class="ti-sub">${esc(t.type)} · H${t.chapter}</div>`;
+        btn.addEventListener("click",()=>showSpeakDetail(t.id));
+        box.appendChild(btn);
+      });
+    });
+  }
+
+  function showSpeakDetail(id){
+    const t=SPEAKING_TOPICS.find(x=>x.id===id);
+    if(!t) return;
+    stopTTS();
+    document.getElementById("speakList").style.display="none";
+    document.getElementById("speakDetail").style.display="block";
+    const ch=CHAPTERS.find(c=>c.id===t.chapter);
+    const tips=(t.tips||[]).map(x=>`<li>${esc(x)}</li>`).join("");
+    document.getElementById("speakDetailContent").innerHTML=`
+      <span class="speak-badge">${esc(t.type)} · H${t.chapter}</span>
+      <h3 style="margin:.5rem 0 .1rem;">${esc(t.title)}</h3>
+      <p class="muted small" style="margin:0 0 .6rem;">${esc(ch?ch.title:"")}</p>
+      <p class="speak-prompt">${esc(t.prompt)}</p>
+      <p class="speak-en">${esc(t.promptEn)}</p>
+      <div class="audio-bar">
+        <button class="btn sm" type="button" id="speakReadPrompt">▶ Prompt</button>
+        <button class="btn primary sm" type="button" id="speakReadSample">▶ Sample</button>
+        <button class="btn sm" type="button" id="speakStopBtn">■ Stop</button>
+      </div>
+      <div class="audio-bar" style="margin-top:0;">
+        <label class="muted small" style="font-size:.76rem;">Voice:</label>
+        <select id="voiceSel" class="voice-sel" style="max-width:100%;font-size:.8rem;padding:.3rem .5rem;flex:1;"></select>
+      </div>
+      <div class="speak-tips"><strong>Useful phrases</strong><ul>${tips}</ul></div>
+      <div class="speak-sample">
+        <strong style="font-family:'Fraunces',serif;">Sample answer (B1)</strong>
+        <p class="nl" style="margin:.45rem 0 0;">${esc(t.sampleNl)}</p>
+        <p class="en">${esc(t.sampleEn)}</p>
+      </div>
+      <p class="muted small" style="margin:.85rem 0 0;">Tip: start the timer in Session, speak first without looking at the sample, then compare and shadow.</p>
+    `;
+    fillVoices();
+    document.getElementById("speakReadPrompt").addEventListener("click",()=>speakDutch(t.prompt));
+    document.getElementById("speakReadSample").addEventListener("click",()=>{
+      speakDutch(t.sampleNl);
+      markSpeakDone(t.id);
+      const topicBtn=document.querySelector(`.topic-item[data-id="${t.id}"]`);
+      if(topicBtn&&!topicBtn.querySelector(".topic-dot")){
+        const dot=document.createElement("span");dot.className="topic-dot";dot.title="Practiced";
+        const title=topicBtn.querySelector(".ti-title");if(title) title.appendChild(dot);
+      }
+    });
+    document.getElementById("speakStopBtn").addEventListener("click",stopTTS);
+  }
+
+  document.getElementById("speakBack").addEventListener("click",()=>{
+    stopTTS();
+    document.getElementById("speakList").style.display="";
+    document.getElementById("speakDetail").style.display="none";
+  });
+
+  // TTS
+  function pickDutchVoice(){
+    const voices=window.speechSynthesis?speechSynthesis.getVoices():[];
+    return voices.find(v=>/^nl(-|$)/i.test(v.lang)&&/nederland|netherlands|dutch/i.test(v.name))
+      ||voices.find(v=>/^nl-NL/i.test(v.lang))
+      ||voices.find(v=>/^nl/i.test(v.lang))||null;
+  }
+  function fillVoices(){
+    const sel=document.getElementById("voiceSel");
+    if(!sel||!window.speechSynthesis) return;
+    const all=speechSynthesis.getVoices();
+    const nl=all.filter(v=>/^nl/i.test(v.lang));
+    const list=nl.length?nl:all;
+    const prev=sel.value;
+    sel.innerHTML="";
+    list.forEach((v,i)=>{
+      const o=document.createElement("option");
+      o.value=String(i);o.textContent=`${v.name} (${v.lang})`;
+      o.dataset.name=v.name;o.dataset.lang=v.lang;
+      sel.appendChild(o);
+    });
+    if(prev&&[...sel.options].some(o=>o.value===prev)) sel.value=prev;
+    else{const dv=pickDutchVoice();if(dv){const idx=list.findIndex(v=>v.name===dv.name);if(idx>=0)sel.value=String(idx);}}
+  }
+  function speakDutch(text){
+    if(!window.speechSynthesis){alert("TTS not available in this browser.");return;}
+    stopTTS();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="nl-NL";u.rate=0.92;
+    const sel=document.getElementById("voiceSel");
+    if(sel&&sel.value!==""){
+      const all=speechSynthesis.getVoices();
+      const nl=all.filter(v=>/^nl/i.test(v.lang));
+      const list=nl.length?nl:all;
+      const v=list[Number(sel.value)];
+      if(v){u.voice=v;u.lang=v.lang||"nl-NL";}
+    } else {const dv=pickDutchVoice();if(dv){u.voice=dv;u.lang=dv.lang;}}
+    speechSynthesis.speak(u);
+  }
+  function stopTTS(){if(window.speechSynthesis) speechSynthesis.cancel();}
+  if(window.speechSynthesis) speechSynthesis.onvoiceschanged=fillVoices;
+
+  // ========== QUIZ ==========
+  const QUIZ_KEY="dutch-b1-quiz-v1";
+  function loadQuiz(){try{return JSON.parse(localStorage.getItem(QUIZ_KEY))||{known:{},wrong:{}};}catch{return{known:{},wrong:{}};}}
+  function saveQuiz(s){localStorage.setItem(QUIZ_KEY,JSON.stringify(s));}
+
+  let quizFilter="all";
+  let quizDeck=[];
+  let quizIdx=0;
+  let quizRevealed=false;
+
+  function wrongCount(){const s=loadQuiz();return Object.keys(s.wrong).filter(k=>s.wrong[k]).length;}
+
+  function buildDeck(){
+    const s=loadQuiz();
+    let pool;
+    if(quizFilter==="wrong") pool=VOCAB_CARDS.filter(c=>s.wrong[c.id]);
+    else if(/^ch\d+$/.test(quizFilter)) pool=VOCAB_CARDS.filter(c=>c.chapter===parseInt(quizFilter.slice(2)));
+    else pool=[...VOCAB_CARDS];
+    const deck=[...pool];
+    for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+    deck.sort((a,b)=>(s.wrong[b.id]?1:0)-(s.wrong[a.id]?1:0));
+    quizDeck=deck;quizIdx=0;quizRevealed=false;
+  }
+
+  function renderQuizPage(){
+    renderFilters();
+    buildDeck();
+    renderCard();
+  }
+
+  function renderFilters(){
+    const row=document.getElementById("filterRow");
+    row.innerHTML="";
+    function chip(label,val){
+      const b=document.createElement("button");
+      b.type="button";b.className="fchip"+(quizFilter===val?" active":"");
+      b.textContent=label;
+      b.addEventListener("click",()=>{quizFilter=val;buildDeck();renderFilters();renderCard();});
+      row.appendChild(b);
+    }
+    const wc=wrongCount();
+    chip("All",  "all");
+    chip((wc?"⚠ ":"")+"Mistakes"+(wc?" ("+wc+")":""),"wrong");
+    CHAPTERS.forEach(ch=>chip("H"+ch.id,"ch"+ch.id));
+  }
+
+  function renderCard(){
+    const infoEl=document.getElementById("quizInfo");
+    const cardEl=document.getElementById("quizCard");
+    const s=loadQuiz();
+    const wc=wrongCount();
+    const kc=Object.keys(s.known).filter(k=>s.known[k]).length;
+
+    const prog=quizDeck.length?`${Math.min(quizIdx+1,quizDeck.length)} / ${quizDeck.length}`:"0 / 0";
+    infoEl.innerHTML=`<span>${prog}</span>`
+      +(wc?`<span class="badge red">⚠ ${wc} to review</span>`:`<span class="badge green">✓ ${kc} known</span>`)
+      +`<button class="btn sm" type="button" id="qReset" style="margin-left:auto;">Reset</button>`;
+    document.getElementById("qReset").addEventListener("click",()=>{
+      if(confirm("Reset all quiz scores?")) {localStorage.removeItem(QUIZ_KEY);buildDeck();renderFilters();renderCard();}
+    });
+
+    if(!quizDeck.length){
+      cardEl.innerHTML=`<div class="flip-card"><p class="muted" style="margin:0;">${
+        quizFilter==="wrong"?"No mistakes yet — great! Go through all cards first.":"No cards here."
+      }</p></div>`;
+      return;
+    }
+    if(quizIdx>=quizDeck.length){
+      cardEl.innerHTML=`<div class="flip-card">
+        <div class="flip-front" style="font-size:1.15rem;">All ${quizDeck.length} cards reviewed!</div>
+        <div class="quiz-actions" style="grid-template-columns:1fr${wc?" 1fr":""};">
+          <button class="btn primary" style="border-radius:14px;padding:.85rem;" type="button" id="qAgain">Start again</button>
+          ${wc?`<button class="btn btn-wrong" style="border-radius:14px;padding:.85rem;" type="button" id="qDoWrong">Review ${wc} mistake${wc!==1?"s":""}</button>`:""}
+        </div>
+      </div>`;
+      document.getElementById("qAgain").addEventListener("click",()=>{buildDeck();renderFilters();renderCard();});
+      const dw=document.getElementById("qDoWrong");
+      if(dw) dw.addEventListener("click",()=>{quizFilter="wrong";buildDeck();renderFilters();renderCard();});
+      return;
+    }
+
+    const card=quizDeck[quizIdx];
+    const isWrong=!!s.wrong[card.id];
+    const isKnown=!!s.known[card.id];
+    const badge=isWrong?` <span class="badge red">⚠</span>`:isKnown?` <span class="badge green">✓</span>`:"";
+
+    cardEl.innerHTML=`<div class="flip-card">
+      <div class="flip-type">H${card.chapter} · ${esc(card.type)}${badge}</div>
+      <div class="flip-front">${esc(card.nl)}</div>
+      <div id="cBack" style="display:${quizRevealed?"block":"none"};border-top:1px dashed var(--line);padding-top:.7rem;margin-top:.3rem;">
+        <div class="flip-back">${esc(card.en)}</div>
+        ${card.example?`<div class="flip-ex">${esc(card.example)}</div>`:""}
+      </div>
+      <div id="cActions">
+        ${quizRevealed?`
+          <div class="quiz-actions">
+            <button class="btn btn-known" type="button" id="qKnown">✓ Known</button>
+            <button class="btn btn-wrong" type="button" id="qWrong">✗ Review</button>
+          </div>
+          <button class="btn btn-skip" type="button" id="qSkip" style="width:100%;margin-top:.4rem;">Skip →</button>
+        `:`
+          <button class="btn primary" style="width:100%;padding:.85rem;border-radius:14px;font-size:1rem;" type="button" id="qReveal">Reveal answer</button>
+          <button class="btn btn-skip" type="button" id="qSkip" style="width:100%;margin-top:.4rem;">Skip →</button>
+        `}
+      </div>
+    </div>`;
+
+    wireCardBtns(card);
+  }
+
+  function wireCardBtns(card){
+    const rev=document.getElementById("qReveal");
+    if(rev) rev.addEventListener("click",()=>{
+      quizRevealed=true;
+      document.getElementById("cBack").style.display="block";
+      document.getElementById("cActions").innerHTML=`
+        <div class="quiz-actions">
+          <button class="btn btn-known" type="button" id="qKnown">✓ Known</button>
+          <button class="btn btn-wrong" type="button" id="qWrong">✗ Review</button>
+        </div>
+        <button class="btn btn-skip" type="button" id="qSkip" style="width:100%;margin-top:.4rem;">Skip →</button>
+      `;
+      wireCardBtns(card);
+    });
+    const skip=document.getElementById("qSkip");
+    if(skip) skip.addEventListener("click",()=>{quizIdx++;quizRevealed=false;renderCard();});
+    const k=document.getElementById("qKnown");
+    if(k) k.addEventListener("click",()=>{
+      const s=loadQuiz();s.known[card.id]=true;delete s.wrong[card.id];saveQuiz(s);
+      quizIdx++;quizRevealed=false;renderFilters();renderCard();
+    });
+    const w=document.getElementById("qWrong");
+    if(w) w.addEventListener("click",()=>{
+      const s=loadQuiz();s.wrong[card.id]=true;delete s.known[card.id];saveQuiz(s);
+      quizIdx++;quizRevealed=false;renderFilters();renderCard();
+    });
+  }
+
+  // ========== SESSION DRAWER: AUDIO ==========
+  const objectUrls=[];
+  let materials={pdfs:[],audio:[],currentFolder:""};
+  let currentTrack=null;
+
+  function remUrl(url){objectUrls.push(url);return url;}
+
+  document.getElementById("pickPdf").addEventListener("change",e=>{
+    const f=e.target.files&&e.target.files[0];
+    if(!f) return;
+    const url=remUrl(URL.createObjectURL(f));
+    materials.pdfs=materials.pdfs.filter(p=>p.name!==f.name);
+    materials.pdfs.push({name:f.name,url});
+    const link=document.getElementById("pdfTabLink");
+    link.href=url;link.style.display="";
+    document.getElementById("pdfStatus").textContent="Loaded: "+f.name;
+  });
+
+  function ingestAudio(fileList){
+    const files=[...fileList].filter(f=>/\.mp3$/i.test(f.name)||(f.type||"").startsWith("audio/"));
+    if(!files.length) return;
+    const groups={};
+    files.forEach(f=>{
+      const parts=(f.webkitRelativePath||f.name).split(/[/\\]/);
+      const folder=parts.length>1?parts[parts.length-2]:"Audio";
+      if(!groups[folder]) groups[folder]=[];
+      groups[folder].push({name:parts[parts.length-1],url:remUrl(URL.createObjectURL(f))});
+    });
+    Object.entries(groups).forEach(([folder,tracks])=>{
+      tracks.sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+      const ex=materials.audio.find(a=>a.folder===folder);
+      if(ex){const m=new Map(ex.tracks.map(t=>[t.name,t]));tracks.forEach(t=>m.set(t.name,t));ex.tracks=[...m.values()].sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));ex.count=ex.tracks.length;}
+      else materials.audio.push({folder,tracks,count:tracks.length});
+    });
+    if(!materials.currentFolder&&materials.audio.length) materials.currentFolder=materials.audio[0].folder;
+    rebuildAudioUI();
+  }
+
+  document.getElementById("pickAudio").addEventListener("change",e=>ingestAudio(e.target.files||[]));
+  document.getElementById("pickAudioDir").addEventListener("change",e=>ingestAudio(e.target.files||[]));
+
+  function rebuildAudioUI(){
+    const sel=document.getElementById("audioFolder");
+    sel.style.display=materials.audio.length>1?"":"none";
+    sel.innerHTML="";
+    materials.audio.forEach(a=>{
+      const o=document.createElement("option");
+      o.value=a.folder;o.textContent=`${a.folder} (${a.count})`;
+      sel.appendChild(o);
+    });
+    if(materials.currentFolder) sel.value=materials.currentFolder;
+    sel.onchange=()=>{materials.currentFolder=sel.value;renderTracks();};
+    renderTracks();
+    const bsBtn=document.getElementById("buildScript");
+    if(bsBtn) bsBtn.style.display=currentTrack?"":"none";
+  }
+
+  function renderTracks(){
+    const pack=materials.audio.find(a=>a.folder===materials.currentFolder);
+    const list=document.getElementById("trackList");
+    list.innerHTML="";
+    if(!pack) return;
+    pack.tracks.forEach(track=>{
+      const btn=document.createElement("button");
+      btn.type="button";btn.className="track-btn";
+      btn.textContent=track.name;
+      btn.addEventListener("click",()=>playTrack(pack.folder,track,btn));
+      list.appendChild(btn);
+    });
+  }
+
+  function playTrack(folder,track,btn){
+    document.querySelectorAll(".track-btn").forEach(b=>b.classList.remove("active"));
+    if(btn) btn.classList.add("active");
+    currentTrack={folder,name:track.name,url:track.url};
+    const player=document.getElementById("audioPlayer");
+    player.src=track.url;player.play().catch(()=>{});
+    document.getElementById("nowPlaying").textContent=track.name;
+    const bsBtn=document.getElementById("buildScript");
+    if(bsBtn) bsBtn.style.display="";
+  }
+
+  // ========== SESSION: NIGHT ==========
+  const NIGHT_HINTS={
+    mon:"Monday: listen + read Tekstboek, then shadow and record a monologue.",
+    tue:"Tuesday: grammar + werkboek exercises, then vocab speaking.",
+    thu:"Thursday: write 80–150 words, then re-listen without transcript + speaking lab.",
+  };
+  document.querySelectorAll(".night-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      document.querySelectorAll(".night-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("nightHint").textContent=NIGHT_HINTS[btn.dataset.night]||"";
+    });
+  });
+  // Auto-select tonight
+  const today=new Date().getDay();
+  const nightMap={1:"mon",2:"tue",4:"thu"};
+  const tonightKey=nightMap[today];
+  if(tonightKey){
+    const nb=document.querySelector(`.night-btn[data-night="${tonightKey}"]`);
+    if(nb){nb.classList.add("active");document.getElementById("nightHint").textContent=NIGHT_HINTS[tonightKey];}
+  }
+
+  // ========== SESSION: TIMER ==========
+  let timerSec=0,timerId=null;
+  function paintTimer(){
+    const m=String(Math.floor(timerSec/60)).padStart(2,"0");
+    const s=String(timerSec%60).padStart(2,"0");
+    document.getElementById("timerDisplay").textContent=`${m}:${s}`;
+  }
+  document.getElementById("timerStart").addEventListener("click",()=>{if(timerId) return;timerId=setInterval(()=>{timerSec++;paintTimer();},1000);});
+  document.getElementById("timerPause").addEventListener("click",()=>{clearInterval(timerId);timerId=null;});
+  document.getElementById("timerReset").addEventListener("click",()=>{clearInterval(timerId);timerId=null;timerSec=0;paintTimer();});
+
+  // ========== SESSION: NOTES ==========
+  const NOTES_KEY="dutch-b1-notes-v1";
+  document.getElementById("sessionNotes").value=localStorage.getItem(NOTES_KEY)||"";
+  document.getElementById("saveNotes").addEventListener("click",()=>{
+    localStorage.setItem(NOTES_KEY,document.getElementById("sessionNotes").value);
+    const b=document.getElementById("saveNotes");b.textContent="Saved ✓";
+    setTimeout(()=>{b.textContent="Save notes";},1200);
+  });
+
+  // ========== SESSION: GEMINI KEY ==========
+  const GEM_KEY="dutch-b1-gemini-key";
+  document.getElementById("geminiKey").value=localStorage.getItem(GEM_KEY)||"";
+  document.getElementById("saveGeminiKey").addEventListener("click",()=>{
+    localStorage.setItem(GEM_KEY,document.getElementById("geminiKey").value.trim());
+    const b=document.getElementById("saveGeminiKey");b.textContent="Saved ✓";
+    setTimeout(()=>{b.textContent="Save key";},1200);
+  });
+
+  // ========== SESSION: SCRIPT BUILDER ==========
+  const scriptCache={};
+  document.getElementById("buildScript").addEventListener("click",buildScript);
+
+  async function buildScript(){
+    if(!currentTrack){alert("Select an audio track first.");return;}
+    const key=currentTrack.folder+"::"+currentTrack.name;
+    const status=document.getElementById("scriptStatus");
+    if(scriptCache[key]){status.textContent="Script already built (open desktop version to view).";return;}
+    const gemKey=(localStorage.getItem(GEM_KEY)||"").trim();
+    if(!gemKey){alert("Add your Gemini API key first.");return;}
+    status.textContent="Building script…";
+    const btn=document.getElementById("buildScript");btn.disabled=true;
+    try{
+      const res=await fetch(currentTrack.url);
+      if(!res.ok) throw new Error("Cannot read audio");
+      const buf=await res.arrayBuffer();
+      const bytes=new Uint8Array(buf);
+      let binary="";
+      for(let i=0;i<bytes.length;i+=0x8000) binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+      const b64=btoa(binary);
+      const prompt=`You are a Dutch B1 tutor. Transcribe the FULL Dutch audio. Return ONLY JSON: {"title":"...","sentences":[{"nl":"full sentence","en":"English"}]}`;
+      const models=["gemini-3.1-flash-lite","gemini-flash-lite-latest","gemini-2.0-flash"];
+      let data=null,lastErr=null;
+      for(const model of models){
+        try{
+          const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(gemKey)}`,{
+            method:"POST",headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({contents:[{parts:[{text:prompt},{inline_data:{mime_type:"audio/mpeg",data:b64}}]}],
+              generationConfig:{temperature:.2,responseMimeType:"application/json"}}),
+          });
+          if(!r.ok){lastErr=new Error(model+" HTTP "+r.status);continue;}
+          const j=await r.json();
+          let txt=j.candidates[0].content.parts[0].text.trim();
+          if(txt.startsWith("```")) txt=txt.replace(/^```(?:json)?\s*/,"").replace(/\s*```$/,"");
+          data=JSON.parse(txt);
+          break;
+        }catch(e){lastErr=e;}
+      }
+      if(!data) throw lastErr||new Error("Gemini failed");
+      scriptCache[key]=data;
+      const lines=(data.sentences||[]).map((s,i)=>`${i+1}. ${s.nl}\n   ${s.en}`).join("\n\n");
+      status.innerHTML=`<strong>${esc(data.title||currentTrack.name)}</strong><br/><pre style="white-space:pre-wrap;font-size:.78rem;margin:.4rem 0 0;">${esc(lines)}</pre>`;
+    }catch(e){
+      status.textContent="Error: "+(e.message||e);
+    }finally{btn.disabled=false;}
+  }
+
+  // Initial quiz render so filter bar is ready when tab is opened
+  renderFilters();
+  buildDeck();
+</script>
+</body>
+</html>
