@@ -74,6 +74,31 @@
         "Lunch/Dinner"
       ],
       "notes": ""
+    },
+    {
+      "date": "2026-07-22",
+      "calories": 720,
+      "protein_g": 84,
+      "carbs_g": 34,
+      "fat_g": 29,
+      "water_ml": 500,
+      "meals": [
+        "Dinner",
+        "dinner"
+      ],
+      "notes": ""
+    },
+    {
+      "date": "2026-07-23",
+      "calories": 980,
+      "protein_g": 48,
+      "carbs_g": 145,
+      "fat_g": 22,
+      "water_ml": 400,
+      "meals": [
+        "Jul 22 soup meal"
+      ],
+      "notes": ""
     }
   ]
 }

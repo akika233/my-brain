@@ -1,8 +1,18 @@
 # Local secrets — never commit these
 .env
+career/.env
 telegram-bot/.env
 telegram-bot/.venv/
 telegram-bot/__pycache__/
+career/__pycache__/
+career/invoice_extractor/__pycache__/
+
+# Invoice PDFs + extracted output (may contain finance data)
+career/invoice_pdfs/
+career/invoices.xlsx
+career/invoices.csv
+career/invoices.json
+career/invoice_extractor_package.zip
 
 # Hevy API cache (local only)
 health/hevy-*.json
