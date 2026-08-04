@@ -142,6 +142,26 @@ a{color:var(--accent)}
 .prog-dot.known{background:var(--sea)}
 .prog-dot.active{background:var(--accent)}
 
+/* ── WRITING REVIEW ── */
+.review-box{margin-top:1rem;border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+.review-header{padding:.75rem 1rem;font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;}
+.review-header.good{background:#f0f7f3;color:var(--ok);}
+.review-header.ok{background:#fffbf0;color:#7a5b00;}
+.review-header.needs{background:#fff5f5;color:#a33;}
+.review-section{padding:.75rem 1rem;border-top:1px solid var(--line);}
+.review-section h4{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin:0 0 .5rem;}
+.review-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.55rem;}
+.review-list li{font-size:.9rem;line-height:1.5;padding-left:1.3rem;position:relative;}
+.review-list li::before{position:absolute;left:0;top:.05rem;font-weight:700;}
+.review-pos li::before{content:"✓";color:var(--ok);}
+.review-imp li::before{content:"→";color:var(--accent-deep);}
+.review-orig{font-size:.83rem;color:var(--muted);margin-top:.2rem;}
+.review-fix{font-size:.85rem;color:var(--sea);background:var(--sea-soft);border-radius:6px;padding:.18rem .5rem;display:inline;}
+.review-corrected{background:#f8f7f2;border-radius:10px;padding:.8rem .95rem;font-size:.92rem;line-height:1.75;white-space:pre-wrap;margin-top:.35rem;}
+.gem-key-row{display:flex;gap:.4rem;align-items:center;margin-top:.45rem;flex-wrap:wrap;}
+.gem-key-row input{flex:1;min-width:0;font:inherit;border:1px solid var(--line);border-radius:8px;padding:.4rem .65rem;font-size:.85rem;background:#fff;}
+.review-loading{color:var(--muted);font-size:.9rem;padding:.6rem 0;display:flex;align-items:center;gap:.5rem;}
+
 /* ── responsive ── */
 @media(max-width:600px){
   .topbar{padding:.5rem .7rem;gap:.5rem}
@@ -1633,8 +1653,27 @@ function renderWriting(){
       <button class="btn" onclick="if(confirm('Wis je tekst?')){document.getElementById('writeArea').value='';updateWordCount('${storageKey}','${w.minWords}')}">Wissen</button>
       <span class="saved-indicator" id="savedInd">Opgeslagen ✓</span>
     </div>
+    <div style="margin-top:.85rem;padding-top:.85rem;border-top:1px dashed var(--line);">
+      <button class="btn btn-primary" id="reviewBtn" onclick="reviewWriting()">✨ AI Review</button>
+      <span style="font-size:.82rem;color:var(--muted);margin-left:.5rem;">Gemini reads your text and gives B1 feedback.</span>
+    </div>
+    <details id="gemKeyDetails" style="margin-top:.55rem;">
+      <summary style="font-size:.8rem;color:var(--muted);cursor:pointer;user-select:none;">🔑 Gemini API key</summary>
+      <div class="gem-key-row">
+        <input type="password" id="gemKeyInput" placeholder="Paste GEMINI_API_KEY here" />
+        <button class="btn btn-sm" onclick="
+          localStorage.setItem('dutch-b1-gemini-key', document.getElementById('gemKeyInput').value.trim());
+          this.textContent='Saved ✓';
+          setTimeout(()=>this.textContent='Save',1600);
+        ">Save</button>
+      </div>
+    </details>
+    <div id="reviewResult"></div>
   </div>`;
   document.getElementById("writingContent").innerHTML=html;
+  // pre-fill key if stored
+  const storedKey=localStorage.getItem("dutch-b1-gemini-key")||"";
+  if(storedKey){const ki=document.getElementById("gemKeyInput");if(ki)ki.value=storedKey;}
   updateWordCount(storageKey, w.minWords);
 
   window.updateWordCount=function(key, min){
@@ -1653,6 +1692,115 @@ function renderWriting(){
     setTimeout(()=>ind.classList.remove("show"),1800);
   };
 }
+
+// ════════════════════════════════════════════════════════════════════
+// WRITING REVIEW (Gemini)
+// ════════════════════════════════════════════════════════════════════
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+window.reviewWriting=async function(){
+  const txt=(document.getElementById("writeArea").value||"").trim();
+  if(!txt||txt.split(/\s+/).length<5){alert("Write a few sentences first.");return;}
+
+  let key=localStorage.getItem("dutch-b1-gemini-key")||"";
+  if(!key){
+    const inp=document.getElementById("gemKeyInput");
+    if(inp) key=inp.value.trim();
+  }
+  if(!key){
+    document.getElementById("gemKeyDetails").open=true;
+    document.getElementById("gemKeyInput").focus();
+    alert("Enter your Gemini API key below, then try again.");
+    return;
+  }
+
+  const ch=currentChapter();
+  const btn=document.getElementById("reviewBtn");
+  btn.disabled=true;btn.textContent="Reviewing…";
+  const resultEl=document.getElementById("reviewResult");
+  resultEl.innerHTML='<div class="review-loading"><span>⏳</span> Sending to Gemini…</div>';
+
+  const prompt=`You are a Dutch B1 language teacher. Review this student's writing exercise.
+
+Assignment: ${ch.writing.prompt}
+Grammar focus: ${ch.writing.tip}
+
+Student wrote:
+"""
+${txt}
+"""
+
+Give honest, constructive feedback for a B1 learner. Be specific — refer to actual phrases from their text.
+Return ONLY valid JSON (no markdown fences):
+{
+  "score": "good|ok|needs work",
+  "summary": "1-2 sentence overall verdict in English",
+  "positives": ["specific thing done well (max 3)"],
+  "improvements": [{"issue": "short label", "original": "their Dutch phrase", "fix": "corrected Dutch", "explanation": "1-sentence English explanation"}],
+  "corrected": "polished B1 version of their full text in Dutch"
+}
+Rules: max 3 items each in positives and improvements; corrected must be real Dutch (not English); keep corrections close to the student's own style.`;
+
+  const models=["gemini-2.0-flash","gemini-flash-lite-latest","gemini-3.1-flash-lite"];
+  let data=null,lastErr=null;
+  for(const model of models){
+    try{
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          contents:[{parts:[{text:prompt}]}],
+          generationConfig:{temperature:0.3,responseMimeType:"application/json"}
+        })
+      });
+      if(!r.ok){lastErr=new Error(model+" HTTP "+r.status);continue;}
+      const j=await r.json();
+      let out=j.candidates[0].content.parts[0].text.trim();
+      if(out.startsWith("```")) out=out.replace(/^```(?:json)?\s*/,"").replace(/\s*```$/,"");
+      data=JSON.parse(out);
+      break;
+    }catch(e){lastErr=e;}
+  }
+
+  btn.disabled=false;btn.textContent="✨ AI Review";
+
+  if(!data){
+    resultEl.innerHTML=`<div style="color:#a33;font-size:.9rem;padding:.5rem 0;">Error: ${esc((lastErr&&lastErr.message)||"Gemini failed")}. Check your API key.</div>`;
+    return;
+  }
+
+  const scoreClass=data.score==="good"?"good":data.score==="ok"?"ok":"needs";
+  const scoreLabel=data.score==="good"?"✓ Looking good!":data.score==="ok"?"~ Getting there":"↑ Needs work";
+
+  const positives=(data.positives||[]).map(p=>`<li>${esc(p)}</li>`).join("");
+  const improvements=(data.improvements||[]).map(imp=>`<li>
+    <strong>${esc(imp.issue||"")}</strong>
+    ${imp.original?`<div class="review-orig">"${esc(imp.original)}" → <span class="review-fix">${esc(imp.fix||"")}</span></div>`:""}
+    <div class="review-orig" style="color:var(--muted);">${esc(imp.explanation||"")}</div>
+  </li>`).join("");
+
+  const correctedKey=`write_${ch.id}`;
+  const correctedBtn=data.corrected
+    ?`<button class="btn btn-sm" style="margin-top:.55rem;" onclick="
+        document.getElementById('writeArea').value=${JSON.stringify(data.corrected)};
+        updateWordCount('${correctedKey}','${ch.writing.minWords}');
+        this.textContent='Done ✓';
+        setTimeout(()=>this.textContent='Use this version',1500);">Use this version</button>`
+    :"";
+
+  resultEl.innerHTML=`<div class="review-box">
+    <div class="review-header ${scoreClass}">
+      <span>${scoreLabel}</span>
+      <span style="font-weight:400;font-size:.88rem;">${esc(data.summary||"")}</span>
+    </div>
+    ${positives?`<div class="review-section"><h4>What's working</h4><ul class="review-list review-pos">${positives}</ul></div>`:""}
+    ${improvements?`<div class="review-section"><h4>To improve</h4><ul class="review-list review-imp">${improvements}</ul></div>`:""}
+    ${data.corrected?`<div class="review-section">
+      <h4>Polished B1 version</h4>
+      <div class="review-corrected">${esc(data.corrected)}</div>
+      ${correctedBtn}
+    </div>`:""}
+  </div>`;
+};
 
 // ════════════════════════════════════════════════════════════════════
 // INIT
