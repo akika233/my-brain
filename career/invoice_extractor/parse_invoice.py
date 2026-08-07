@@ -9,6 +9,9 @@ from .models import InvoiceRecord
 _VENDU_PAR = re.compile(
     r"(?i)vendu\s*par\s*[:\-]?\s*(.+?)(?:\n|$)",
 )
+_EMETTEUR = re.compile(
+    r"(?i)(?:[ée]metteur|[ée]mettrice)\s*[:\-]?\s*(.+?)(?:\n|$)",
+)
 _NOTRE_REF = re.compile(
     r"(?i)(?:notre\s+r[ée]f[ée]rence|"
     r"num[ée]ro\s+de\s+commande\s+client|"
@@ -17,8 +20,9 @@ _NOTRE_REF = re.compile(
 _VOTRE_REF = re.compile(
     r"(?i)votre\s+r[ée]f[ée]rence\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-_/]*)",
 )
+# Handles: "date de la facture", "date d'émission", "date d 'emission" (space before apostrophe)
 _DATE_FACTURE = re.compile(
-    r"(?i)(?:date\s+de\s+la\s+facture|date\s+d['\u2019][\u00e9e]mission)\s*[:\-]?\s*"
+    r"(?i)(?:date\s+de\s+la\s+facture|date\s+d\s*['\u2019]?\s*[ée]mission)\s*[:\-]?\s*"
     r"(\d{1,2}[-/.]\d{1,2}[-/.]\d{2,4})",
 )
 _DATE_PAIEMENT = re.compile(
@@ -29,8 +33,9 @@ _TOTAL_HT = re.compile(
     r"(?i)(?:total\s*h\.?\s*t\.?|avoir\s*total)\b[^\d€EUR]{0,40}"
     r"(?:EUR|€)?\s*([0-9]{1,3}(?:[\s.\u202f][0-9]{3})*[.,][0-9]{2}|[0-9]+[.,][0-9]{2})",
 )
+# Matches "Total TVA", "TVA", "VAT" — excludes "TVA intra" (intracom number)
 _TVA_AMOUNT = re.compile(
-    r"(?i)(?:tva|vat)\b(?!\s*intra)[^\d€EUR]{0,40}"
+    r"(?i)(?:total\s+)?(?:tva|vat)\b(?!\s*intra)[^\d€EUR]{0,40}"
     r"(?:EUR|€)?\s*([0-9]{1,3}(?:[\s.\u202f][0-9]{3})*[.,][0-9]{2}|[0-9]+[.,][0-9]{2})",
 )
 _TVA_RATE = re.compile(
@@ -49,7 +54,8 @@ _COMPANY = re.compile(
 # ── English / Dutch fallbacks ─────────────────────────────────────────
 _INV_NO = re.compile(
     r"(?i)(?:invoice\s*(?:number|no\.?|#)|factuur(?:nummer|nr\.?)?|"
-    r"fact\.?\s*nr\.?|n[°o]\s*(?:de\s+)?facture|num[ée]ro\s+(?:de\s+)?facture)\s*[:#]?\s*([A-Z0-9][A-Z0-9\-_/]{2,})",
+    r"fact\.?\s*nr\.?|n[°o]\s*(?:de\s+)?facture|num[ée]ro\s+(?:de\s+)?facture|"
+    r"num[ée]ro\s*:)\s*[:#]?\s*([A-Z0-9][A-Z0-9\-_/]{2,})",
 )
 _DATE_GENERIC = re.compile(
     r"(?i)(?:invoice\s*date|factuurdatum|datum\s*factuur)\s*[:#]?\s*"
@@ -59,6 +65,10 @@ _PO = re.compile(
     r"(?i)(?:(?:purchase\s*)?order(?:\s*number|\s*no\.?|\s*#)?|"
     r"po\s*(?:number|no\.?|#)?|inkooporder(?:nummer|nr\.?)?)\s*[:#]?\s*"
     r"([A-Z0-9][A-Z0-9\-_/]{2,})",
+)
+# Pattern-based PO detection: "POR" + 5 digits, or year 20xx + 4–5 digits
+_PO_PATTERN = re.compile(
+    r"\b(POR\d{5}|20[2-9]\d{5,6})\b",
 )
 _AMOUNT_TOTAL = re.compile(
     r"(?i)(?:total\s*(?:amount|due|ttc)?|totaal(?:bedrag)?(?:\s*incl\.?\s*(?:btw|vat))?|"
@@ -74,7 +84,14 @@ def parse_invoice_text(text: str, source_file: str) -> InvoiceRecord:
 
     # Notre référence → invoice_number; Votre référence → po_number
     invoice_number = _clean_ref(_first(_NOTRE_REF, cleaned)) or _first(_INV_NO, cleaned)
+
+    # PO: label-based first, then bare pattern scan (POR##### or 20xx#####)
     po_number = _first(_VOTRE_REF, cleaned) or _first(_PO, cleaned)
+    if not po_number:
+        po_match = _PO_PATTERN.search(cleaned)
+        if po_match:
+            po_number = po_match.group(1)
+            notes.append("po_number from pattern scan")
 
     raw_date = (
         _first(_DATE_FACTURE, cleaned)
@@ -202,7 +219,12 @@ def _normalize_date(raw: str | None) -> str | None:
 
 
 def _extract_supplier(text: str) -> str | None:
-    # Prefer "Vendu par" (Amazon-style)
+    # "Emetteur / Emettrice" (French invoice issuer field)
+    emetteur = _first(_EMETTEUR, text)
+    if emetteur:
+        return emetteur.strip(" ,")[:160]
+
+    # "Vendu par" (Amazon-style)
     vendu = _first(_VENDU_PAR, text)
     if vendu:
         return vendu.strip(" ,")[:160]
