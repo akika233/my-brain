@@ -156,9 +156,10 @@ _TVA_NEXT = re.compile(
     r"(?i)total\s+t\.?v\.?a\.?\s*[:\-]?\s*\n\s*(?:EUR|€)?\s*" + _AMT
 )
 # Detail row: "20% TVA_amt HT_base"  or  "20% HT_base TVA_amt" (column order varies).
+# Line-anchored ((?m)^) so product lines like "1 -8,32 € 20% -9,98 € -9,98 €" don't match.
 # We compare the two amounts: the SMALLER absolute value is TVA, the LARGER is HT.
 _TVA_DETAIL_ROW = re.compile(
-    r"(?i)(\d{1,2}(?:[,.]\d)?)\s*%\s+(?:EUR|€)?\s*"
+    r"(?im)^[ \t]*(\d{1,2}(?:[,.]\d)?)\s*%\s+(?:EUR|€)?\s*"
     r"(-?[0-9]+[.,][0-9]{2})\s*(?:EUR|€)?\s+"
     r"(?:EUR|€)?\s*(-?[0-9]+[.,][0-9]{2})"
 )
@@ -195,10 +196,11 @@ _VOTRE_REF = re.compile(
     r"(?i)votre\s+r[ée]f[ée]rence\s*[:\-]?\s*([A-Z0-9][A-Z0-9\-_/]*)"
 )
 # "COMMANDE N° PO 20251013"  /  "N° PO XXXX"  /  "purchase order …"
+# \bpo\b uses word boundaries so "po" inside words like "points" is not matched
 _PO_LABEL = re.compile(
-    r"(?i)(?:commande\s+n[°o]?\s+po|n[°o]\s+po|"
+    r"(?i)(?:commande\s+n[°o]?\s+\bpo\b|n[°o]\s+\bpo\b|"
     r"(?:purchase\s*)?order(?:\s*number|\s*no\.?|\s*#)?|"
-    r"po\s*(?:number|no\.?|#)?|inkooporder(?:nummer|nr\.?)?)"
+    r"\bpo\b\s*(?:number|no\.?|#)?|inkooporder(?:nummer|nr\.?)?)"
     r"\s*[:#]?\s*([A-Z0-9][A-Z0-9\-_/]{2,})"
 )
 # "Numéro de commande client Parly II - 20250017"  → trailing numeric code
@@ -451,8 +453,13 @@ def _extract_supplier(text: str) -> str | None:
         return m.group(1).strip(" ,")[:160]
 
     # Heuristic: first company name with a recognized legal-form suffix, excluding New Balance
+    # and lines that are clearly address/attention fragments (pdfplumber column-join artifact)
+    _NOISE = re.compile(r"(?i)\b(attention|fournisseur|r[èe]glement|paiement)\b")
     companies = [c.group(0).strip().rstrip(",") for c in _COMPANY.finditer(text)]
-    companies = [c for c in companies if "new balance" not in c.lower()]
+    companies = [
+        c for c in companies
+        if "new balance" not in c.lower() and not _NOISE.search(c)
+    ]
     if companies:
         return companies[0][:160]
 
