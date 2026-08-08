@@ -3,7 +3,8 @@
 Extract invoice fields from PDFs (local folder or NF Docstore).
 
 Field mapping (French invoices):
-  supplier          <- Emetteur / Emettrice, Vendu par, else letterhead company
+  supplier          <- Emetteur / Emettrice, Vendu par, letterhead company,
+                       else OCR of the logo when the name is only in an image
   invoice_date      <- Date d'emission / Date de la facture / Date (French months supported)
   invoice_number    <- Facture:, Numero, Numero de l'avoir (credit notes)
   po_number         <- Votre reference, COMMANDE N PO, or POR#####/20xx##### pattern
@@ -24,8 +25,7 @@ import sys
 from pathlib import Path
 
 from .docstore import LocalFolderDocstore, build_docstore_from_env, default_invoice_folder
-from .parse_invoice import parse_invoice_text
-from .pdf_text import extract_text
+from .pipeline import extract_invoice
 from .store import save_records
 
 
@@ -47,8 +47,7 @@ def process_pdfs(paths: list[Path]) -> list:
     records = []
     for path in paths:
         try:
-            text = extract_text(path)
-            rec = parse_invoice_text(text, source_file=path.name)
+            rec = extract_invoice(path)
             records.append(rec)
             flag = " [REVIEW]" if rec.needs_review else ""
             print(

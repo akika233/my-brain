@@ -213,7 +213,16 @@ _PO_PATTERN = re.compile(r"\b(POR\d{5}|20[2-9]\d{5,6})\b")
 # Main parser
 # ══════════════════════════════════════════════════════════════════════════════
 
-def parse_invoice_text(text: str, source_file: str) -> InvoiceRecord:
+def parse_invoice_text(
+    text: str,
+    source_file: str,
+    ocr_supplier: str | None = None,
+) -> InvoiceRecord:
+    """Pull invoice fields out of extracted PDF text.
+
+    ocr_supplier is a fallback used only when the text layer contains no supplier name,
+    e.g. when it is printed solely inside a logo image.
+    """
     notes: list[str] = []
     cleaned = _normalize(text)
 
@@ -252,6 +261,11 @@ def parse_invoice_text(text: str, source_file: str) -> InvoiceRecord:
 
     # ── Supplier ──────────────────────────────────────────────────────────────
     supplier = _extract_supplier(cleaned)
+    supplier_from_ocr = False
+    if supplier is None and ocr_supplier:
+        supplier = ocr_supplier
+        supplier_from_ocr = True
+        notes.append("supplier from letterhead OCR")
 
     # ── Currency ──────────────────────────────────────────────────────────────
     currency = _first(_CURRENCY_RE, cleaned)
@@ -329,7 +343,7 @@ def parse_invoice_text(text: str, source_file: str) -> InvoiceRecord:
 
     excerpt = cleaned[:800].replace("\n", " | ")
     problems = _validate(cleaned, invoice_number, invoice_date, supplier, amount,
-                         vat_amount, vat_rate)
+                         vat_amount, vat_rate, supplier_from_ocr)
 
     return InvoiceRecord(
         source_file=source_file,
@@ -364,6 +378,7 @@ def _validate(
     amount: float | None,
     vat_amount: float | None,
     vat_rate: float | None,
+    supplier_from_ocr: bool = False,
 ) -> list[str]:
     """Flag fields that are missing or arithmetically inconsistent.
 
@@ -371,6 +386,10 @@ def _validate(
     total where the net amount was expected.
     """
     problems: list[str] = []
+
+    # OCR can misread characters, so a name recovered from a logo is always worth a look
+    if supplier_from_ocr:
+        problems.append("supplier read from logo via OCR - verify spelling")
 
     for label, value in (
         ("invoice_number", invoice_number),

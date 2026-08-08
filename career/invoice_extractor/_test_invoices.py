@@ -12,8 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from career.invoice_extractor.parse_invoice import parse_invoice_text
-from career.invoice_extractor.pdf_text import extract_text
+from career.invoice_extractor.pipeline import extract_invoice
 
 DEFAULT_FOLDER = Path.home() / "Downloads"
 
@@ -37,7 +36,7 @@ EXPECTED = {
     "Sup-Invoice-251210720.pdf": (
         "251210720", "2025-12-31", 227.69, 45.54, "20251013",
         "tabular header with number+date on a later row, totals in a separate column, "
-        "supplier absent from the text layer",
+        "supplier only inside a logo image (recovered by OCR)",
     ),
 }
 
@@ -53,7 +52,7 @@ def main(folder: Path) -> int:
             skipped += 1
             continue
 
-        rec = parse_invoice_text(extract_text(path), filename)
+        rec = extract_invoice(path)
         checks = {
             "invoice_number": (rec.invoice_number, num),
             "invoice_date": (rec.invoice_date, date),
