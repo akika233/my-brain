@@ -3,13 +3,14 @@
 Extract invoice fields from PDFs (local folder or NF Docstore).
 
 Field mapping (French invoices):
-  supplier          ← Vendu par / left-side company (e.g. Worldpack Trading B.V.)
-  invoice_date      ← Date de la facture, else Date de Paiement
-  invoice_number    ← Notre référence (e.g. 00077971, Marseille - 20250017)
-  po_number         ← Votre référence (e.g. IN230450)
-  amount            ← Total HT
-  vat_amount        ← TVA
-  vat_rate          ← derived or printed %
+  supplier          <- Emetteur / Emettrice, Vendu par, else letterhead company
+  invoice_date      <- Date d'emission / Date de la facture / Date (French months supported)
+  invoice_number    <- Facture:, Numero, Numero de l'avoir (credit notes)
+  po_number         <- Votre reference, COMMANDE N PO, or POR#####/20xx##### pattern
+  amount            <- Total HT / Montant Total HT
+  vat_amount        <- Total TVA / Total T.V.A.
+  vat_rate          <- printed % or derived from VAT / HT
+  needs_review      <- set when a field is missing or HT+VAT does not reconcile with TTC
 
 Usage:
   python -m career.invoice_extractor --input "C:\\Users\\shjiang\\OneDrive - New Balance Athletics, Inc\\Documents\\Invoice"
@@ -49,9 +50,10 @@ def process_pdfs(paths: list[Path]) -> list:
             text = extract_text(path)
             rec = parse_invoice_text(text, source_file=path.name)
             records.append(rec)
+            flag = " [REVIEW]" if rec.needs_review else ""
             print(
-                f"OK  {path.name} | {rec.supplier} | {rec.invoice_date} | "
-                f"Notre={rec.invoice_number} | Votre={rec.po_number} | "
+                f"OK{flag}  {path.name} | {rec.supplier} | {rec.invoice_date} | "
+                f"invoice={rec.invoice_number} | po={rec.po_number} | "
                 f"HT={rec.amount} | TVA={rec.vat_amount}"
             )
         except Exception as exc:  # noqa: BLE001
@@ -129,7 +131,10 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     out = save_records(records, args.output)
-    print(f"Wrote {len(records)} invoice(s) → {out}")
+    flagged = sum(1 for r in records if r.needs_review)
+    print(f"Wrote {len(records)} invoice(s) -> {out}")
+    if flagged:
+        print(f"{flagged} invoice(s) flagged for review (see needs_review/validation)")
     return 0
 
 

@@ -31,8 +31,9 @@ _DATE_FR_TEXT = re.compile(
     re.IGNORECASE,
 )
 
-# Amount fragment (allows negative for credit notes; space / narrow-space as thousands sep)
-_AMT = r"(-?[0-9]{1,3}(?:[ \u202f][0-9]{3})*[.,][0-9]{2}|-?[0-9]+[.,][0-9]{2})"
+# Amount fragment (allows negative for credit notes; space / narrow-space as thousands sep).
+# Permits a 2-space thousands gap in case layout extraction widens one, e.g. "27  317,58".
+_AMT = r"(-?[0-9]{1,3}(?:[ \u202f]{1,2}[0-9]{3})*[.,][0-9]{2}|-?[0-9]+[.,][0-9]{2})"
 
 _CURRENCY_RE = re.compile(r"(€|EUR|USD|\$|GBP|£)")
 
@@ -130,17 +131,21 @@ _COMPANY = re.compile(
 # Amount — Total HT
 # ══════════════════════════════════════════════════════════════════════════════
 
+# Separator between an amount label and its value. Only a colon is accepted: allowing a
+# dash would swallow the minus sign of a negative credit-note amount ("Total HT  -8,32").
+_SEP = r"\s*:?\s*"
+
 # "Montant Total HT 27 317,58"  /  "Total HT 580,00"  — value on SAME line
 _TOTAL_HT_INLINE = re.compile(
-    r"(?i)(?:montant\s+)?total\s+h\.?\s*t\.?\s*[:\-]?\s*(?:EUR|€)?\s*" + _AMT
+    r"(?i)(?:montant\s+)?total\s+h\.?\s*t\.?" + _SEP + r"(?:EUR|€)?\s*" + _AMT
 )
 # "Total HT :\n227,69"  — value on the NEXT line directly
 _TOTAL_HT_NEXT = re.compile(
-    r"(?i)total\s+h\.?\s*t\.?\s*[:\-]?\s*\n\s*(?:EUR|€)?\s*" + _AMT
+    r"(?i)total\s+h\.?\s*t\.?" + _SEP + r"\n\s*(?:EUR|€)?\s*" + _AMT
 )
 # "Avoir total -9,98 €"  — credit-note grand total (used as HT fallback)
 _AVOIR_TOTAL = re.compile(
-    r"(?i)avoir\s+total\s*[:\-]?\s*(?:EUR|€)?\s*" + _AMT
+    r"(?i)avoir\s+total" + _SEP + r"(?:EUR|€)?\s*" + _AMT
 )
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -149,11 +154,11 @@ _AVOIR_TOTAL = re.compile(
 
 # "Total T.V.A. 5 463,52"  /  "Total TVA 116,00"  — same line
 _TVA_INLINE = re.compile(
-    r"(?i)total\s+t\.?v\.?a\.?\s*[:\-]?\s*(?:EUR|€)?\s*" + _AMT
+    r"(?i)total\s+t\.?v\.?a\.?" + _SEP + r"(?:EUR|€)?\s*" + _AMT
 )
 # "Total TVA :\n45,54"  — next line
 _TVA_NEXT = re.compile(
-    r"(?i)total\s+t\.?v\.?a\.?\s*[:\-]?\s*\n\s*(?:EUR|€)?\s*" + _AMT
+    r"(?i)total\s+t\.?v\.?a\.?" + _SEP + r"\n\s*(?:EUR|€)?\s*" + _AMT
 )
 # Detail row: "20% TVA_amt HT_base"  or  "20% HT_base TVA_amt" (column order varies).
 # Line-anchored ((?m)^) so product lines like "1 -8,32 € 20% -9,98 € -9,98 €" don't match.
@@ -162,13 +167,6 @@ _TVA_DETAIL_ROW = re.compile(
     r"(?im)^[ \t]*(\d{1,2}(?:[,.]\d)?)\s*%\s+(?:EUR|€)?\s*"
     r"(-?[0-9]+[.,][0-9]{2})\s*(?:EUR|€)?\s+"
     r"(?:EUR|€)?\s*(-?[0-9]+[.,][0-9]{2})"
-)
-# Three consecutive standalone decimal lines: HT  /  VAT  /  TTC
-# Matches layouts where labeled totals appear in a separate column (Cleaning invoice style)
-_TOTALS_BLOCK = re.compile(
-    r"(?m)^ *(-?[0-9]+[.,][0-9]{2}) *$\n"
-    r"^ *(-?[0-9]+[.,][0-9]{2}) *$\n"
-    r"^ *(-?[0-9]+[.,][0-9]{2}) *$"
 )
 # Generic fallback: bare "TVA" / "T.V.A." followed by amount (not intracom number)
 _TVA_FALLBACK = re.compile(
@@ -298,18 +296,7 @@ def parse_invoice_text(text: str, source_file: str) -> InvoiceRecord:
                     vat_amount = tv_val
                     notes.append("vat_amount from TVA detail row")
 
-    # 5. Three consecutive standalone decimal lines → HT / VAT / TTC
-    if amount is None or vat_amount is None:
-        m_block = _TOTALS_BLOCK.search(cleaned)
-        if m_block:
-            if amount is None:
-                amount = _to_float(m_block.group(1))
-                notes.append("amount from standalone totals block")
-            if vat_amount is None:
-                vat_amount = _to_float(m_block.group(2))
-                notes.append("vat_amount from standalone totals block")
-
-    # 6. Credit-note "Avoir total" (used as HT fallback)
+    # 5. Credit-note "Avoir total" (used as HT fallback)
     if amount is None:
         amount = _to_float(_first(_AVOIR_TOTAL, cleaned))
         if amount is not None:
@@ -341,6 +328,8 @@ def parse_invoice_text(text: str, source_file: str) -> InvoiceRecord:
         notes.append("vat_rate derived from TVA / Total HT")
 
     excerpt = cleaned[:800].replace("\n", " | ")
+    problems = _validate(cleaned, invoice_number, invoice_date, supplier, amount,
+                         vat_amount, vat_rate)
 
     return InvoiceRecord(
         source_file=source_file,
@@ -352,9 +341,71 @@ def parse_invoice_text(text: str, source_file: str) -> InvoiceRecord:
         vat_amount=vat_amount,
         po_number=po_number,
         currency=currency,
+        needs_review=bool(problems),
+        validation="; ".join(problems) if problems else "ok",
         raw_excerpt=excerpt,
         parse_notes="; ".join(notes) if notes else None,
     )
+
+
+# "Total TTC" / "Net à payer" / "Total à payer" / "TOTAL DE LA FACTURE" — used to
+# cross-check that HT + VAT reconciles against the printed gross total.
+_TOTAL_TTC = re.compile(
+    r"(?i)(?:total\s+ttc|net\s+[àa]\s+payer|total\s+[àa]\s+payer|"
+    r"total\s+de\s+la\s+facture)" + _SEP + r"(?:EUR|€)?\s*" + _AMT
+)
+
+
+def _validate(
+    text: str,
+    invoice_number: str | None,
+    invoice_date: str | None,
+    supplier: str | None,
+    amount: float | None,
+    vat_amount: float | None,
+    vat_rate: float | None,
+) -> list[str]:
+    """Flag fields that are missing or arithmetically inconsistent.
+
+    Catches silent mis-parses that look plausible in isolation, e.g. picking up a gross
+    total where the net amount was expected.
+    """
+    problems: list[str] = []
+
+    for label, value in (
+        ("invoice_number", invoice_number),
+        ("invoice_date", invoice_date),
+        ("supplier", supplier),
+        ("amount", amount),
+    ):
+        if value is None:
+            problems.append(f"{label} missing")
+
+    # Date should have normalised to ISO; anything else means the format was unrecognised
+    if invoice_date and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", invoice_date):
+        problems.append(f"invoice_date unparsed ({invoice_date})")
+
+    # HT + VAT should reconcile with the printed gross total
+    ttc = _to_float(_first(_TOTAL_TTC, text))
+    if ttc is not None and amount is not None and vat_amount is not None:
+        if abs((amount + vat_amount) - ttc) > 0.02:
+            problems.append(
+                f"HT+VAT ({amount + vat_amount:.2f}) != TTC ({ttc:.2f})"
+            )
+
+    # VAT should equal HT x rate
+    if amount and vat_amount is not None and vat_rate:
+        expected = abs(amount) * vat_rate / 100
+        if abs(expected - abs(vat_amount)) > max(0.02, expected * 0.01):
+            problems.append(
+                f"VAT {vat_amount} inconsistent with {vat_rate}% of {amount}"
+            )
+
+    # Sign sanity: a credit note should be negative throughout, an invoice positive
+    if amount is not None and vat_amount is not None and amount * vat_amount < 0:
+        problems.append("amount and vat_amount have opposite signs")
+
+    return problems
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -362,9 +413,24 @@ def parse_invoice_text(text: str, source_file: str) -> InvoiceRecord:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _normalize(text: str) -> str:
+    """Tidy whitespace while keeping double spaces, which mark column boundaries.
+
+    pdf_text renders a wide horizontal gap as two spaces so that side-by-side page
+    columns stay distinguishable. Collapsing all runs to a single space would throw
+    that away, so runs of 2+ are normalised to exactly two.
+    """
     text = text.replace("\xa0", " ").replace("\u202f", " ")
-    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"[ \t]{2,}", "  ", text)
     return text.strip()
+
+
+def _iter_cells(text: str):
+    """Yield individual column cells, splitting each line on column gaps."""
+    for line in text.splitlines():
+        for cell in re.split(r"\s{2,}", line.strip()):
+            cell = cell.strip()
+            if cell:
+                yield cell
 
 
 def _first(pattern: re.Pattern[str], text: str) -> str | None:
@@ -452,15 +518,13 @@ def _extract_supplier(text: str) -> str | None:
     if m:
         return m.group(1).strip(" ,")[:160]
 
-    # Heuristic: first company name with a recognized legal-form suffix, excluding New Balance
-    # and lines that are clearly address/attention fragments (pdfplumber column-join artifact)
-    _NOISE = re.compile(r"(?i)\b(attention|fournisseur|r[èe]glement|paiement)\b")
-    companies = [c.group(0).strip().rstrip(",") for c in _COMPANY.finditer(text)]
-    companies = [
-        c for c in companies
-        if "new balance" not in c.lower() and not _NOISE.search(c)
-    ]
-    if companies:
-        return companies[0][:160]
+    # Heuristic: first company name ending in a legal form. Matching per column cell
+    # (rather than per line) stops a neighbouring column from being glued onto the name.
+    for cell in _iter_cells(text):
+        m = _COMPANY.match(cell)
+        if m:
+            name = m.group(0).strip().rstrip(",")
+            if "new balance" not in name.lower():
+                return name[:160]
 
     return None

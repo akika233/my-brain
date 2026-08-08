@@ -15,6 +15,8 @@ class InvoiceRecord:
     vat_amount: float | None = None
     po_number: str | None = None
     currency: str | None = None
+    needs_review: bool = False
+    validation: str | None = None
     raw_excerpt: str | None = None
     parse_notes: str | None = None
 
