@@ -159,6 +159,14 @@ class Handler(BaseHTTPRequestHandler):
             self._send_file(SITE, "text/html; charset=utf-8")
             return
 
+        if path in ("/learn", "/dutch-b1-learn.html"):
+            learn = ROOT / "dutch-b1-learn.html"
+            if not learn.exists():
+                self._send(404, b"Learn HTML missing", "text/plain")
+                return
+            self._send_file(learn, "text/html; charset=utf-8")
+            return
+
         if path == "/api/index":
             body = json.dumps(build_index(), ensure_ascii=False).encode("utf-8")
             self._send(200, body, "application/json; charset=utf-8")
@@ -222,6 +230,7 @@ def main() -> None:
     print("Open on this PC or your phone (same Wi-Fi):")
     for u in lan_urls():
         print(f"  {u}")
+        print(f"  {u.rstrip('/')}/dutch-b1-learn.html  (listening + 30-min tests)")
     print("Keep this window open. Press Ctrl+C to stop.")
     try:
         webbrowser.open(f"http://127.0.0.1:{PORT}/")

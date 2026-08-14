@@ -124,6 +124,27 @@ a{color:var(--accent)}
 .rec-btn{display:flex;align-items:center;gap:.45rem;padding:.55rem 1.1rem;border-radius:999px;font-size:.9rem;font-weight:700;border:2px solid var(--accent);background:#fff;cursor:pointer;transition:.15s}
 .rec-btn.listening{background:var(--accent);color:#fff;animation:pulse 1.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(196,92,38,.3)}50%{box-shadow:0 0 0 8px rgba(196,92,38,0)}}
+
+/* ── LAB / TEST ── */
+.status-pill{display:inline-flex;align-items:center;gap:.35rem;font-size:.75rem;font-weight:700;padding:.2rem .6rem;border-radius:999px;background:#f0ece4;color:var(--muted)}
+.status-pill.ok{background:var(--sea-soft);color:var(--sea)}
+.status-pill.warn{background:#fff4d6;color:#8a6a00}
+.lab-toolbar{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.85rem}
+.folder-chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:.28rem .75rem;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--muted)}
+.folder-chip.active{background:var(--sea);border-color:var(--sea);color:#fff}
+.track-list{display:flex;flex-direction:column;gap:.25rem;max-height:280px;overflow:auto;margin:.5rem 0 1rem}
+.track-btn{text-align:left;border:1px solid transparent;background:#fff;border-radius:10px;padding:.4rem .7rem;font-size:.85rem;cursor:pointer}
+.track-btn:hover{border-color:var(--line);background:#f8f5f0}
+.track-btn.active{background:var(--sea-soft);border-color:#c8e0de;font-weight:700;color:var(--sea)}
+.real-audio{width:100%;margin:.55rem 0}
+.script-line{padding:.4rem 0;border-bottom:1px dashed var(--line);font-size:.95rem}
+.script-en{font-size:.85rem;color:var(--muted);font-style:italic}
+.timer-bar{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;background:var(--ink);color:#fff;border-radius:var(--r);padding:.75rem 1rem;margin-bottom:.85rem}
+.timer-clock{font-family:"Fraunces",serif;font-size:1.8rem;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.timer-bar.low{background:#7a1f18}
+.test-part{border-top:1px dashed var(--line);padding-top:.85rem;margin-top:.85rem}
+.test-part h4{font-size:1rem;margin-bottom:.45rem}
+.note-area{width:100%;min-height:70px;border:1px solid var(--line);border-radius:10px;padding:.55rem;font-size:.9rem}
 .rec-result{margin-top:.65rem;padding:.65rem .9rem;background:#f4f7fb;border-radius:12px;font-size:.93rem;min-height:3rem}
 .rec-audio{display:none;width:100%;margin-top:.55rem}
 .rec-audio.show{display:block}
@@ -171,6 +192,8 @@ a{color:var(--accent)}
   <button class="mod-btn" data-mod="listening"><span class="mod-icon">🎧</span> Listening</button>
   <button class="mod-btn" data-mod="speaking"><span class="mod-icon">🎤</span> Speaking</button>
   <button class="mod-btn" data-mod="writing"><span class="mod-icon">✍️</span> Writing</button>
+  <button class="mod-btn" data-mod="lab"><span class="mod-icon">💿</span> CD Lab</button>
+  <button class="mod-btn" data-mod="test"><span class="mod-icon">⏱</span> 30-min test</button>
 </div>
 
 <div class="wrap">
@@ -233,6 +256,16 @@ a{color:var(--accent)}
     <div id="listeningContent"></div>
   </div>
 
+  <!-- ── CD LAB panel ── -->
+  <div class="panel" id="panel-lab">
+    <div id="labContent"></div>
+  </div>
+
+  <!-- ── 30-MIN TEST panel ── -->
+  <div class="panel" id="panel-test">
+    <div id="testContent"></div>
+  </div>
+
   <!-- ── SPEAKING panel ── -->
   <div class="panel" id="panel-speaking">
     <div id="speakingContent"></div>
@@ -243,6 +276,9 @@ a{color:var(--accent)}
     <div id="writingContent"></div>
   </div>
 </div>
+
+<input type="file" id="pickAudioFiles" accept="audio/*,.mp3" multiple hidden/>
+<input type="file" id="pickAudioDir" accept="audio/*,.mp3" webkitdirectory multiple hidden/>
 
 <script>
 // ════════════════════════════════════════════════════════════════════
@@ -1190,6 +1226,107 @@ const CHAPTERS = [
 }
 ];
 
+// Per-chapter 30-min listening + speaking tests (comprehension is based on
+// the chapter TTS dialogue, so it stays valid even without CD-track mapping).
+const TESTS = {
+  1:{
+    listenQs:[
+      {q:"Wat is het plan voor volgend jaar?",options:["Verhuizen naar Polen","Gaan studeren","Stoppen met werken"],answer:1},
+      {q:"Wat wil de persoon studeren?",options:["Rechten","Verpleegkunde","Economie"],answer:1},
+      {q:"Waarom die studie?",options:["Het is makkelijk","Het salaris is hoog","Graag met mensen werken"],answer:2},
+      {q:"Hoe voelt de persoon over de moeilijkheid?",options:["Bang om te falen","Overtuigd dat het lukt","Onzeker en klaar om te stoppen"],answer:1}
+    ],
+    speaking:[
+      {title:"Gisteren en morgen",type:"Monologue · 90 sec",seconds:90,prompt:"Vertel wat je gisteren deed en wat je morgen van plan bent. Gebruik bijzinnen met dat / omdat / als.",promptEn:"Tell what you did yesterday and what you plan for tomorrow. Use subordinate clauses.",phrases:["Gisteren heb ik…","Ik ben van plan om…","Ik hoop dat…","Als alles goed gaat…"],sampleNl:"Gisteren heb ik tot laat gewerkt omdat er een deadline was. Morgen ben ik van plan om eerder te stoppen, zodat ik Nederlands kan oefenen. Ik hoop dat ik volgend jaar vloeiender spreek.",sampleEn:"Yesterday I worked late because there was a deadline. Tomorrow I plan to stop earlier so I can practise Dutch. I hope I will speak more fluently next year."},
+      {title:"Ambitie",type:"Monologue · 90 sec",seconds:90,prompt:"Vertel over één ambitie. Waarom is die belangrijk, en wat moet je doen om die te bereiken?",promptEn:"Talk about one ambition: why it matters and what you must do to reach it.",phrases:["Mijn doel is…","Ik verwacht dat…","Daarom moet ik…","Over vijf jaar…"],sampleNl:"Mijn doel is om B1 Nederlands te halen, omdat ik beter wil functioneren op het werk. Daarom oefen ik drie avonden per week. Over vijf jaar hoop ik me hier echt thuis te voelen.",sampleEn:"My goal is to pass B1 Dutch because I want to function better at work. That is why I practise three evenings a week. In five years I hope to really feel at home here."}
+    ]
+  },
+  2:{
+    listenQs:[
+      {q:"Wie is de patiënt?",options:["Mevrouw De Jong","Mevrouw De Vries","De dokter"],answer:1},
+      {q:"Wat is de klacht?",options:["Hoofdpijn sinds een week","Buikpijn sinds gisteren","Koorts sinds een maand"],answer:0},
+      {q:"Waar voelt ze de pijn?",options:["Rechts, in de nek","Links, boven het oog","In de hele rug"],answer:1},
+      {q:"Wanneer wordt het erger?",options:["Bij het eten","Bij licht","Bij sporten"],answer:1}
+    ],
+    speaking:[
+      {title:"Om uitleg vragen",type:"Role-play · 90 sec",seconds:90,prompt:"Iemand geeft een vage instructie. Vraag om verduidelijking en controleer of je het goed begrepen hebt.",promptEn:"Someone gives a vague instruction. Ask for clarification and check you understood.",phrases:["Wat bedoelt u precies?","Kunt u een voorbeeld geven?","Als ik het goed begrijp…","Met andere woorden…"],sampleNl:"Excuseer, wat bedoelt u precies? Kunt u dat uitleggen met een voorbeeld? Als ik het goed begrijp, moet ik eerst bellen en daarna een e-mail sturen. Klopt dat?",sampleEn:"Excuse me, what exactly do you mean? Could you explain with an example? If I understand correctly, I should call first and then send an email. Is that right?"},
+      {title:"Zintuigen",type:"Monologue · 90 sec",seconds:90,prompt:"Beschrijf een plek (thuis, werk, park) met minstens drie zintuigen: zien, horen, ruiken of voelen.",promptEn:"Describe a place using at least three senses.",phrases:["Ik zie…","Ik hoor…","Het ruikt naar…","Ik voel me…"],sampleNl:"In het park zie ik kinderen spelen en hoor ik vogels. Het ruikt naar gras na de regen. Ik voel me daar rustig, omdat ik even niet aan werk denk.",sampleEn:"In the park I see children playing and I hear birds. It smells like grass after rain. I feel calm there because I am not thinking about work for a moment."}
+    ]
+  },
+  3:{
+    listenQs:[
+      {q:"Waar twijfelt de persoon over?",options:["Een verhuizing","Een nieuwe baan","Een opleiding"],answer:1},
+      {q:"Wat is het probleem van de huidige baan?",options:["Te ver weg","Saai","Slecht salaris"],answer:1},
+      {q:"Wat is het nadeel van de nieuwe baan?",options:["Saai werk","Ver weg","Slechte collega's"],answer:1},
+      {q:"Wat is het advies?",options:["Meteen opzeggen","Voor- en nadelen opschrijven","Niets doen"],answer:1}
+    ],
+    speaking:[
+      {title:"Twee mensen vergelijken",type:"Compare · 90 sec",seconds:90,prompt:"Vergelijk twee mensen die je kent. Gebruik meer/minder … dan en zeg wie jij prettiger vindt en waarom.",promptEn:"Compare two people you know. Use comparatives and say who you prefer and why.",phrases:["… is meer … dan","Aan de andere kant…","Ik werk liever met… omdat…"],sampleNl:"Sam is directer dan Lisa, maar Lisa is geduldiger. Ik werk liever met Lisa omdat de sfeer prettiger is. Aan de andere kant leer ik van Sam om sneller te beslissen.",sampleEn:"Sam is more direct than Lisa, but Lisa is more patient. I prefer working with Lisa because the atmosphere is nicer. On the other hand I learn from Sam to decide faster."},
+      {title:"Advies geven",type:"Advice · 90 sec",seconds:90,prompt:"Een vriend slaapt te weinig en is altijd moe. Geef drie adviezen.",promptEn:"A friend sleeps too little and is always tired. Give three pieces of advice.",phrases:["Ik zou je aanraden om…","Het is beter om…","Je kunt beter…","Probeer eens…"],sampleNl:"Ik zou je aanraden om eerder naar bed te gaan. Het is beter om geen telefoon in bed te gebruiken. Je kunt beter ook overdag even wandelen, zodat je 's avonds moe wordt.",sampleEn:"I would recommend going to bed earlier. It is better not to use your phone in bed. You should also walk a bit during the day so you get tired in the evening."}
+    ]
+  },
+  4:{
+    listenQs:[
+      {q:"Waarom is donderdag lastig?",options:["Te vroeg","Er is een afspraak","Het kantoor is dicht"],answer:1},
+      {q:"Welk alternatief wordt voorgesteld?",options:["Woensdag","Vrijdag","Zaterdag"],answer:1},
+      {q:"Hoe laat wordt de vergadering gehouden?",options:["Om tien uur","Om negen uur","Om twaalf uur"],answer:1},
+      {q:"Wat stuurt iemand daarna?",options:["Een factuur","Een agenda","Een presentatie"],answer:1}
+    ],
+    speaking:[
+      {title:"Drie voorstellen",type:"Suggest · 90 sec",seconds:90,prompt:"Stel drie activiteiten voor een teamuitje voor. Reageer alsof iemand bezwaar heeft tegen de eerste.",promptEn:"Suggest three team outing activities. React as if someone objects to the first.",phrases:["Als we nou eens…","Wat dacht je van…?","Ik zie er wel wat in","Ik weet het niet zo"],sampleNl:"Als we nou eens naar een restaurant gaan? Als dat te duur is, wat dacht je van bowling? Of zullen we bij iemand thuis eten? Dat is gezellig en niet te duur.",sampleEn:"What if we go to a restaurant? If that is too expensive, how about bowling? Or shall we eat at someone's home? That is nice and not too expensive."},
+      {title:"Passief gebruiken",type:"Monologue · 60 sec",seconds:60,prompt:"Beschrijf wat er op je werk of thuis deze week wordt gedaan. Gebruik minstens twee passieve zinnen (er wordt…).",promptEn:"Describe what is being done at work or home this week. Use at least two passive sentences.",phrases:["Er wordt… georganiseerd","Het formulier wordt…","Er wordt hard gewerkt"],sampleNl:"Er wordt deze week een vergadering georganiseerd. Het verslag wordt daarna verstuurd. Er wordt hard gewerkt omdat de deadline dichterbij komt.",sampleEn:"A meeting is being organised this week. The report is then sent. People are working hard because the deadline is getting closer."}
+    ]
+  },
+  5:{
+    listenQs:[
+      {q:"Wat is het gerucht?",options:["De school sluit","De supermarkt sluit","Het kantoor verhuist"],answer:1},
+      {q:"Wat schijnt het probleem te zijn?",options:["Personeel","Het huurcontract","De openingstijden"],answer:1},
+      {q:"Is er bewijs?",options:["Ja, een brief","Nee, alleen een collega die er werkt","Ja, de krant"],answer:1},
+      {q:"Wat is het advies?",options:["Meteen doorvertellen","Eerst controleren","Niets zeggen tegen de eigenaar"],answer:1}
+    ],
+    speaking:[
+      {title:"Een gerucht checken",type:"Monologue · 90 sec",seconds:90,prompt:"Vertel over iets dat je hoorde maar niet meteen geloofde. Hoe heb je het gecheckt, en wat bleek waar?",promptEn:"Talk about something you heard but did not immediately believe. How did you check it?",phrases:["Naar verluidt…","Het schijnt dat…","Ik heb het gecontroleerd door…","Uiteindelijk bleek dat…"],sampleNl:"Naar verluidt zou ons kantoor verhuizen. Ik twijfelde, dus ik heb het gecheckt bij mijn manager. Uiteindelijk bleek dat het alleen om samenwerking ging, niet om een verhuizing.",sampleEn:"Reportedly our office would move. I doubted it, so I checked with my manager. In the end it turned out to be cooperation, not a move."},
+      {title:"Uitleg vragen",type:"Role-play · 60 sec",seconds:60,prompt:"Iemand gebruikt een woord dat je niet kent. Vraag om uitleg en herhaal het in je eigen woorden.",promptEn:"Someone uses a word you do not know. Ask for an explanation and repeat it in your own words.",phrases:["Wat betekent dat precies?","Kunt u dat herhalen?","Als ik het goed begrijp…"],sampleNl:"Sorry, wat betekent dat precies? Kunt u een voorbeeld geven? Als ik het goed begrijp, bedoelt u dat we moeten wachten tot vrijdag. Klopt dat?",sampleEn:"Sorry, what does that mean exactly? Could you give an example? If I understand correctly, you mean we should wait until Friday. Is that right?"}
+    ]
+  },
+  6:{
+    listenQs:[
+      {q:"Waar moet de persoon tussen kiezen?",options:["Twee steden","Twee banen","Twee opleidingen"],answer:1},
+      {q:"Wat zijn voordelen van de eerste baan?",options:["Dichtbij huis","Hoger salaris en uitdagend","Minder reizen"],answer:1},
+      {q:"Wat is het nadeel van de eerste baan?",options:["Saai werk","Ver reizen, minder tijd voor jezelf","Slecht team"],answer:1},
+      {q:"Welke baan kiest de persoon?",options:["De eerste","De tweede","Nog geen keuze"],answer:1}
+    ],
+    speaking:[
+      {title:"Een keuze verdedigen",type:"Justify · 90 sec",seconds:90,prompt:"Kies tussen twee opties (baan, stad of opleiding). Geef drie argumenten en reageer op één tegenwerping.",promptEn:"Choose between two options. Give three arguments and answer one objection.",phrases:["Enerzijds…, anderzijds…","Ik kies voor … omdat…","Ik ben ervan overtuigd dat…"],sampleNl:"Ik kies voor de baan dichter bij huis. Enerzijds verdient de andere meer, anderzijds bespaar ik reistijd. Ik ben ervan overtuigd dat balans belangrijker is dan een hoger salaris.",sampleEn:"I choose the job closer to home. On the one hand the other pays more, on the other hand I save commute time. I am convinced that balance matters more than a higher salary."},
+      {title:"Voor- en nadelen",type:"Monologue · 60 sec",seconds:60,prompt:"Noem twee voordelen en twee nadelen van thuiswerken.",promptEn:"Name two advantages and two disadvantages of working from home.",phrases:["Het voordeel is dat…","Daarentegen…","Daardoor…"],sampleNl:"Het voordeel is dat ik tijd bespaar. Daardoor heb ik meer rust. Daarentegen mis ik collega's, en soms is het moeilijker om te stoppen met werken.",sampleEn:"The advantage is that I save time. As a result I have more rest. On the other hand I miss colleagues, and sometimes it is harder to stop working."}
+    ]
+  },
+  7:{
+    listenQs:[
+      {q:"Hoe ging de persoon vroeger naar het werk?",options:["Met de auto","Lopend","Met de bus"],answer:1},
+      {q:"Hoe ver was dat?",options:["Ongeveer twee kilometer","Tien kilometer","Vijfhonderd meter"],answer:0},
+      {q:"Hoe gaat de persoon nu meestal?",options:["Alleen met de auto","Fietsen, soms auto","Alleen lopen"],answer:1},
+      {q:"Wat vindt de ander belangrijk?",options:["Geld sparen","Bewegen","Later opstaan"],answer:1}
+    ],
+    speaking:[
+      {title:"Een gewoonte",type:"Monologue · 90 sec",seconds:90,prompt:"Beschrijf een gewoonte van vroeger en wat je nu anders doet. Gebruik vroeger, eigenlijk, toch.",promptEn:"Describe an old habit and what you do differently now.",phrases:["Vroeger…","Ik was gewend aan…","Maar eigenlijk…","Toch…"],sampleNl:"Vroeger at ik elke avond voor de tv. Ik was daaraan gewend. Maar eigenlijk sliep ik slechter. Nu eet ik aan tafel. Toch kijk ik soms nog een aflevering na het eten.",sampleEn:"I used to eat in front of the TV every evening. I was used to that. But actually I slept worse. Now I eat at the table. Still, sometimes I watch an episode after dinner."},
+      {title:"Stereotype nuanceren",type:"Opinion · 90 sec",seconds:90,prompt:"Kies een stereotype. Zeg wat deels klopt en wat niet. Noem een uitzondering.",promptEn:"Choose a stereotype. Say what is partly true and what is not. Give an exception.",phrases:["Men zegt dat…","Dat klopt deels…","Maar eigenlijk…","Er zijn uitzonderingen"],sampleNl:"Men zegt dat Nederlanders altijd op tijd zijn. Dat klopt deels op het werk. Maar eigenlijk komen veel mensen ook te laat. Er zijn altijd uitzonderingen.",sampleEn:"They say the Dutch are always on time. That is partly true at work. But actually many people are also late. There are always exceptions."}
+    ]
+  },
+  8:{
+    listenQs:[
+      {q:"Wat is het eerste punt van de samenvatting?",options:["Nieuwe medewerkers","Het budget","De deadline"],answer:1},
+      {q:"Wat is daarna besloten?",options:["Het kantoor sluiten","Twee nieuwe medewerkers aannemen","De vergadering uitstellen"],answer:1},
+      {q:"Wat is de nieuwe deadline?",options:["1 augustus","1 september","1 oktober"],answer:1},
+      {q:"Wat is de conclusie?",options:["Het plan is afgewezen","Iedereen is het eens met het plan","Er is geen beslissing"],answer:1}
+    ],
+    speaking:[
+      {title:"Samenvatten",type:"Present · 90 sec",seconds:90,prompt:"Vat dit hoofdstuk of je werkweek samen in één minuut. Gebruik ten eerste, vervolgens, ten slotte, kortom.",promptEn:"Summarise this chapter or your work week in one minute using structure words.",phrases:["Het gaat over…","Ten eerste…","Vervolgens…","Ten slotte…","Kortom:…"],sampleNl:"Het gaat over mijn werkweek. Ten eerste had ik twee vergaderingen. Vervolgens heb ik een rapport afgemaakt. Ten slotte heb ik Nederlands geoefend. Kortom: het was druk maar nuttig.",sampleEn:"It is about my work week. Firstly I had two meetings. Then I finished a report. Finally I practised Dutch. In short: it was busy but useful."},
+      {title:"Presenteren",type:"Present · 90 sec",seconds:90,prompt:"Presenteer in het kort waarom jij Nederlands leert. Begin, midden, slot.",promptEn:"Briefly present why you are learning Dutch. Beginning, middle, end.",phrases:["Ik begin met…","Bovendien…","Concluderend…","Al met al…"],sampleNl:"Ik begin met mijn reden: ik woon en werk hier. Bovendien wil ik beter met collega's praten. Concluderend: Nederlands is nodig voor mijn dagelijks leven. Al met al ben ik gemotiveerd om door te gaan.",sampleEn:"I start with my reason: I live and work here. Moreover I want to talk better with colleagues. In conclusion: Dutch is necessary for daily life. All in all I am motivated to continue."}
+    ]
+  }
+};
+
 // ════════════════════════════════════════════════════════════════════
 // APP STATE
 // ════════════════════════════════════════════════════════════════════
@@ -1309,6 +1446,17 @@ function stopTTS(){
 // Recording state (MediaRecorder + optional transcript)
 const recState = {};
 
+let materials = { mode:"none", audio:[], exists:false };
+let labFolderIdx = 0;
+let labTrackIdx = 0;
+let labBlobUrls = [];
+let testTimerId = null;
+const testRun = { active:false, chId:null, endsAt:0, answers:{}, notes:"", realNotes:"" };
+
+function esc(s){
+  return String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
 // ════════════════════════════════════════════════════════════════════
 // CHAPTER SELECT
 // ════════════════════════════════════════════════════════════════════
@@ -1325,6 +1473,12 @@ function buildChTabs(){
 }
 
 function selectChapter(idx){
+  if(testRun.active && CHAPTERS[idx].id !== testRun.chId){
+    if(!confirm("A 30-min test is running. Switch chapter and abort the test?")) return;
+    stopTestTimer();
+    testRun.active=false;
+    testRun.finished=false;
+  }
   currentChIdx=idx;
   document.querySelectorAll(".ch-tab").forEach((b,i)=>b.classList.toggle("active",i===idx));
   buildHeader();
@@ -1360,6 +1514,8 @@ function renderCurrentModule(){
   else if(currentMod==="grammar"){ renderGrammar(); }
   else if(currentMod==="reading"){ renderReading(); }
   else if(currentMod==="listening"){ renderListening(); }
+  else if(currentMod==="lab"){ renderLab(); }
+  else if(currentMod==="test"){ renderTest(); }
   else if(currentMod==="speaking"){ renderSpeaking(); }
   else if(currentMod==="writing"){ renderWriting(); }
 }
@@ -1570,37 +1726,49 @@ function renderListening(){
   let textHidden=true;
   window.listenRate = window.listenRate || 0.9;
   let html=`<div class="card">
-    <h3 style="font-size:1.15rem;margin-bottom:.85rem">${L.title}</h3>
+    <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.75rem">
+      <h3 style="font-size:1.15rem;margin:0">${esc(L.title)}</h3>
+      <span class="status-pill ${materials.mode==="server"?"ok":(materials.mode==="local"?"ok":"warn")}">${materialsStatus()}</span>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem">Chapter dialogue (slow TTS). For authentic Contact! 2 CD audio, open <strong>CD Lab</strong> and pick any track.</p>
     <div class="listen-controls">
-      <button class="btn btn-sm btn-sea" onclick="playFullListening(${JSON.stringify(L.sents.map(s=>s.nl)).replace(/"/g,'&quot;')})">▶ Play all</button>
+      <button class="btn btn-sm btn-sea" onclick="playFullListening()">▶ Play all</button>
       <button class="btn btn-sm" data-tts-toggle onclick="togglePauseContinue()">■ Stop</button>
       <span style="font-size:.82rem;color:var(--muted)">Speed:</span>
-      <button class="btn btn-sm speed-btn" id="spdSlow" onclick="setListenRate(0.7)" title="Slow">🐢 Slow</button>
-      <button class="btn btn-sm speed-btn" id="spdNormal" onclick="setListenRate(1.0)" title="Normal">▶ Normal</button>
+      <button class="btn btn-sm speed-btn" id="spdSlow" onclick="setListenRate(0.7)">🐢 Slow</button>
+      <button class="btn btn-sm speed-btn" id="spdNormal" onclick="setListenRate(1.0)">▶ Normal</button>
       <button class="btn btn-sm" id="hideTextBtn" onclick="toggleHideText()">Show text</button>
     </div>
     <div id="listenSents">`;
   L.sents.forEach((s,i)=>{
     html+=`<div class="sent-row">
       <div>
-        <button class="btn btn-sm btn-icon" onclick="speak(${JSON.stringify(s.nl)}, window.listenRate)" title="Play">▶</button>
+        <button class="btn btn-sm btn-icon" onclick="speak(${esc(JSON.stringify(s.nl))}, window.listenRate)" title="Play">▶</button>
       </div>
-      <div class="sent-nl hidden-text" id="lsNl_${i}">${s.nl}</div>
-      <div class="sent-en">${s.en}</div>
+      <div class="sent-nl hidden-text" id="lsNl_${i}">${esc(s.nl)}</div>
+      <div class="sent-en">${esc(s.en)}</div>
     </div>`;
   });
-  html+=`</div></div>`;
+  html+=`</div></div>
+    <div class="card">
+      <h3 style="font-size:1.05rem;margin-bottom:.45rem">Real CD sample</h3>
+      <p style="font-size:.88rem;color:var(--muted);margin-bottom:.65rem">Play a Contact! 2 track here without leaving this chapter. Track lists are not mapped to chapters — pick freely.</p>
+      ${realAudioPickerHtml("listenPick")}
+    </div>`;
   document.getElementById("listeningContent").innerHTML=html;
+  wireRealAudioPicker("listenPick");
 
   window.setListenRate=function(r){
     window.listenRate=r;
-    document.getElementById("spdSlow").style.fontWeight = r<0.85 ? "700" : "500";
-    document.getElementById("spdNormal").style.fontWeight = r>=0.85 ? "700" : "500";
+    const slow=document.getElementById("spdSlow");
+    const norm=document.getElementById("spdNormal");
+    if(slow) slow.style.fontWeight = r<0.85 ? "700" : "500";
+    if(norm) norm.style.fontWeight = r>=0.85 ? "700" : "500";
   };
   window.setListenRate(window.listenRate);
 
-  window.playFullListening=function(texts){
-    speakQueue(texts, window.listenRate || 0.9);
+  window.playFullListening=function(){
+    speakQueue(L.sents.map(s=>s.nl), window.listenRate || 0.9);
   };
   window.toggleHideText=function(){
     textHidden=!textHidden;
@@ -1617,21 +1785,22 @@ function renderListening(){
 // ════════════════════════════════════════════════════════════════════
 function renderSpeaking(){
   const ch=currentChapter();
-  const sp=ch.speaking;
+  const extra=(TESTS[ch.id]&&TESTS[ch.id].speaking)||[];
+  const prompts=[...ch.speaking.prompts, ...extra];
   let html="";
-  sp.prompts.forEach((p,idx)=>{
+  prompts.forEach((p,idx)=>{
     const pid="sp_"+idx;
     html+=`<div class="card">
       <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.55rem;flex-wrap:wrap">
-        <span class="rule-badge">${p.type}</span>
-        <strong style="font-family:Fraunces,serif;font-size:1.05rem">${p.title}</strong>
+        <span class="rule-badge">${esc(p.type)}</span>
+        <strong style="font-family:Fraunces,serif;font-size:1.05rem">${esc(p.title)}</strong>
       </div>
       <div class="speak-prompt-box">
-        ${p.prompt}
-        <div class="speak-prompt-en">${p.promptEn}</div>
+        ${esc(p.prompt)}
+        <div class="speak-prompt-en">${esc(p.promptEn)}</div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-sm" onclick="speak(${JSON.stringify(p.prompt)},0.88)">▶ Start audio</button>
+        <button class="btn btn-sm" onclick="speak(${esc(JSON.stringify(p.prompt))},0.88)">▶ Start audio</button>
         <button class="btn btn-sm" data-tts-toggle onclick="togglePauseContinue()">■ Stop</button>
         <button class="btn btn-sm btn-sea" id="recBtn_${idx}" onclick="toggleRec(${idx})">🎤 Record myself</button>
         <button class="btn btn-sm" id="playRecBtn_${idx}" onclick="playRecording(${idx})" disabled>▶ Listen recording</button>
@@ -1640,16 +1809,16 @@ function renderSpeaking(){
       <audio id="recAudio_${idx}" class="rec-audio" controls></audio>
       <div style="margin:.6rem 0 .4rem;font-size:.85rem;font-weight:700;color:var(--muted)">Useful phrases — click to hear:</div>
       <div class="useful-phrases">`;
-    p.phrases.forEach(ph=>{
-      html+=`<span class="phrase-chip" onclick="speak(${JSON.stringify(ph)},0.88)">${ph}</span>`;
+    (p.phrases||[]).forEach(ph=>{
+      html+=`<span class="phrase-chip" onclick="speak(${esc(JSON.stringify(ph))},0.88)">${esc(ph)}</span>`;
     });
     html+=`</div>
       <div class="sample-answer">
         <button class="btn btn-sm" onclick="toggleSample('${pid}')">Show sample answer</button>
-        <button class="btn btn-sm" onclick="speak(${JSON.stringify(p.sampleNl)},0.9)">▶ Read sample</button>
+        <button class="btn btn-sm" onclick="speak(${esc(JSON.stringify(p.sampleNl))},0.9)">▶ Read sample</button>
         <div id="${pid}_sample" style="display:none;margin-top:.7rem">
-          <div class="sample-nl">${p.sampleNl}</div>
-          <div class="sample-en">${p.sampleEn}</div>
+          <div class="sample-nl">${esc(p.sampleNl)}</div>
+          <div class="sample-en">${esc(p.sampleEn)}</div>
         </div>
       </div>
     </div>`;
@@ -1775,6 +1944,354 @@ function renderSpeaking(){
 }
 
 // ════════════════════════════════════════════════════════════════════
+// MATERIALS (server hybrid + local file picker)
+// ════════════════════════════════════════════════════════════════════
+function materialsStatus(){
+  if(materials.mode==="server"){
+    const n=materials.audio.reduce((s,a)=>s+a.count,0);
+    return "PC server · "+n+" tracks";
+  }
+  if(materials.mode==="local"){
+    const n=materials.audio.reduce((s,a)=>s+a.count,0);
+    return n ? ("Local files · "+n+" tracks") : "Local files loaded";
+  }
+  return "No CD audio yet";
+}
+
+function totalTracks(){
+  return materials.audio.reduce((s,a)=>s+(a.count||a.tracks.length),0);
+}
+
+async function connectMaterials(){
+  wireFilePickers();
+  try{
+    const r=await fetch("/api/index",{cache:"no-store"});
+    if(!r.ok) throw new Error("no server");
+    const idx=await r.json();
+    if(idx && idx.audio && idx.audio.length){
+      materials={
+        mode:"server",
+        exists:!!idx.exists,
+        audio: idx.audio.map(a=>({
+          folder:a.folder,
+          count:a.count,
+          tracks:a.tracks.map(t=>({
+            name:t,
+            url:"/materials/"+encodeURIComponent(a.folder)+"/"+encodeURIComponent(t)
+          }))
+        }))
+      };
+    }
+  }catch(e){
+    if(materials.mode==="none") materials={mode:"none", audio:[], exists:false};
+  }
+  if(currentMod==="lab"||currentMod==="listening"||currentMod==="test") renderCurrentModule();
+}
+
+function wireFilePickers(){
+  if(window._pickersWired) return;
+  window._pickersWired=true;
+  const files=document.getElementById("pickAudioFiles");
+  const dir=document.getElementById("pickAudioDir");
+  if(files) files.addEventListener("change",()=>ingestAudioFiles(files.files||[]));
+  if(dir) dir.addEventListener("change",()=>ingestAudioFiles(dir.files||[]));
+}
+
+function ingestAudioFiles(fileList){
+  const files=[...fileList].filter(f=>/\.mp3$/i.test(f.name)||(f.type||"").startsWith("audio/"));
+  if(!files.length) return;
+  labBlobUrls.forEach(u=>URL.revokeObjectURL(u));
+  labBlobUrls=[];
+  const byFolder={};
+  files.forEach(f=>{
+    const parts=(f.webkitRelativePath||f.name).split(/[/\\]/);
+    const folder=parts.length>1?parts[parts.length-2]:"Uploaded audio";
+    if(!byFolder[folder]) byFolder[folder]=[];
+    const url=URL.createObjectURL(f);
+    labBlobUrls.push(url);
+    byFolder[folder].push({name:f.name, url});
+  });
+  materials={
+    mode:"local",
+    exists:true,
+    audio:Object.keys(byFolder).sort().map(folder=>{
+      const tracks=byFolder[folder].sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+      return {folder, tracks, count:tracks.length};
+    })
+  };
+  labFolderIdx=0; labTrackIdx=0;
+  renderCurrentModule();
+}
+
+function realAudioPickerHtml(prefix){
+  if(!totalTracks()){
+    return `<div class="lab-toolbar">
+      <span class="status-pill warn">${materialsStatus()}</span>
+      <button class="btn btn-sm btn-sea" onclick="document.getElementById('pickAudioDir').click()">📁 Pick CD folder(s)</button>
+      <button class="btn btn-sm" onclick="document.getElementById('pickAudioFiles').click()">🎵 Pick MP3s</button>
+    </div>
+    <p style="font-size:.85rem;color:var(--muted)">Best: run <code>python learning/serve-dutch-b1.py</code> then open this page at <code>http://127.0.0.1:8765/dutch-b1-learn.html</code>. Or pick <em>tekstboek 2 CD1</em> etc. from OneDrive.</p>`;
+  }
+  const folder=materials.audio[labFolderIdx]||materials.audio[0];
+  const track=(folder.tracks[labTrackIdx]||folder.tracks[0]);
+  let html=`<div class="lab-toolbar">
+      <span class="status-pill ok">${materialsStatus()}</span>
+      <button class="btn btn-sm" onclick="document.getElementById('pickAudioDir').click()">📁 Other folder</button>
+    </div>
+    <div class="lab-toolbar" id="${prefix}_folders">`;
+  materials.audio.forEach((a,i)=>{
+    html+=`<button class="folder-chip ${i===labFolderIdx?"active":""}" onclick="selectLabFolder(${i},'${prefix}')">${esc(a.folder)} (${a.count})</button>`;
+  });
+  html+=`</div>
+    <select id="${prefix}_sel" style="width:100%;padding:.45rem .6rem;border:1px solid var(--line);border-radius:10px;background:#fff" onchange="selectLabTrack(this.selectedIndex,'${prefix}')">`;
+  folder.tracks.forEach((t,i)=>{
+    html+=`<option ${i===labTrackIdx?"selected":""}>${esc(t.name)}</option>`;
+  });
+  html+=`</select>
+    <audio id="${prefix}_player" class="real-audio" controls preload="metadata" src="${esc(track.url)}"></audio>`;
+  return html;
+}
+
+function wireRealAudioPicker(prefix){
+  wireFilePickers();
+  if(prefix==="lab") loadLabTranscript();
+}
+
+function selectLabFolder(i, prefix){
+  labFolderIdx=i;
+  labTrackIdx=0;
+  if(currentMod==="lab") renderLab();
+  else if(currentMod==="listening") renderListening();
+  else if(currentMod==="test") renderTest();
+}
+
+function selectLabTrack(i, prefix){
+  labTrackIdx=i;
+  const folder=materials.audio[labFolderIdx];
+  if(!folder) return;
+  const track=folder.tracks[i];
+  const player=document.getElementById(prefix+"_player");
+  if(player && track){
+    player.src=track.url;
+    player.play().catch(()=>{});
+  }
+  if(prefix==="lab") loadLabTranscript();
+}
+
+function currentLabTrack(){
+  const folder=materials.audio[labFolderIdx];
+  if(!folder) return null;
+  return {folder:folder.folder, track:folder.tracks[labTrackIdx]};
+}
+
+async function loadLabTranscript(){
+  const box=document.getElementById("labScript");
+  if(!box) return;
+  const cur=currentLabTrack();
+  if(!cur){ box.innerHTML=""; return; }
+  if(materials.mode!=="server"){
+    box.innerHTML=`<p style="font-size:.88rem;color:var(--muted)">AI transcript needs the local server. Audio still plays. Open via <code>python learning/serve-dutch-b1.py</code> for Dutch + English script.</p>`;
+    return;
+  }
+  box.innerHTML=`<p style="font-size:.88rem;color:var(--muted)">Transcribing ${esc(cur.track.name)}…</p>`;
+  try{
+    const url="/api/transcript?folder="+encodeURIComponent(cur.folder)+"&track="+encodeURIComponent(cur.track.name);
+    const r=await fetch(url);
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||"transcript failed");
+    let html=`<h4 style="margin:.4rem 0 .55rem">${esc(data.title||cur.track.name)}</h4>`;
+    (data.sentences||[]).forEach(s=>{
+      html+=`<div class="script-line">${esc(s.nl)}<div class="script-en">${esc(s.en||"")}</div></div>`;
+    });
+    if(!(data.sentences||[]).length) html+=`<p style="color:var(--muted)">No sentences returned.</p>`;
+    box.innerHTML=html;
+  }catch(e){
+    box.innerHTML=`<p style="font-size:.88rem;color:var(--red)">Transcript failed: ${esc(e.message||e)}. Audio still works.</p>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════════
+// CD LAB
+// ════════════════════════════════════════════════════════════════════
+function renderLab(){
+  let html=`<div class="card">
+    <h3 style="font-size:1.15rem;margin-bottom:.35rem">Contact! 2 CD Lab</h3>
+    <p style="font-size:.9rem;color:var(--muted);margin-bottom:.75rem">Browse any tekstboek / werkboek CD track. No chapter mapping — pick what you want. On the PC server, Gemini builds a Dutch + English script after you select a track.</p>
+    ${realAudioPickerHtml("lab")}
+    <div id="labScript" style="margin-top:.75rem"></div>
+  </div>`;
+  document.getElementById("labContent").innerHTML=html;
+  wireRealAudioPicker("lab");
+}
+
+// ════════════════════════════════════════════════════════════════════
+// 30-MIN CHAPTER TEST
+// ════════════════════════════════════════════════════════════════════
+function testSecondsLeft(){
+  if(!testRun.active) return 30*60;
+  return Math.max(0, Math.round((testRun.endsAt-Date.now())/1000));
+}
+
+function formatClock(sec){
+  const m=Math.floor(sec/60), s=sec%60;
+  return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+
+function stopTestTimer(){
+  if(testTimerId){ clearInterval(testTimerId); testTimerId=null; }
+}
+
+function startChapterTest(){
+  const ch=currentChapter();
+  stopTestTimer();
+  testRun.active=true;
+  testRun.chId=ch.id;
+  testRun.endsAt=Date.now()+30*60*1000;
+  testRun.answers={};
+  testRun.notes="";
+  testRun.realNotes="";
+  testRun.finished=false;
+  renderTest();
+  testTimerId=setInterval(()=>{
+    if(!testRun.active) return;
+    const left=testSecondsLeft();
+    const clock=document.getElementById("testClock");
+    const bar=document.getElementById("testTimerBar");
+    if(clock) clock.textContent=formatClock(left);
+    if(bar) bar.classList.toggle("low", left<=120);
+    if(left<=0){
+      testRun.active=false;
+      stopTestTimer();
+      finishChapterTest(true);
+    }
+  },250);
+}
+
+function finishChapterTest(timedOut){
+  testRun.active=false;
+  stopTestTimer();
+  testRun.finished=true;
+  testRun.timedOut=!!timedOut;
+  const ch=currentChapter();
+  const T=TESTS[ch.id];
+  let score=0;
+  T.listenQs.forEach((q,i)=>{
+    if(testRun.answers[i]===q.answer) score++;
+  });
+  testRun.score=score;
+  testRun.max=T.listenQs.length;
+  renderTest();
+}
+
+function renderTest(){
+  const ch=currentChapter();
+  const T=TESTS[ch.id];
+  if(!T){ document.getElementById("testContent").innerHTML="<p>No test for this chapter.</p>"; return; }
+
+  if(testRun.chId && testRun.chId!==ch.id && (testRun.active||testRun.finished)){
+    // switching chapter resets a finished run visually; running test stays bound to its chapter
+  }
+
+  if(!testRun.active && !testRun.finished){
+    document.getElementById("testContent").innerHTML=`<div class="card">
+      <h3 style="font-size:1.15rem;margin-bottom:.4rem">30-min test · H${ch.id} ${esc(ch.title)}</h3>
+      <p style="margin-bottom:.7rem;color:var(--muted)">Listening + speaking only. Timer starts when you press start and cannot be paused. Suggested split: 12 min dialogue questions, 8 min real CD, 10 min speaking.</p>
+      <ol style="margin:0 0 1rem 1.1rem;color:var(--ink)">
+        <li><strong>Luisteren</strong> — play the chapter dialogue (text hidden), then 4 multiple-choice questions.</li>
+        <li><strong>CD-sample</strong> — pick any real Contact! 2 track and note what you heard.</li>
+        <li><strong>Spreken</strong> — two timed monologues; record yourself.</li>
+      </ol>
+      <button class="btn btn-primary" onclick="startChapterTest()">Start 30-min test</button>
+    </div>`;
+    return;
+  }
+
+  const left=testSecondsLeft();
+  const L=ch.listening;
+  let html=`<div class="timer-bar ${left<=120?"low":""}" id="testTimerBar">
+      <div>
+        <div style="font-size:.75rem;opacity:.8;text-transform:uppercase;letter-spacing:.06em">H${ch.id} · 30-min test</div>
+        <div class="timer-clock" id="testClock">${formatClock(left)}</div>
+      </div>
+      <div class="btn-row">
+        ${testRun.finished?"":`<button class="btn btn-sm" style="background:#fff" onclick="finishChapterTest(false)">Finish now</button>`}
+        <button class="btn btn-sm" style="background:#fff" onclick="if(confirm('Reset this test?')){stopTestTimer();testRun.active=false;testRun.finished=false;renderTest();}">Reset</button>
+      </div>
+    </div>`;
+
+  if(testRun.finished){
+    html+=`<div class="card">
+      <h3>Result</h3>
+      <p style="margin:.4rem 0 0">Listening score: <strong>${testRun.score} / ${testRun.max}</strong>${testRun.timedOut?" · time was up":""}.</p>
+      <p style="font-size:.88rem;color:var(--muted);margin-top:.35rem">Speaking is not auto-scored — replay your recordings in part 3.</p>
+    </div>`;
+  }
+
+  html+=`<div class="card">
+    <div class="test-part" style="border:0;padding-top:0;margin-top:0">
+      <h4>1. Luisteren — ${esc(L.title)}</h4>
+      <p style="font-size:.88rem;color:var(--muted);margin-bottom:.55rem">Play twice if you want. Text stays hidden during the test.</p>
+      <div class="btn-row" style="margin-bottom:.75rem">
+        <button class="btn btn-sm btn-sea" onclick="speakQueue(${esc(JSON.stringify(L.sents.map(s=>s.nl)))},0.9)">▶ Play dialogue</button>
+        <button class="btn btn-sm" data-tts-toggle onclick="togglePauseContinue()">■ Stop</button>
+      </div>`;
+  T.listenQs.forEach((q,i)=>{
+    html+=`<div class="qcard" id="tq_${i}"><strong>${i+1}. ${esc(q.q)}</strong>`;
+    q.options.forEach((opt,oi)=>{
+      const chosen=testRun.answers[i]===oi;
+      let cls="option-btn";
+      if(testRun.finished){
+        if(oi===q.answer) cls+=" correct";
+        else if(chosen) cls+=" wrong";
+      } else if(chosen) cls+=" correct";
+      html+=`<button class="${cls}" ${testRun.finished?"disabled":""} onclick="pickTestAnswer(${i},${oi})">${esc(opt)}</button>`;
+    });
+    if(testRun.finished) html+=`<div class="answer" style="display:block;margin-top:.35rem">Antwoord: ${esc(q.options[q.answer])}</div>`;
+    html+=`</div>`;
+  });
+  html+=`</div>
+    <div class="test-part">
+      <h4>2. Real CD sample</h4>
+      <p style="font-size:.88rem;color:var(--muted);margin-bottom:.55rem">Pick any track. Listen once or twice. Write 3 words or a short summary — this part is practice, not scored.</p>
+      ${realAudioPickerHtml("testPick")}
+      <textarea class="note-area" id="testRealNotes" placeholder="Wat hoorde je? 3 woorden / korte samenvatting…" oninput="testRun.realNotes=this.value">${esc(testRun.realNotes)}</textarea>
+    </div>
+    <div class="test-part">
+      <h4>3. Spreken</h4>`;
+  T.speaking.forEach((p,idx)=>{
+    const rid="t"+idx;
+    html+=`<div style="margin-bottom:1rem">
+      <div class="speak-prompt-box">
+        <strong>${esc(p.title)}</strong> · ${esc(p.type)}
+        <div>${esc(p.prompt)}</div>
+        <div class="speak-prompt-en">${esc(p.promptEn)}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-sm btn-sea" id="recBtn_${rid}" onclick="toggleRec('${rid}')">🎤 Record (${p.seconds||90}s)</button>
+        <button class="btn btn-sm" id="playRecBtn_${rid}" onclick="playRecording('${rid}')" disabled>▶ Listen recording</button>
+        ${testRun.finished?`<button class="btn btn-sm" onclick="speak(${esc(JSON.stringify(p.sampleNl))},0.9)">▶ Sample</button>`:""}
+      </div>
+      <div class="rec-result" id="recResult_${rid}">Record your answer in Dutch.</div>
+      <audio id="recAudio_${rid}" class="rec-audio" controls></audio>
+    </div>`;
+  });
+  html+=`</div></div>`;
+
+  document.getElementById("testContent").innerHTML=html;
+  wireRealAudioPicker("testPick");
+
+  window.pickTestAnswer=function(qi, oi){
+    if(!testRun.active || testRun.finished) return;
+    testRun.answers[qi]=oi;
+    const card=document.getElementById("tq_"+qi);
+    if(!card) return;
+    card.querySelectorAll(".option-btn").forEach((btn,idx)=>{
+      btn.classList.toggle("correct", idx===oi);
+    });
+  };
+}
+
+// ════════════════════════════════════════════════════════════════════
 // WRITING
 // ════════════════════════════════════════════════════════════════════
 function renderWriting(){
@@ -1830,6 +2347,7 @@ setupModTabs();
 buildHeader();
 resetVocabDeck();
 updateVocabUI();
+connectMaterials();
 </script>
 </body>
 </html>
