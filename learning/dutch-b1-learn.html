@@ -125,6 +125,9 @@ a{color:var(--accent)}
 .rec-btn.listening{background:var(--accent);color:#fff;animation:pulse 1.2s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(196,92,38,.3)}50%{box-shadow:0 0 0 8px rgba(196,92,38,0)}}
 .rec-result{margin-top:.65rem;padding:.65rem .9rem;background:#f4f7fb;border-radius:12px;font-size:.93rem;min-height:3rem}
+.rec-audio{display:none;width:100%;margin-top:.55rem}
+.rec-audio.show{display:block}
+.btn.listening,.rec-btn.listening{background:var(--accent);color:#fff;border-color:var(--accent);animation:pulse 1.2s infinite}
 
 /* ── WRITING ── */
 .writing-prompt{font-size:1.05rem;line-height:1.65;margin-bottom:.85rem}
@@ -1210,9 +1213,11 @@ function saveKnown(chId){ localStorage.setItem("known_"+chId, JSON.stringify([..
 function currentChapter(){ return CHAPTERS[currentChIdx]; }
 
 // ════════════════════════════════════════════════════════════════════
-// TTS
+// TTS — start / pause+continue / hard stop
 // ════════════════════════════════════════════════════════════════════
 let dutchVoice = null;
+const tts = { queue:[], idx:0, rate:1.0, paused:false, active:false, hardStop:false };
+
 function loadVoices(){
   const voices = speechSynthesis.getVoices();
   dutchVoice = voices.find(v=>/^nl-NL/i.test(v.lang) && /nederland|dutch/i.test(v.name))
@@ -1222,15 +1227,87 @@ function loadVoices(){
 }
 if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 
-function speak(text, rate=1.0){
-  if(!window.speechSynthesis) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang  = "nl-NL";
-  u.rate  = rate;
-  if(dutchVoice){ u.voice = dutchVoice; }
-  speechSynthesis.speak(u);
+function refreshTtsButtons(){
+  document.querySelectorAll("[data-tts-toggle]").forEach(btn=>{
+    if(tts.paused) btn.textContent = "▶ Continue";
+    else if(tts.active || (window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending))) btn.textContent = "⏸ Pause";
+    else btn.textContent = "■ Stop";
+  });
 }
+
+function speakQueue(texts, rate=1.0){
+  if(!window.speechSynthesis){ alert("Speech synthesis not available in this browser."); return; }
+  tts.hardStop = true;
+  speechSynthesis.cancel();
+  tts.hardStop = false;
+  tts.queue = (Array.isArray(texts) ? texts : [texts]).map(t=>String(t||"").trim()).filter(Boolean);
+  tts.idx = 0;
+  tts.rate = rate;
+  tts.paused = false;
+  tts.active = tts.queue.length > 0;
+  refreshTtsButtons();
+  playNextUtterance();
+}
+
+function speak(text, rate=1.0){ speakQueue([text], rate); }
+
+function playNextUtterance(){
+  if(!window.speechSynthesis || tts.hardStop || tts.paused) return;
+  if(tts.idx >= tts.queue.length){
+    tts.active = false;
+    refreshTtsButtons();
+    return;
+  }
+  const u = new SpeechSynthesisUtterance(tts.queue[tts.idx]);
+  u.lang = "nl-NL";
+  u.rate = tts.rate;
+  if(dutchVoice) u.voice = dutchVoice;
+  u.onend = ()=>{
+    if(tts.hardStop || tts.paused) return;
+    tts.idx++;
+    setTimeout(playNextUtterance, 350);
+  };
+  u.onerror = ()=>{
+    if(tts.hardStop) return;
+    tts.idx++;
+    setTimeout(playNextUtterance, 200);
+  };
+  speechSynthesis.speak(u);
+  tts.active = true;
+  refreshTtsButtons();
+}
+
+/** Pause while playing, or continue from pause. */
+function togglePauseContinue(){
+  if(!window.speechSynthesis) return;
+  if(tts.paused || speechSynthesis.paused){
+    tts.paused = false;
+    if(speechSynthesis.paused) speechSynthesis.resume();
+    else if(tts.active && tts.idx < tts.queue.length && !speechSynthesis.speaking) playNextUtterance();
+    refreshTtsButtons();
+    return;
+  }
+  if(speechSynthesis.speaking || speechSynthesis.pending || tts.active){
+    try{ speechSynthesis.pause(); }catch(e){}
+    tts.paused = true;
+    refreshTtsButtons();
+  }
+}
+
+function stopTTS(){
+  if(!window.speechSynthesis) return;
+  tts.hardStop = true;
+  tts.paused = false;
+  tts.active = false;
+  tts.queue = [];
+  tts.idx = 0;
+  speechSynthesis.cancel();
+  tts.hardStop = false;
+  refreshTtsButtons();
+}
+
+// Recording state (MediaRecorder + optional transcript)
+const recState = {};
 
 // ════════════════════════════════════════════════════════════════════
 // CHAPTER SELECT
@@ -1452,9 +1529,9 @@ function renderReading(){
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem;flex-wrap:wrap;gap:.5rem">
       <h3 style="font-size:1.15rem">${r.title}</h3>
       <div class="btn-row">
-        <button class="btn btn-sm" onclick="speak(document.getElementById('readText').innerText, 0.88)">🔊 Read aloud</button>
+        <button class="btn btn-sm" onclick="speak(document.getElementById('readText').innerText, 0.88)">▶ Read aloud</button>
         <button class="btn btn-sm" id="toggleEnBtn" onclick="toggleReadEn()">Show English</button>
-        <button class="btn btn-sm" onclick="speechSynthesis.cancel()">■ Stop</button>
+        <button class="btn btn-sm" data-tts-toggle onclick="togglePauseContinue()">■ Stop</button>
       </div>
     </div>
     <div class="text-body" id="readText">`;
@@ -1491,44 +1568,40 @@ function renderListening(){
   const ch=currentChapter();
   const L=ch.listening;
   let textHidden=true;
-  let rate=0.9;
+  window.listenRate = window.listenRate || 0.9;
   let html=`<div class="card">
     <h3 style="font-size:1.15rem;margin-bottom:.85rem">${L.title}</h3>
     <div class="listen-controls">
-      <button class="btn btn-sm btn-sea" onclick="playFullListening(${JSON.stringify(L.sents.map(s=>s.nl)).replace(/"/g,'&quot;')}, ${rate})">▶ Play all</button>
-      <button class="btn btn-sm" onclick="speechSynthesis.cancel()">■ Stop</button>
+      <button class="btn btn-sm btn-sea" onclick="playFullListening(${JSON.stringify(L.sents.map(s=>s.nl)).replace(/"/g,'&quot;')})">▶ Play all</button>
+      <button class="btn btn-sm" data-tts-toggle onclick="togglePauseContinue()">■ Stop</button>
       <span style="font-size:.82rem;color:var(--muted)">Speed:</span>
-      <button class="btn btn-sm speed-btn" onclick="rate=0.7;this.style.fontWeight='700'" title="Slow">🐢 Slow</button>
-      <button class="btn btn-sm speed-btn" onclick="rate=1.0;this.style.fontWeight='700'" title="Normal">▶ Normal</button>
-      <button class="btn btn-sm" id="hideTextBtn" onclick="toggleHideText()">Hide text</button>
+      <button class="btn btn-sm speed-btn" id="spdSlow" onclick="setListenRate(0.7)" title="Slow">🐢 Slow</button>
+      <button class="btn btn-sm speed-btn" id="spdNormal" onclick="setListenRate(1.0)" title="Normal">▶ Normal</button>
+      <button class="btn btn-sm" id="hideTextBtn" onclick="toggleHideText()">Show text</button>
     </div>
     <div id="listenSents">`;
   L.sents.forEach((s,i)=>{
     html+=`<div class="sent-row">
       <div>
-        <button class="btn btn-sm btn-icon" onclick="speak(${JSON.stringify(s.nl)}, rate)" title="Play">🔊</button>
+        <button class="btn btn-sm btn-icon" onclick="speak(${JSON.stringify(s.nl)}, window.listenRate)" title="Play">▶</button>
       </div>
-      <div class="sent-nl" id="lsNl_${i}">${s.nl}</div>
+      <div class="sent-nl hidden-text" id="lsNl_${i}">${s.nl}</div>
       <div class="sent-en">${s.en}</div>
     </div>`;
   });
   html+=`</div></div>`;
   document.getElementById("listeningContent").innerHTML=html;
 
-  window.playFullListening=function(texts){
-    let i=0;
-    function next(){
-      if(i>=texts.length) return;
-      speechSynthesis.cancel();
-      const u=new SpeechSynthesisUtterance(texts[i]);
-      u.lang="nl-NL"; u.rate=rate;
-      if(dutchVoice) u.voice=dutchVoice;
-      u.onend=()=>{ i++; setTimeout(next,400); };
-      speechSynthesis.speak(u);
-    }
-    next();
+  window.setListenRate=function(r){
+    window.listenRate=r;
+    document.getElementById("spdSlow").style.fontWeight = r<0.85 ? "700" : "500";
+    document.getElementById("spdNormal").style.fontWeight = r>=0.85 ? "700" : "500";
   };
-  window.rate=rate;
+  window.setListenRate(window.listenRate);
+
+  window.playFullListening=function(texts){
+    speakQueue(texts, window.listenRate || 0.9);
+  };
   window.toggleHideText=function(){
     textHidden=!textHidden;
     L.sents.forEach((_,i)=>{
@@ -1558,11 +1631,13 @@ function renderSpeaking(){
         <div class="speak-prompt-en">${p.promptEn}</div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-sm" onclick="speak(${JSON.stringify(p.prompt)},0.88)">🔊 Read prompt</button>
+        <button class="btn btn-sm" onclick="speak(${JSON.stringify(p.prompt)},0.88)">▶ Start audio</button>
+        <button class="btn btn-sm" data-tts-toggle onclick="togglePauseContinue()">■ Stop</button>
         <button class="btn btn-sm btn-sea" id="recBtn_${idx}" onclick="toggleRec(${idx})">🎤 Record myself</button>
-        <button class="btn btn-sm" onclick="speechSynthesis.cancel()">■ Stop</button>
+        <button class="btn btn-sm" id="playRecBtn_${idx}" onclick="playRecording(${idx})" disabled>▶ Listen recording</button>
       </div>
-      <div class="rec-result" id="recResult_${idx}">Press 🎤 and speak Dutch…</div>
+      <div class="rec-result" id="recResult_${idx}">Press 🎤 to record, then ▶ Listen recording to hear yourself.</div>
+      <audio id="recAudio_${idx}" class="rec-audio" controls></audio>
       <div style="margin:.6rem 0 .4rem;font-size:.85rem;font-weight:700;color:var(--muted)">Useful phrases — click to hear:</div>
       <div class="useful-phrases">`;
     p.phrases.forEach(ph=>{
@@ -1571,7 +1646,7 @@ function renderSpeaking(){
     html+=`</div>
       <div class="sample-answer">
         <button class="btn btn-sm" onclick="toggleSample('${pid}')">Show sample answer</button>
-        <button class="btn btn-sm" onclick="speak(${JSON.stringify(p.sampleNl)},0.9)">🔊 Read sample</button>
+        <button class="btn btn-sm" onclick="speak(${JSON.stringify(p.sampleNl)},0.9)">▶ Read sample</button>
         <div id="${pid}_sample" style="display:none;margin-top:.7rem">
           <div class="sample-nl">${p.sampleNl}</div>
           <div class="sample-en">${p.sampleEn}</div>
@@ -1585,24 +1660,117 @@ function renderSpeaking(){
     const el=document.getElementById(id+"_sample");
     el.style.display=el.style.display==="none"?"block":"none";
   };
-  window.toggleRec=function(idx){
-    const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!SpeechRecognition){ document.getElementById("recResult_"+idx).textContent="Speech recognition not supported in this browser."; return; }
+
+  window.toggleRec=async function(idx){
     const btn=document.getElementById("recBtn_"+idx);
-    if(btn.classList.contains("listening")){
-      if(window._recog) window._recog.stop();
-      btn.classList.remove("listening"); btn.textContent="🎤 Record myself"; return;
+    const result=document.getElementById("recResult_"+idx);
+    const playBtn=document.getElementById("playRecBtn_"+idx);
+    const audioEl=document.getElementById("recAudio_"+idx);
+    const st=recState[idx];
+
+    if(st && st.recorder && st.recorder.state==="recording"){
+      st.recorder.stop();
+      if(st.recog){ try{ st.recog.stop(); }catch(e){} }
+      btn.classList.remove("listening");
+      btn.textContent="🎤 Record myself";
+      return;
     }
-    const rec=new SpeechRecognition();
-    window._recog=rec;
-    rec.lang="nl-NL"; rec.continuous=false; rec.interimResults=true;
-    rec.onresult=e=>{
-      let txt=""; for(let i=0;i<e.results.length;i++) txt+=e.results[i][0].transcript;
-      document.getElementById("recResult_"+idx).textContent=txt;
-    };
-    rec.onend=()=>{ btn.classList.remove("listening"); btn.textContent="🎤 Record myself"; };
-    rec.start(); btn.classList.add("listening"); btn.textContent="⏹ Stop";
-    document.getElementById("recResult_"+idx).textContent="🎙 Listening…";
+
+    // stop any other active recording
+    Object.keys(recState).forEach(k=>{
+      const other=recState[k];
+      if(other && other.recorder && other.recorder.state==="recording"){
+        try{ other.recorder.stop(); }catch(e){}
+        if(other.recog){ try{ other.recog.stop(); }catch(e){} }
+      }
+      const ob=document.getElementById("recBtn_"+k);
+      if(ob){ ob.classList.remove("listening"); ob.textContent="🎤 Record myself"; }
+    });
+
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      result.textContent="Recording needs a modern browser (Chrome/Edge) over http://localhost or https.";
+      return;
+    }
+
+    try{
+      stopTTS();
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      const chunks=[];
+      const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus"
+        : (MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "");
+      const recorder = mime ? new MediaRecorder(stream,{mimeType:mime}) : new MediaRecorder(stream);
+      recState[idx]={ recorder, chunks, stream, url: st?.url || null, recog:null };
+
+      recorder.ondataavailable=e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+      recorder.onstop=()=>{
+        stream.getTracks().forEach(t=>t.stop());
+        if(chunks.length){
+          if(recState[idx].url) URL.revokeObjectURL(recState[idx].url);
+          const blob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
+          const url=URL.createObjectURL(blob);
+          recState[idx].url=url;
+          audioEl.src=url;
+          audioEl.classList.add("show");
+          playBtn.disabled=false;
+          const transcript=result.dataset.transcript||"";
+          result.textContent = transcript
+            ? ("Saved. Transcript: "+transcript+" — press ▶ Listen recording")
+            : "Recording saved — press ▶ Listen recording to hear yourself.";
+        } else {
+          result.textContent="No audio captured. Try again and allow the microphone.";
+        }
+        btn.classList.remove("listening");
+        btn.textContent="🎤 Record myself";
+      };
+
+      recorder.start();
+      btn.classList.add("listening");
+      btn.textContent="⏹ Stop recording";
+      result.dataset.transcript="";
+      result.textContent="🎙 Recording… speak Dutch now";
+
+      // Optional live transcript (Chrome)
+      const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+      if(SpeechRecognition){
+        const recog=new SpeechRecognition();
+        recog.lang="nl-NL";
+        recog.continuous=true;
+        recog.interimResults=true;
+        recog.onresult=e=>{
+          let txt="";
+          for(let i=0;i<e.results.length;i++) txt+=e.results[i][0].transcript+" ";
+          txt=txt.trim();
+          result.dataset.transcript=txt;
+          result.textContent="🎙 "+txt;
+        };
+        try{ recog.start(); recState[idx].recog=recog; }catch(e){}
+      }
+    }catch(err){
+      result.textContent="Microphone blocked. Allow mic access, or open via http://localhost (not a raw file:// page).";
+    }
+  };
+
+  window.playRecording=function(idx){
+    const audioEl=document.getElementById("recAudio_"+idx);
+    const result=document.getElementById("recResult_"+idx);
+    const playBtn=document.getElementById("playRecBtn_"+idx);
+    if(!audioEl || !audioEl.src){
+      result.textContent="No recording yet — press 🎤 Record myself first.";
+      return;
+    }
+    stopTTS();
+    if(!audioEl.paused && !audioEl.ended){
+      audioEl.pause();
+      playBtn.textContent="▶ Listen recording";
+      return;
+    }
+    audioEl.currentTime=0;
+    audioEl.play().then(()=>{
+      playBtn.textContent="⏸ Pause recording";
+    }).catch(()=>{
+      result.textContent="Could not play recording. Try recording again.";
+    });
+    audioEl.onended=()=>{ playBtn.textContent="▶ Listen recording"; };
   };
 }
 
@@ -1628,8 +1796,8 @@ function renderWriting(){
     <div class="word-count" id="wordCount">0 woorden (minimum: ${w.minWords})</div>
     <div class="btn-row">
       <button class="btn btn-primary" onclick="saveWriting('${storageKey}')">Opslaan</button>
-      <button class="btn" onclick="speak(document.getElementById('writeArea').value, 0.92)">🔊 Lees voor</button>
-      <button class="btn" onclick="speechSynthesis.cancel()">■ Stop</button>
+      <button class="btn" onclick="speak(document.getElementById('writeArea').value, 0.92)">▶ Lees voor</button>
+      <button class="btn" data-tts-toggle onclick="togglePauseContinue()">■ Stop</button>
       <button class="btn" onclick="if(confirm('Wis je tekst?')){document.getElementById('writeArea').value='';updateWordCount('${storageKey}','${w.minWords}')}">Wissen</button>
       <span class="saved-indicator" id="savedInd">Opgeslagen ✓</span>
     </div>
