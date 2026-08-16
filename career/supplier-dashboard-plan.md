@@ -60,9 +60,62 @@ One supplier relationship dominates the exposure.
   gross invoice and the credit never nets off.
 
 **Direct debit is not visible in this extract.** Every row is `PMTH05 = SEP` (SEPA
-credit transfer). To report on DD failures at all, the vendor master needs to expose the
-mandate flag and the payment run needs to return a rejection reason. Flagging as a data
-gap to close before that view can be built.
+credit transfer). The mandate flag, scheme and expected invoice frequency are not in
+Aurora at all — they live in the AP mandate repository — so `VENDMAST` in the workbook
+carries dedicated columns for them.
+
+**The GL listing and vendor master first arrived empty, and the reason matters.** They
+were tabs in a workbook saved as `.CSV`. CSV is a single-sheet format, so every tab
+except the active one was silently dropped, and that same save rounded the GL accounts
+to scientific notation. Supplied as `.xlsx` they came through intact — which also
+confirms the corruption: GL accounts are genuinely 12 digits (`615220001040`), so the
+AP log's `6.13E+11` is a truncated `613…` rent account. The account *family* survives,
+the account does not.
+
+## 2b. What the GL and vendor list show
+
+75 GL lines and 51 suppliers for France Retail (company `NF`). These are samples, so
+counts below are indicative rather than a full population — but the failure modes are
+unambiguous.
+
+**Suppliers are trading without a vendor master record.** Nine of the thirteen suppliers
+posting to the GL have no row in the vendor list: `ABE001`, `BKS001`, `CAS001`, `CEN001`,
+`ESP002`, `MCA001`, `MGE001`, `NIK001`, `PRO005`. `MCA001` is the striking one — it
+appears in the AP log *and* posts rent of €27k, €1.3k and €43k plus a €119k credit note,
+yet has no master record. No master record means no agreed payment method, no terms and
+no mandate. This is the root of "payment or invoice hard to match to the supplier".
+
+**The vendor name field is unusable for identification.** Every `SNAM05` value is exactly
+four characters: `Adye`, `SCI `, `ESTU`. `SCI002` and `SCI003` are both `SCI `, and
+`SCI001` reads ` ESP`, which does not match its own code. You cannot identify a supplier
+from this field, which is precisely why matching is manual.
+
+**AP and the vendor master do not reconcile.** Of the five AP-log suppliers, two agree
+exactly (`OPT001` €677.98, `PLA001` €170.00), two differ (`EST001` €22,024 vs €2,855;
+`OMN001` €7,000 vs €8,400) and one is absent. Note the €2,855 figure is exactly the sum
+of `EST001`'s two oldest invoices, so the two extracts are as-of different dates — worth
+confirming before treating the whole difference as an error.
+
+**Direct debit is where the real exposure sits.** Six suppliers are set to `PMTH05 = DD`,
+holding €175,394 of open balance — money collectable without a payment run approving it.
+`SCI001` alone is €129,506. **Five of the six have no invoice anywhere in the GL.** That
+is exactly the gap the process document describes: no systematic monitoring of suppliers
+set up for DD who have not submitted invoices. The one exception, `SCI002`, last invoiced
+16 June 2026 — 61 days ago.
+
+**PO coverage is better than the AP log suggested**: 41 of 50 AP-sourced GL lines (82%)
+carry a `POR` reference. All nine without one are rent or property charges (`Loyer`,
+`Le Marais Base rent Q3 2026`, `Lyon TOR Q2 266`). Under the DD process those sit on the
+Contracted Cost Sheet and legitimately have no PO, so the target excludes them rather
+than counting them as failures.
+
+**The GL carries a ready-made P&L dimension.** `Flash Category` groups spend into
+Rent - Office and Building (€143,913), Parts, Maintenance & Repair (€27,765) and Cleaning
+(€3,528). Accruals post as `Journal type = Reversing` and reverse the following period,
+so the P&L view separates posted invoices from the accrual cycle.
+
+One caution: the GL sheet's own control total reads €271,936.57 against 75 rows summing
+to €175,205. The extract is partial, so do not reconcile to that header figure.
 
 ## 3. Data model — the joins that make it work
 
@@ -110,10 +163,17 @@ Trend of 3-way match rate, % of lines with a valid PO, % with a usable GL code, 
 receipt lag (`DATE` → posting `PERIOD`). This is the view that shows whether the
 underlying process is improving or you are just clearing symptoms faster.
 
-**View 4 — Payment method health (answers "is direct debit working?")**
-DD mandates active vs used, failed collections with reason codes, DD-flagged vendors
-that were actually paid by manual transfer. Blocked until the mandate and rejection data
-is available — build the frame now, populate when the fields exist.
+**View 4 — Direct debit control (answers "is direct debit working?")**
+This view is not invented here: the *EMEA DTC Direct Debit Process* document already
+specifies it, calling for a Direct Debit Supplier Dashboard built on GL listings and
+VendMast to identify DD suppliers, record signed mandates, establish expected invoice
+frequency from historical activity, monitor receipt against that schedule, and flag
+missing invoices for proactive follow-up. The workbook implements it as `DD_Monitor`,
+with thresholds taken straight from the document: reminder at **7 calendar days** past
+the expected invoice date, escalation to the PO owner **15 days** after that, mandate
+completeness requiring signature, treasury approval and SharePoint filing, and the
+**Core vs B2B** split — roughly 99% of mandates sit on Core, which is not registered
+with HSBC, so anyone holding the bank details can collect.
 
 **View 5 — P&L view (answers "what does this cost us?")**
 Spend by GL account and category against budget, accrual vs actual by period, and the
@@ -141,13 +201,58 @@ turn amount variance into an automatic flag.
 
 **Phase 5 — View 4** once the direct-debit mandate and rejection fields are available.
 
-## 6. Still needed
+## 6. KPI set
 
-- The **GL listing** and **vendor master** extracts (referenced but not yet supplied)
-- A full AP log, not the 9-row sample — needed to size the problem and set thresholds
+Twenty-four KPIs are defined on the `KPI_Definitions` tab of the workbook — the "Layout &
+KPI definition" and "Define metrics & data sources" milestones from the project charter.
+Each carries a definition, the literal Excel formula, its data source, an owner and a
+target. Sixteen appear as tiles on the dashboard, grouped into four bands:
+
+| Band | KPIs on the tile row |
+|---|---|
+| Payment timeliness | Open AP, Overdue Value, Overdue % of AP, Weighted Avg Days Past Due |
+| Blocked items and invoice matching | Over 90 Days, Match Exception Rate, PO Coverage Rate, GL Codes Unusable |
+| Direct debit control | DD Exposure, DD Without Active Mandate, DD Suppliers With No Invoices, Core Scheme Share |
+| Invoice receipt and supplier reconciliation | Receipt SLA Breaches, Suppliers Not in Vendor Master, AP vs Vendor Master Variance, Top Supplier Concentration |
+
+Over-90-day balances sit with matching rather than timeliness on purpose: those items are
+blocked, and a faster payment run does not clear them.
+
+Targets are set where the process document gives one (7-day reminder, 15-day escalation,
+B2B migration, 100% mandate documentation) and left as "tracked, not targeted" where it
+does not, rather than inventing a number.
+
+One measure worth calling out: **accrual exposure** is estimated from each supplier's
+average historical GL amount, not summed from AP. A missing invoice is by definition not
+in AP yet, so summing the open balance would always report zero.
+
+## 7. Still needed
+
+The single highest-value input is the **expected invoice frequency per DD supplier**.
+Without it the receipt control cannot compute an expected date, and every DD row reads
+"Frequency not set". It can be seeded from GL history for suppliers that have billed
+before, and from the contract for those that have not.
+
+- **Expected invoice frequency** for the six DD suppliers (VENDMAST column M)
+- **The DD mandate register** — scheme, status, signed date, treasury approval,
+  SharePoint filing. Not in Aurora; comes from the AP repository (VENDMAST columns H–L)
+- **Payment terms per supplier**, which the vendor list extract does not carry at all
+- Full extracts rather than samples, so the reconciliation counts can be trusted
+- **Set the GL account column to text before exporting**, and never save the source
+  as `.CSV`
 - Confirmation of which Aurora report generates `AP_LG_NF`, so the export can be fixed
   at source rather than patched downstream
-- Whether direct debit mandates live in Aurora or only at the bank
+
+## 8. Immediate actions the data already justifies
+
+1. Investigate `SCI001` — €129,506 of direct debit exposure with no invoice anywhere in
+   the GL. Highest single risk on the dashboard.
+2. Create vendor master records for the nine suppliers currently trading without one,
+   starting with `MCA001`, which is posting six-figure rent and credit notes.
+3. Ask why `EST001` shows €22,024 in the AP log against €2,855 in the vendor master, and
+   confirm the two extracts are as of the same date.
+4. Fix the `AP_LG_NF` export to emit text GL accounts and a single date format.
+5. Chase `OMN001` — two invoices, €7,000, 152 days overdue, one with no PO reference.
 
 **See also:** [[README]]
 

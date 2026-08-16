@@ -6,31 +6,55 @@ Work notes, career goals, skills.
 
 Design plan: [[supplier-dashboard-plan]] — problems, data model, five views, build phases.
 
-`build_dashboard.py` reads an Aurora `AP_LG_NF` open-items export and writes a
-formula-driven workbook. It normalises the export's inconsistencies on the way in:
-`dd/mm/yy` vs bare Excel serial dates, `00/00/00` for "no due date", and GL accounts
-rounded to scientific notation.
+`aurora_extracts.py` reads the three Aurora exports; `build_dashboard.py` turns them
+into a formula-driven workbook. The readers normalise Aurora's AS/400 conventions —
+`CYYMMDD` dates (`1260204` → 2026-02-04), `CYYPP` periods (`12601` → 2026-01),
+space-padded codes — plus the AP log's own mix of `dd/mm/yy`, bare Excel serials and
+`00/00/00` for "no due date".
 
 ```bash
 pip install openpyxl
-python career/build_dashboard.py --input "C:\path\to\AP_LG_NF.CSV"
+python career/build_dashboard.py \
+  --input "C:\path\to\AP_LG_NF.CSV" \
+  --reference "C:\path\to\GL+vendorlist.xlsx"
 ```
 
-Output is `career/supplier_dashboard.xlsx` with five sheets:
+`--reference` is the workbook holding the GL listing and vendor list tabs (defaults
+`--gl-sheet Sheet1`, `--vendor-sheet Sheet2`; header rows are found by looking for
+`ACCN08` and `SUPN05`, so title and control-total rows above them are fine). Omit it
+and the workbook still builds from the AP log alone.
+
+Output is `career/supplier_dashboard.xlsx`:
 
 | Sheet | What it is for |
 |---|---|
-| `Dashboard` | KPI tiles, aging profile, top overdue suppliers, exception queue |
-| `AP_Log` | the extract plus calculated columns, as Excel table `AP_Data` |
+| `Dashboard` | 16 KPI tiles in four bands, five charts, exception queue |
+| `KPI_Definitions` | all 24 KPIs with formula, source, owner, target, cadence |
+| `AP_Log` | open items plus calculated columns, as Excel table `AP_Data` |
+| `GL_Listing` | the GL extract plus a vendor-master presence flag |
+| `VENDMAST` | vendor list plus the DD mandate columns AP maintains |
+| `DD_Monitor` | direct debit control, driven by `VENDMAST` + `GL_Listing` |
+| `Reconciliation` | every supplier across all three extracts, with variances |
 | `Suppliers` | per-supplier exposure and concentration |
+| `P&L_View` | spend by Flash Category and GL account, accruals split out |
 | `Data_Quality` | export faults to fix at source, with owner columns |
 | `_Calc` | hidden chart and spill helpers |
 
-Every KPI is an Excel formula over `AP_Data`, so refreshing the extract in place
-recalculates the workbook without re-running Python. Re-run the script when the
-supplier population changes — the `Suppliers` sheet is materialised at build time.
-The exception queue on the Dashboard needs Excel 365 (`FILTER`/`SORT`); on older
+Every KPI is an Excel formula, so refreshing an extract in place recalculates the
+workbook without re-running Python. Re-run the script when the supplier population
+changes — `Suppliers` and `Reconciliation` are materialised at build time. The source
+tables keep spare blank rows inside their ranges so pasted data is picked up without
+anyone resizing them. The exception queue needs Excel 365 (`FILTER`/`SORT`); on older
 Excel, filter `AP_Log` on Exception Reason instead.
+
+`DD Supplier` on VENDMAST is derived from `PMTH05`, so it never drifts. The mandate
+columns (scheme, status, signed, treasury approved, filed) and expected invoice
+frequency are not in Aurora — they come from the AP mandate repository, and the
+receipt control stays dormant until the frequency column is filled in.
+
+Direct debit thresholds come from the *EMEA DTC Direct Debit Process* document:
+reminder at 7 calendar days past the expected invoice date, escalation 15 days after
+that, and mandate completeness requiring signature, treasury approval and filing.
 
 The AP export and the generated workbook are gitignored — they hold real supplier data.
 
