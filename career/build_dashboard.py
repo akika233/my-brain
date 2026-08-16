@@ -315,6 +315,10 @@ assert sorted(_banded) == sorted(k.ref for k in TILE_KPIS), (
 # ─────────────────────────────────────────────────────────────────────
 # SHEET: AP_LOG
 # ─────────────────────────────────────────────────────────────────────
+# Calculated columns use plain relative references ($H2) rather than the
+# structured [@[Due Date]] shorthand. The shorthand is Excel UI sugar; written
+# straight into the file it fails to parse and Excel strips the whole sheet's
+# formulas on open. Templates take {r} = the row being written.
 AP_COLS: list[tuple[str, int, str, str | None, str | None]] = [
     ("Supplier Code", 14, "center", None, None),
     ("Supplier Name", 20, "left", None, None),
@@ -333,38 +337,42 @@ AP_COLS: list[tuple[str, int, str, str | None, str | None]] = [
     ("Pay Cat", 8, "center", None, None),
     ("Ledger", 8, "center", None, None),
     ("Terms Days", 11, "center", "0",
-     '=IF(OR([@[Due Date]]="",[@[Doc Date]]=""),"",[@[Due Date]]-[@[Doc Date]])'),
+     '=IF(OR($H{r}="",$G{r}=""),"",$H{r}-$G{r})'),
     # Always numeric: the weighted-average KPI multiplies this column, and a ""
     # here would poison the whole SUMPRODUCT with #VALUE!.
     ("Days Past Due", 12, "center", "0",
-     '=IF([@[Due Date]]="",0,MAX(0,TODAY()-[@[Due Date]]))'),
+     '=IF($H{r}="",0,MAX(0,TODAY()-$H{r}))'),
     ("Status", 11, "center", None,
-     '=IF([@Type]="CR","Credit",'
-     'IF([@[Due Date]]="","No Due Date",'
-     'IF([@[Days Past Due]]>0,"Overdue","Open")))'),
+     '=IF($C{r}="CR","Credit",'
+     'IF($H{r}="","No Due Date",'
+     'IF($R{r}>0,"Overdue","Open")))'),
     ("Aging Bucket", 12, "center", None,
-     '=IF(OR([@Status]="Credit",[@Status]="No Due Date"),"n/a",'
-     'IF([@[Days Past Due]]=0,"Current",'
-     'IF([@[Days Past Due]]<=30,"1-30",'
-     'IF([@[Days Past Due]]<=60,"31-60",'
-     'IF([@[Days Past Due]]<=90,"61-90","90+")))))'),
+     '=IF(OR($S{r}="Credit",$S{r}="No Due Date"),"n/a",'
+     'IF($R{r}=0,"Current",'
+     'IF($R{r}<=30,"1-30",'
+     'IF($R{r}<=60,"31-60",'
+     'IF($R{r}<=90,"61-90","90+")))))'),
     ("In Vendor Master", 15, "center", None,
-     '=IF([@[Supplier Code]]="","",'
-     'IF(COUNTIF(Vend_Data[Supplier Code],[@[Supplier Code]])>0,"Yes","No"))'),
+     '=IF($A{r}="","",'
+     'IF(COUNTIF(Vend_Data[Supplier Code],$A{r})>0,"Yes","No"))'),
     # Priority order: the reason that blocks payment outranks the reason that
     # merely makes the line look odd.
     ("Exception Reason", 30, "left", None,
      '=IFS('
-     '[@Type]="CR","Unapplied credit",'
-     '[@[In Vendor Master]]="No","Supplier not in vendor master",'
-     'ISNUMBER(SEARCH("E+",[@[GL Account]]&"")),"GL account corrupted on export",'
-     '[@[PO Ref]]="","No PO reference",'
-     '[@[Terms Days]]<0,"Due date before invoice date",'
-     'AND([@[Terms Days]]<>"",[@[Terms Days]]<=1),"Payment terms 1 day or less",'
-     '[@[Doc Amount]]<>[@[Open Amount]],"Partial payment / amount mismatch",'
-     'LEFT([@[PO Ref]],3)<>"POR","Non-standard PO format",'
-     '[@[Days Past Due]]>90,"Over 90 days past due",'
+     '$C{r}="CR","Unapplied credit",'
+     '$U{r}="No","Supplier not in vendor master",'
+     'ISNUMBER(SEARCH("E+",$M{r}&"")),"GL account corrupted on export",'
+     '$F{r}="","No PO reference",'
+     '$Q{r}<0,"Due date before invoice date",'
+     'AND($Q{r}<>"",$Q{r}<=1),"Payment terms 1 day or less",'
+     '$K{r}<>$L{r},"Partial payment / amount mismatch",'
+     'LEFT($F{r},3)<>"POR","Non-standard PO format",'
+     '$R{r}>90,"Over 90 days past due",'
      'TRUE,"")'),
+    # Ranking key for the dashboard exception queue. Absolute value so a large
+    # credit surfaces too; the row fraction just breaks ties so MATCH is unique.
+    ("Exc Sort Key", 12, "center", "0.000000",
+     '=IF($V{r}="","",ABS($L{r})-ROW()/1000000)'),
 ]
 
 
@@ -384,7 +392,7 @@ def build_ap_log(ws, lines) -> None:
         ws.row_dimensions[i].height = 15
         for j, (_, _, al, fmt, formula) in enumerate(AP_COLS, 1):
             c = ws.cell(i, j)
-            c.value = formula if formula else source[j - 1]
+            c.value = formula.format(r=i) if formula else source[j - 1]
             c.alignment = _align(al, "center")
             c.font = _font(9, color=C["dark"])
             if fmt:
@@ -416,8 +424,8 @@ GL_COLS: list[tuple[str, int, str | None, str | None]] = [
     ("Journal Type", 12, None, None),
     ("Ledger", 8, None, None),
     ("In Vendor Master", 15, None,
-     '=IF([@[Supplier Code]]="","",'
-     'IF(COUNTIF(Vend_Data[Supplier Code],[@[Supplier Code]])>0,"Yes","No"))'),
+     '=IF($G{r}="","",'
+     'IF(COUNTIF(Vend_Data[Supplier Code],$G{r})>0,"Yes","No"))'),
 ]
 
 
@@ -439,7 +447,7 @@ def build_gl_listing(ws, gl: list[GLLine]) -> None:
         ] if g else [None] * 16
         for j, (_, _, fmt, formula) in enumerate(GL_COLS, 1):
             c = ws.cell(i, j)
-            c.value = formula if formula else source[j - 1]
+            c.value = formula.format(r=i) if formula else source[j - 1]
             c.font = _font(9)
             c.alignment = _align("left" if j in (4, 5, 10) else "center", "center")
             if fmt:
@@ -468,7 +476,7 @@ VEND_COLS: list[tuple[str, int, str | None, str | None]] = [
     ("Currency", 9, None, None),
     ("AP Balance", 14, "#,##0.00", None),
     # Derived, so nobody has to keep a duplicate flag in step with PMTH05.
-    ("DD Supplier", 12, None, '=IF([@[Payment Method]]="DD","Y","N")'),
+    ("DD Supplier", 12, None, '=IF($D{r}="DD","Y","N")'),
     ("DD Scheme", 11, None, None),
     ("Mandate Status", 14, None, None),
     ("Mandate Signed", 14, "DD-MMM-YY", None),
@@ -497,7 +505,7 @@ def build_vendmast(ws, vendors: list[VendorLine]) -> int:
         for j, (_, _, fmt, formula) in enumerate(VEND_COLS, 1):
             c = ws.cell(i, j)
             if formula:
-                c.value = formula
+                c.value = formula.format(r=i)
                 c.fill = _fill(C["light"])
             elif j <= 6:
                 c.value = source[j - 1]
@@ -1089,13 +1097,23 @@ def build_calc(ws, supplier_count: int, categories: list[str]) -> None:
         )
         ws.cell(i, 14).number_format = "#,##0"
 
-    ws.cell(EXC_SPILL_ROW, 1).value = (
-        "=IFERROR(SORT(FILTER(CHOOSE({1,2,3,4,5,6,7},"
-        "AP_Data[Supplier Code],AP_Data[LREF],AP_Data[Supplier Ref],"
-        "AP_Data[Due Date],AP_Data[Days Past Due],AP_Data[Open Amount],"
-        "AP_Data[Exception Reason]),"
-        'AP_Data[Exception Reason]<>""),6,-1),"")'
-    )
+    # Exception queue, largest exposure first. Built with LARGE + INDEX/MATCH on
+    # the sort key rather than FILTER/SORT: dynamic arrays need spill metadata
+    # that openpyxl cannot emit, and Excel discards the formulas on open.
+    # Column P holds the nth largest key; columns A-G look the row up from it.
+    queue_cols = [
+        "AP_Data[Supplier Code]", "AP_Data[LREF]", "AP_Data[Supplier Ref]",
+        "AP_Data[Due Date]", "AP_Data[Days Past Due]", "AP_Data[Open Amount]",
+        "AP_Data[Exception Reason]",
+    ]
+    for n in range(EXC_DETAIL_ROWS):
+        row = EXC_SPILL_ROW + n
+        ws.cell(row, 16).value = f'=IFERROR(LARGE(AP_Data[Exc Sort Key],{n + 1}),"")'
+        for j, column in enumerate(queue_cols, 1):
+            ws.cell(row, j).value = (
+                f'=IF($P{row}="","",IFERROR(INDEX({column},'
+                f'MATCH($P{row},AP_Data[Exc Sort Key],0)),""))'
+            )
 
 
 # ─────────────────────────────────────────────────────────────────────
@@ -1264,10 +1282,9 @@ def build_dashboard(ws, ws_calc, source_name: str, n_categories: int) -> None:
         for j, (_, al, fmt) in enumerate(DETAIL_COLS, 2):
             calc_col = get_column_letter(j - 1)
             c = ws.cell(r, j)
-            c.value = (
-                f'=IFERROR(IF(_Calc!${calc_col}${calc_row}=0,"",'
-                f"_Calc!${calc_col}${calc_row}),\"\")"
-            )
+            # _Calc already blanks unused queue rows, so no =0 guard here; that
+            # would also hide a legitimate zero days-past-due or open amount.
+            c.value = f'=IFERROR(_Calc!${calc_col}${calc_row},"")'
             c.fill = _fill(C["red_bg"] if i % 2 == 0 else C["card"])
             c.border = _border("thin", C["line"])
             c.alignment = _align(al, "center")

@@ -44,8 +44,20 @@ Every KPI is an Excel formula, so refreshing an extract in place recalculates th
 workbook without re-running Python. Re-run the script when the supplier population
 changes — `Suppliers` and `Reconciliation` are materialised at build time. The source
 tables keep spare blank rows inside their ranges so pasted data is picked up without
-anyone resizing them. The exception queue needs Excel 365 (`FILTER`/`SORT`); on older
-Excel, filter `AP_Log` on Exception Reason instead.
+anyone resizing them.
+
+Formulas stick to what every spreadsheet engine parses, because the workbook gets opened
+in WPS Office as well as Excel and WPS silently discards anything it cannot read:
+
+- Calculated columns use plain relative references (`$H2`), never the `[@[Due Date]]`
+  self-reference shorthand. Table references to *other* tables (`AP_Data[Open Amount]`)
+  are fine and used throughout.
+- No dynamic arrays. The exception queue ranks rows with `LARGE` against the
+  `Exc Sort Key` helper column in `AP_Log`, then pulls each row back with `INDEX`/`MATCH`,
+  rather than `FILTER`/`SORT`.
+
+If the file ever opens with a "repaired or removed unreadable content" dialog, the message
+names the sheet parts it stripped; `sheet3.xml` is the third tab, and so on.
 
 `DD Supplier` on VENDMAST is derived from `PMTH05`, so it never drifts. The mandate
 columns (scheme, status, signed, treasury approved, filed) and expected invoice
