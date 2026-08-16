@@ -40,10 +40,10 @@ One supplier relationship dominates the exposure.
 
 **Data quality faults that directly cause the "can't match" complaint:**
 
-- **GL accounts are destroyed by Excel.** Three rows carry `GLAC17` as `6.24E+11`,
-  `6.13E+11`, `6.28E+11` — 12-digit account codes rounded to 3 significant figures on
-  CSV export. Those lines **cannot be mapped to a P&L account at all**. Fixing the
-  export (text-format the column, or export from Aurora as fixed-width) is a
+- **GL accounts are destroyed by Excel.** Six of the nine rows (67%) carry `GLAC17` as
+  `6.24E+11`, `6.13E+11` or `6.28E+11` — 12-digit account codes rounded to 3 significant
+  figures on CSV export. Those lines **cannot be mapped to a P&L account at all**. Fixing
+  the export (text-format the column, or export from Aurora as fixed-width) is a
   prerequisite, not a nice-to-have.
 - **Dates arrive in two incompatible formats.** Most rows are `dd/mm/yy`; `OPT001` and
   `PLA001` come through as Excel serials (46331, 46301, 46118, 46119). Any aging
@@ -125,8 +125,9 @@ it converts an operational annoyance into a euro figure.
 ## 5. Build sequence
 
 **Phase 1 — Fix the extract.** Get a clean Aurora export: `GLAC17` as text, one date
-format, `PDUE` never `00/00/00`. No dashboard is worth building on the current CSV,
-because a quarter of the GL codes are unusable. Half a day, and it unblocks everything.
+format, `PDUE` never `00/00/00`. Two-thirds of the GL codes in the current CSV are
+unusable, so the P&L view cannot be trusted until this is fixed. Half a day, and it
+unblocks everything.
 
 **Phase 2 — Load and normalise.** A Python loader producing one tidy fact table plus a
 supplier dimension, with the derived fields from section 3. Reuses the parsing patterns

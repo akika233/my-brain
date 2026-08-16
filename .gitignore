@@ -7,6 +7,11 @@ telegram-bot/__pycache__/
 career/__pycache__/
 career/invoice_extractor/__pycache__/
 
+# Supplier/AP data + generated dashboard (real finance data — keep local)
+career/ap_log.csv
+career/AP_LG_NF*.CSV
+career/supplier_dashboard.xlsx
+
 # Invoice PDFs + extracted output (may contain finance data)
 career/invoice_pdfs/
 career/invoices.xlsx

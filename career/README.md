@@ -4,8 +4,35 @@ Work notes, career goals, skills.
 
 ## Supplier dashboard
 
-- Design plan: [[supplier-dashboard-plan]] — problems, data model, five views, build phases
-- Template builder: `build_dashboard.py` → `supplier_dashboard.xlsx`
+Design plan: [[supplier-dashboard-plan]] — problems, data model, five views, build phases.
+
+`build_dashboard.py` reads an Aurora `AP_LG_NF` open-items export and writes a
+formula-driven workbook. It normalises the export's inconsistencies on the way in:
+`dd/mm/yy` vs bare Excel serial dates, `00/00/00` for "no due date", and GL accounts
+rounded to scientific notation.
+
+```bash
+pip install openpyxl
+python career/build_dashboard.py --input "C:\path\to\AP_LG_NF.CSV"
+```
+
+Output is `career/supplier_dashboard.xlsx` with five sheets:
+
+| Sheet | What it is for |
+|---|---|
+| `Dashboard` | KPI tiles, aging profile, top overdue suppliers, exception queue |
+| `AP_Log` | the extract plus calculated columns, as Excel table `AP_Data` |
+| `Suppliers` | per-supplier exposure and concentration |
+| `Data_Quality` | export faults to fix at source, with owner columns |
+| `_Calc` | hidden chart and spill helpers |
+
+Every KPI is an Excel formula over `AP_Data`, so refreshing the extract in place
+recalculates the workbook without re-running Python. Re-run the script when the
+supplier population changes — the `Suppliers` sheet is materialised at build time.
+The exception queue on the Dashboard needs Excel 365 (`FILTER`/`SORT`); on older
+Excel, filter `AP_Log` on Exception Reason instead.
+
+The AP export and the generated workbook are gitignored — they hold real supplier data.
 
 ## Invoice PDF extractor
 
