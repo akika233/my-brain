@@ -9,6 +9,7 @@ Things I'm studying or practicing
 - **Self-contained learning module:** `learning/dutch-b1-learn.html` — open directly in any browser, no server needed
   - **Phone:** https://akika233.github.io/dutch-b1-site/dutch-b1-learn.html
   - All 8 chapters built-in: vocab flashcards + TTS audio, grammar, reading, listening, speaking, writing
+  - **Reading / Listening difficulty:** NT2 II · B1→B2 — Klokhuis-style culture articles + Jeugdjournaal-style news/interview audio (see [NTI Nederlands voor anderstaligen](https://www.nti.nl/talen/nederlands/nederlands-voor-anderstaligen/), [Jeugdjournaal](https://jeugdjournaal.nl/), [Het Klokhuis](https://hetklokhuis.nl/))
   - **CD Lab:** play real Contact! 2 MP3s (tekstboek/werkboek CDs) — via local server or a folder picker
   - **30-min test per chapter:** timed listening (4 questions) + real CD sample + 2 speaking recordings
   - Dutch TTS for every word, sentence, prompt and sample answer
