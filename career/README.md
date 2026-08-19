@@ -70,6 +70,41 @@ that, and mandate completeness requiring signature, treasury approval and filing
 
 The AP export and the generated workbook are gitignored — they hold real supplier data.
 
+## DTC Retail budget tracker — PO to GL match
+
+Ruzana's `DTC Retail 2026 Budget Tracker` already tries to land GL journals on
+the PA that raised them. `improve_budget_tracker.py` copies that workbook and
+fixes the match so tracker column J (PA / PO) lines up with the GL listing's
+`POR_Value` / `LINDES`.
+
+```bash
+python career/improve_budget_tracker.py
+python career/improve_budget_tracker.py --input "C:\path\to\DTC Retail 2026 Budget Tracker.xlsx"
+```
+
+Output is `career/DTC_Retail_2026_Budget_Tracker.xlsx` (gitignored). Open the
+`PO_Match` tab first.
+
+What was broken, and what the rewrite does:
+
+- Invoice month `Jan` now matches Actuals `JAN`.
+- Local-currency SUMIFS (CW:DH) stay on the PO instead of walking into Type /
+  Category / Description when filled right.
+- One PO split across several tracker rows no longer each pulls the full GL
+  amount — `Alloc Weight` (column EG) splits by PA value.
+- PO and GL keys are trimmed / upper-cased so Aurora's padded `POR10949` matches
+  the tracker.
+- GL listing column S flags journals whose PO is not on the tracker (the sample
+  has `20256044` and `20250009`). Type the real PA in Actuals column P to force
+  a match, or add the PA on the tracker.
+- GB invoice-currency lookup no longer points at Type and a `#REF!` range.
+- DKK FX no longer looks up the typo `DDK`.
+
+Paste a new GL extract into `2026 GL listing` (the helper columns Q–U sit
+outside the query table so a refresh does not wipe them). Re-run the script
+only when new PAs appear, so they show up on `PO_Match`; there are spare rows
+on that sheet if you want to type a PO by hand.
+
 ## Invoice PDF extractor
 
 Pull invoice fields from bosuka DocStore PDFs (Selenium + basic auth), or from a local folder.

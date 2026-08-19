@@ -11,6 +11,7 @@ career/invoice_extractor/__pycache__/
 career/ap_log.csv
 career/AP_LG_NF*.CSV
 career/supplier_dashboard.xlsx
+career/DTC_Retail_2026_Budget_Tracker*.xlsx
 
 # Invoice PDFs + extracted output (may contain finance data)
 career/invoice_pdfs/
