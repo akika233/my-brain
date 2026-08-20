@@ -4,6 +4,7 @@ Work notes, career goals, skills.
 
 ## Supplier dashboard
 
+User guide: [[supplier-dashboard-guide]] — weekly payment run, month-end close, what to type.
 Design plan: [[supplier-dashboard-plan]] — problems, data model, five views, build phases.
 
 `aurora_extracts.py` reads the three Aurora exports; `build_dashboard.py` turns them
