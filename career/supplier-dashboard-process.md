@@ -182,8 +182,23 @@ If the estimate looks wrong (new supplier, one-off spike), override in the
 accrual journal — do not overwrite the formula. Note the override in VENDMAST
 Notes.
 
-Non-DD suppliers (rent, contracted costs on the Contracted Cost Sheet) are
-**not** in this accrual. They stay on the existing contracted-cost process.
+**Rent and other contracted costs still need an accrual.** They are out of K12
+only because the *method* is wrong for them, not because they should be ignored.
+
+K12 estimates "we usually get an invoice of about €X and it has not shown up".
+That fits variable DD bills (utilities, cleaning). Rent is a known contract:
+quarterly `Loyer`, TOR, credits. Averaging MCA001's GL (`€27k`, `€1.3k`, `€43k`,
+plus a `€119k` credit) would book nonsense. Those amounts live on the Contracted
+Cost Sheet, which is also why they have no PO and are excluded from PO coverage
+(K06) — a matching rule, not an accrual rule.
+
+If the landlord is `PMTH05 = DD` they **do** appear on `DD_Monitor` (SCI names
+in France often are property companies). Chase them on Track B like any other DD
+supplier. Book the accrual from the lease / contracted-cost sheet, not from
+K12's average. If they are not DD, they never enter `DD_Monitor`; accrue from
+the contracted-cost sheet on the existing schedule.
+
+Do not use "not in K12" as a reason to skip the rent accrual.
 
 ---
 
