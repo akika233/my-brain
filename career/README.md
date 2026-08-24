@@ -5,6 +5,7 @@ Work notes, career goals, skills.
 ## Supplier dashboard
 
 User guide: [[supplier-dashboard-guide]] — weekly payment run, month-end close, what to type.
+Process plan: [[supplier-dashboard-process]] — Track A aging / Track B DD receipt, chase and accrue.
 Design plan: [[supplier-dashboard-plan]] — problems, data model, five views, build phases.
 
 `aurora_extracts.py` reads the three Aurora exports; `build_dashboard.py` turns them
@@ -120,13 +121,20 @@ pip install -r career/requirements-invoice.txt
 python -m career.invoice_extractor --input "C:\Users\shjiang\OneDrive - New Balance Athletics, Inc\Documents\Invoice"
 
 # Download by LREF from DocStore, then extract
-python -m career.invoice_extractor --from-docstore --country NG --lref 221566 --lref 223663 --output career/invoices.xlsx
+python -m career.invoice_extractor --from-docstore --country AT --lref 00011841 --output career/invoices.xlsx
+
+# Or drive downloads from Excel columns DocRef + Country (e.g. 2026 GL listing)
+python -m career.invoice_extractor --from-excel career/DTC_Retail_2026_Budget_Tracker.xlsx --sheet "2026 GL listing" --download-dir career/invoice_pdfs --output career/invoices.xlsx
+
+# Download only (no parse), same as the old RENT_TO_TEST Selenium script
+python -m career.invoice_extractor --from-excel career/DTC_Retail_2026_Budget_Tracker.xlsx --sheet "2026 GL listing" --download-dir RENT_TO_TEST --download-only
 ```
 
 DocStore page URL shape:
-`http://bosuka1.newbalance.com:6400/docStore/store/NG%20Docstore/document/?L[LREF]=221566`
+`http://bosuka1.newbalance.com:6400/docStore/store/AT%20Docstore/document/?L[LREF]=00011841`
 
-Downloads are saved as `{country}_{LREF}.pdf` (e.g. `NG_221566.pdf`).
+Downloads are saved as `{country}_{DocRef}.pdf` (e.g. `AT_00011841.pdf`).
+Excel column aliases: `DocRef` / `AllRows.DOCREF` / `LREF`, and `Country`.
 
 ## Adyen scheduled report downloader
 

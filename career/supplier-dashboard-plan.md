@@ -3,7 +3,7 @@
 Plan for a visual dashboard over Aurora AP data to fix late payments, wrong amounts,
 failed direct debits, and unmatched invoices — reported in P&L terms.
 
-How to use the built file: [[supplier-dashboard-guide]].
+How to use the built file: [[supplier-dashboard-guide]]. Monday operating process (aging vs DD receipt): [[supplier-dashboard-process]].
 
 Builds on the existing template in `build_dashboard.py` → `supplier_dashboard.xlsx`
 (see [[README]]), which currently runs on synthetic data.

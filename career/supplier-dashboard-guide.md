@@ -9,7 +9,7 @@ Open it in **Excel or WPS Office**. Do not save a copy that Excel/WPS already
 "repaired" — that version has had formulas stripped. If a repair dialog
 appears, close without saving and rebuild (see [[README]]).
 
-**See also:** [[supplier-dashboard-plan]]
+**See also:** [[supplier-dashboard-plan]] · [[supplier-dashboard-process]]
 
 ## What you type vs what calculates
 
