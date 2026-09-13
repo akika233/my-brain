@@ -1420,36 +1420,83 @@ function saveKnown(chId){ localStorage.setItem("known_"+chId, JSON.stringify([..
 function currentChapter(){ return CHAPTERS[currentChIdx]; }
 
 // ════════════════════════════════════════════════════════════════════
-// TTS — start / pause+continue / hard stop
+// TTS — Colette (Edge neural) via the practice server
 // ════════════════════════════════════════════════════════════════════
-let dutchVoice = null;
-const tts = { queue:[], idx:0, rate:1.0, paused:false, active:false, hardStop:false };
+const EDGE_VOICE = "nl-NL-ColetteNeural";
+const tts = {
+  queue:[], idx:0, rate:"+0%", paused:false, active:false, hardStop:false,
+  audio:null, gen:0
+};
+const ttsCache = new Map();
 
-function loadVoices(){
-  const voices = speechSynthesis.getVoices();
-  dutchVoice = voices.find(v=>/^nl-NL/i.test(v.lang) && /nederland|dutch/i.test(v.name))
-    || voices.find(v=>/^nl-NL/i.test(v.lang))
-    || voices.find(v=>/^nl/i.test(v.lang))
-    || null;
+function edgeRateFromUi(rate){
+  if(typeof rate === "string" && /^[+-]\d+%$/.test(rate)) return rate;
+  if(typeof rate === "number" && rate <= 0.8) return "-20%";
+  return "+0%";
 }
-if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+
+function ttsEndpoint(){
+  const saved = (localStorage.getItem("dutchTtsServer") || "").replace(/\/$/, "");
+  if(saved) return saved + "/api/tts";
+  return "/api/tts";
+}
+
+function ensureTtsAudio(){
+  if(tts.audio) return tts.audio;
+  const a = document.createElement("audio");
+  a.id = "edgeTtsPlayer";
+  a.preload = "auto";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.addEventListener("ended", ()=>{
+    if(tts.hardStop || tts.paused) return;
+    tts.idx++;
+    playNextUtterance();
+  });
+  tts.audio = a;
+  return a;
+}
+
+async function fetchColetteUrl(text, rate){
+  const key = rate + "\n" + text;
+  if(ttsCache.has(key)) return ttsCache.get(key);
+  const res = await fetch(ttsEndpoint(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, rate, voice: EDGE_VOICE })
+  });
+  if(!res.ok){
+    let detail = "";
+    try { detail = (await res.json()).error || ""; } catch(e){ detail = await res.text(); }
+    throw new Error(detail || ("TTS HTTP " + res.status));
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  if(ttsCache.size > 40){
+    const first = ttsCache.keys().next().value;
+    URL.revokeObjectURL(ttsCache.get(first));
+    ttsCache.delete(first);
+  }
+  ttsCache.set(key, url);
+  return url;
+}
 
 function refreshTtsButtons(){
   document.querySelectorAll("[data-tts-toggle]").forEach(btn=>{
     if(tts.paused) btn.textContent = "▶ Continue";
-    else if(tts.active || (window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending))) btn.textContent = "⏸ Pause";
+    else if(tts.active) btn.textContent = "⏸ Pause";
     else btn.textContent = "■ Stop";
   });
 }
 
 function speakQueue(texts, rate=1.0){
-  if(!window.speechSynthesis){ alert("Speech synthesis not available in this browser."); return; }
-  tts.hardStop = true;
-  speechSynthesis.cancel();
+  tts.gen++;
+  const a = tts.audio;
+  if(a){ a.pause(); a.removeAttribute("src"); }
   tts.hardStop = false;
   tts.queue = (Array.isArray(texts) ? texts : [texts]).map(t=>String(t||"").trim()).filter(Boolean);
   tts.idx = 0;
-  tts.rate = rate;
+  tts.rate = edgeRateFromUi(rate);
   tts.paused = false;
   tts.active = tts.queue.length > 0;
   refreshTtsButtons();
@@ -1458,57 +1505,58 @@ function speakQueue(texts, rate=1.0){
 
 function speak(text, rate=1.0){ speakQueue([text], rate); }
 
-function playNextUtterance(){
-  if(!window.speechSynthesis || tts.hardStop || tts.paused) return;
+async function playNextUtterance(){
+  const gen = tts.gen;
+  if(tts.hardStop || tts.paused) return;
   if(tts.idx >= tts.queue.length){
     tts.active = false;
     refreshTtsButtons();
     return;
   }
-  const u = new SpeechSynthesisUtterance(tts.queue[tts.idx]);
-  u.lang = "nl-NL";
-  u.rate = tts.rate;
-  if(dutchVoice) u.voice = dutchVoice;
-  u.onend = ()=>{
-    if(tts.hardStop || tts.paused) return;
-    tts.idx++;
-    setTimeout(playNextUtterance, 350);
-  };
-  u.onerror = ()=>{
-    if(tts.hardStop) return;
-    tts.idx++;
-    setTimeout(playNextUtterance, 200);
-  };
-  speechSynthesis.speak(u);
-  tts.active = true;
-  refreshTtsButtons();
+  const a = ensureTtsAudio();
+  try{
+    const url = await fetchColetteUrl(tts.queue[tts.idx], tts.rate);
+    if(gen !== tts.gen || tts.hardStop) return;
+    a.src = url;
+    tts.active = true;
+    refreshTtsButtons();
+    await a.play();
+  }catch(err){
+    if(gen !== tts.gen || tts.hardStop) return;
+    tts.active = false;
+    refreshTtsButtons();
+    alert("Colette needs the practice server and internet.\n\nRun: python learning/serve-dutch-b1.py\nThen open http://127.0.0.1:8765/dutch-b1-learn.html\n\n" + (err && err.message ? err.message : err));
+  }
 }
 
-/** Pause while playing, or continue from pause. */
 function togglePauseContinue(){
-  if(!window.speechSynthesis) return;
-  if(tts.paused || speechSynthesis.paused){
+  const a = tts.audio;
+  if(tts.paused){
     tts.paused = false;
-    if(speechSynthesis.paused) speechSynthesis.resume();
-    else if(tts.active && tts.idx < tts.queue.length && !speechSynthesis.speaking) playNextUtterance();
+    if(a && a.src) a.play();
+    else playNextUtterance();
     refreshTtsButtons();
     return;
   }
-  if(speechSynthesis.speaking || speechSynthesis.pending || tts.active){
-    try{ speechSynthesis.pause(); }catch(e){}
+  if(tts.active && a && !a.paused){
+    a.pause();
     tts.paused = true;
     refreshTtsButtons();
   }
 }
 
 function stopTTS(){
-  if(!window.speechSynthesis) return;
+  tts.gen++;
   tts.hardStop = true;
   tts.paused = false;
   tts.active = false;
   tts.queue = [];
   tts.idx = 0;
-  speechSynthesis.cancel();
+  if(tts.audio){
+    tts.audio.pause();
+    tts.audio.removeAttribute("src");
+    tts.audio.load();
+  }
   tts.hardStop = false;
   refreshTtsButtons();
 }
@@ -1795,14 +1843,14 @@ function renderListening(){
   const ch=currentChapter();
   const L=ch.listening;
   let textHidden=true;
-  window.listenRate = window.listenRate || 0.9;
+  window.listenRate = window.listenRate || 1.0;
   let html=`<div class="card">
     <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-bottom:.4rem">
       <h3 style="font-size:1.15rem;margin:0">${esc(L.title)}</h3>
       <span class="status-pill ${materials.mode==="server"?"ok":(materials.mode==="local"?"ok":"warn")}">${materialsStatus()}</span>
     </div>
     <div style="font-size:.75rem;color:var(--muted);margin-bottom:.75rem;letter-spacing:.01em">NT2 II &middot; Jeugdjournaal-stijl &middot; nieuws/interview</div>
-    <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem">Chapter dialogue (slow TTS). For authentic Contact! 2 CD audio, open <strong>CD Lab</strong> and pick any track.</p>
+    <p style="font-size:.88rem;color:var(--muted);margin-bottom:.75rem">Chapter dialogue — Colette (Netherlands Dutch). For authentic Contact! 2 CD audio, open <strong>CD Lab</strong> and pick any track.</p>
     <div class="listen-controls">
       <button class="btn btn-sm btn-sea" onclick="playFullListening()">▶ Play all</button>
       <button class="btn btn-sm" data-tts-toggle onclick="togglePauseContinue()">■ Stop</button>
@@ -1840,7 +1888,7 @@ function renderListening(){
   window.setListenRate(window.listenRate);
 
   window.playFullListening=function(){
-    speakQueue(L.sents.map(s=>s.nl), window.listenRate || 0.9);
+    speakQueue(L.sents.map(s=>s.nl), window.listenRate || 1.0);
   };
   window.toggleHideText=function(){
     textHidden=!textHidden;

@@ -11,6 +11,7 @@ Usage:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import mimetypes
 import re
@@ -84,6 +85,30 @@ def safe_materials_path(rel: str) -> Path | None:
     return target
 
 
+TTS_VOICE = "nl-NL-ColetteNeural"
+TTS_RATE_RE = re.compile(r"^[+-]\d+%$")
+
+
+def synthesize_colette(text: str, voice: str = TTS_VOICE, rate: str = "+0%") -> bytes:
+    """Colette via free Edge TTS. Needs internet; no Azure key."""
+    import edge_tts
+
+    if not TTS_RATE_RE.match(rate):
+        rate = "+0%"
+    if not voice or not re.match(r"^nl-[A-Z]{2}-[A-Za-z]+Neural$", voice):
+        voice = TTS_VOICE
+
+    async def _run() -> bytes:
+        comm = edge_tts.Communicate(text, voice, rate=rate)
+        parts: list[bytes] = []
+        async for msg in comm.stream():
+            if msg["type"] == "audio":
+                parts.append(msg["data"])
+        return b"".join(parts)
+
+    return asyncio.run(_run())
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "DutchB1Server/1.0"
 
@@ -95,6 +120,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-cache")
+        self.send_header("Access-Control-Allow-Origin", "*")
         if extra:
             for k, v in extra.items():
                 self.send_header(k, v)
@@ -127,6 +153,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             self.send_response(status)
             self.send_header("Content-Type", ctype)
+            self.send_header("Access-Control-Allow-Origin", "*")
             self.send_header("Accept-Ranges", "bytes")
             self.send_header("Content-Length", str(length))
             if status == 206:
@@ -205,6 +232,15 @@ class Handler(BaseHTTPRequestHandler):
             self._send_file(target)
             return
 
+        if path == "/api/tts":
+            qs = parse_qs(parsed.query)
+            self._tts_audio(
+                (qs.get("text") or [""])[0],
+                (qs.get("rate") or ["+0%"])[0],
+                (qs.get("voice") or [TTS_VOICE])[0],
+            )
+            return
+
         # Allow reading contact2-index.json fallback from learning/
         if path == "/contact2-index.json":
             fallback = ROOT / "contact2-index.json"
@@ -213,6 +249,62 @@ class Handler(BaseHTTPRequestHandler):
                 return
 
         self._send(404, b"Not found", "text/plain")
+
+    def do_OPTIONS(self) -> None:  # noqa: N802
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Max-Age", "86400")
+        self.end_headers()
+
+    def _tts_audio(self, text: str, rate: str, voice: str) -> None:
+        text = re.sub(r"\s+", " ", (text or "").strip())
+        if not text:
+            self._send(400, b'{"error":"text required"}', "application/json")
+            return
+        if len(text) > 8000:
+            self._send(413, b'{"error":"text too long"}', "application/json")
+            return
+        try:
+            audio = synthesize_colette(text, voice=voice or TTS_VOICE, rate=rate or "+0%")
+        except ModuleNotFoundError:
+            self._send(
+                501,
+                b'{"error":"pip install edge-tts"}',
+                "application/json; charset=utf-8",
+            )
+            return
+        except Exception as e:
+            err = json.dumps({"error": str(e)}, ensure_ascii=False).encode("utf-8")
+            self._send(502, err, "application/json; charset=utf-8")
+            return
+        extra = {"Cache-Control": "public, max-age=3600"}
+        self._send(200, audio, "audio/mpeg", extra)
+
+    def do_POST(self) -> None:  # noqa: N802
+        parsed = urlparse(self.path)
+        if parsed.path != "/api/tts":
+            self._send(404, b"Not found", "text/plain")
+            return
+        n = int(self.headers.get("Content-Length") or 0)
+        if n > 24_000:
+            self._send(413, b'{"error":"payload too large"}', "application/json")
+            return
+        raw = self.rfile.read(n) if n else b"{}"
+        try:
+            payload = json.loads(raw.decode("utf-8") or "{}")
+        except json.JSONDecodeError:
+            self._send(400, b'{"error":"invalid json"}', "application/json")
+            return
+        if not isinstance(payload, dict):
+            self._send(400, b'{"error":"invalid json"}', "application/json")
+            return
+        self._tts_audio(
+            str(payload.get("text") or ""),
+            str(payload.get("rate") or "+0%"),
+            str(payload.get("voice") or TTS_VOICE),
+        )
 
 
 def main() -> None:
