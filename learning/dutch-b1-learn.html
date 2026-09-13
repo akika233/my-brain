@@ -1420,14 +1420,27 @@ function saveKnown(chId){ localStorage.setItem("known_"+chId, JSON.stringify([..
 function currentChapter(){ return CHAPTERS[currentChIdx]; }
 
 // ════════════════════════════════════════════════════════════════════
-// TTS — Colette (Edge neural) via the practice server
+// TTS — Colette via practice server on LAN; browser Colette on GitHub Pages
 // ════════════════════════════════════════════════════════════════════
 const EDGE_VOICE = "nl-NL-ColetteNeural";
 const tts = {
-  queue:[], idx:0, rate:"+0%", paused:false, active:false, hardStop:false,
-  audio:null, gen:0
+  queue:[], idx:0, rate:"+0%", uiRate:1.0, paused:false, active:false, hardStop:false,
+  audio:null, gen:0, engine:"browser"
 };
 const ttsCache = new Map();
+let dutchVoice = null;
+
+function loadVoices(){
+  if(!window.speechSynthesis) return;
+  const voices = speechSynthesis.getVoices();
+  dutchVoice = voices.find(v=>/colette/i.test(v.name))
+    || voices.find(v=>/^nl-NL/i.test(v.lang) && /online|neural|natural/i.test(v.name))
+    || voices.find(v=>/^nl-NL/i.test(v.lang) && /nederland|dutch/i.test(v.name))
+    || voices.find(v=>/^nl-NL/i.test(v.lang))
+    || voices.find(v=>/^nl/i.test(v.lang))
+    || null;
+}
+if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 
 function edgeRateFromUi(rate){
   if(typeof rate === "string" && /^[+-]\d+%$/.test(rate)) return rate;
@@ -1439,6 +1452,13 @@ function ttsEndpoint(){
   const saved = (localStorage.getItem("dutchTtsServer") || "").replace(/\/$/, "");
   if(saved) return saved + "/api/tts";
   return "/api/tts";
+}
+
+function useServerTts(){
+  if((localStorage.getItem("dutchTtsServer") || "").trim()) return true;
+  const h = location.hostname;
+  if(h === "localhost" || h === "127.0.0.1") return true;
+  return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h);
 }
 
 function ensureTtsAudio(){
@@ -1465,13 +1485,14 @@ async function fetchColetteUrl(text, rate){
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text, rate, voice: EDGE_VOICE })
   });
+  const buf = await res.arrayBuffer();
   if(!res.ok){
     let detail = "";
-    try { detail = (await res.json()).error || ""; } catch(e){ detail = await res.text(); }
+    try { detail = JSON.parse(new TextDecoder().decode(buf)).error || ""; }
+    catch(e){ detail = new TextDecoder().decode(buf).slice(0, 180); }
     throw new Error(detail || ("TTS HTTP " + res.status));
   }
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
+  const url = URL.createObjectURL(new Blob([buf], { type: "audio/mpeg" }));
   if(ttsCache.size > 40){
     const first = ttsCache.keys().next().value;
     URL.revokeObjectURL(ttsCache.get(first));
@@ -1482,21 +1503,26 @@ async function fetchColetteUrl(text, rate){
 }
 
 function refreshTtsButtons(){
+  const speaking = window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending);
   document.querySelectorAll("[data-tts-toggle]").forEach(btn=>{
     if(tts.paused) btn.textContent = "▶ Continue";
-    else if(tts.active) btn.textContent = "⏸ Pause";
+    else if(tts.active || speaking) btn.textContent = "⏸ Pause";
     else btn.textContent = "■ Stop";
   });
 }
 
 function speakQueue(texts, rate=1.0){
   tts.gen++;
+  tts.hardStop = true;
+  if(window.speechSynthesis) speechSynthesis.cancel();
   const a = tts.audio;
   if(a){ a.pause(); a.removeAttribute("src"); }
   tts.hardStop = false;
   tts.queue = (Array.isArray(texts) ? texts : [texts]).map(t=>String(t||"").trim()).filter(Boolean);
   tts.idx = 0;
+  tts.uiRate = typeof rate === "number" ? rate : 1.0;
   tts.rate = edgeRateFromUi(rate);
+  tts.engine = useServerTts() ? "server" : "browser";
   tts.paused = false;
   tts.active = tts.queue.length > 0;
   refreshTtsButtons();
@@ -1505,12 +1531,43 @@ function speakQueue(texts, rate=1.0){
 
 function speak(text, rate=1.0){ speakQueue([text], rate); }
 
+function playBrowserUtterance(){
+  if(!window.speechSynthesis || tts.hardStop || tts.paused) return;
+  if(tts.idx >= tts.queue.length){
+    tts.active = false;
+    refreshTtsButtons();
+    return;
+  }
+  const u = new SpeechSynthesisUtterance(tts.queue[tts.idx]);
+  u.lang = "nl-NL";
+  u.rate = tts.uiRate;
+  if(dutchVoice) u.voice = dutchVoice;
+  u.onend = ()=>{
+    if(tts.hardStop || tts.paused) return;
+    tts.idx++;
+    setTimeout(playNextUtterance, 350);
+  };
+  u.onerror = ()=>{
+    if(tts.hardStop) return;
+    tts.idx++;
+    setTimeout(playNextUtterance, 200);
+  };
+  tts.engine = "browser";
+  tts.active = true;
+  speechSynthesis.speak(u);
+  refreshTtsButtons();
+}
+
 async function playNextUtterance(){
   const gen = tts.gen;
   if(tts.hardStop || tts.paused) return;
   if(tts.idx >= tts.queue.length){
     tts.active = false;
     refreshTtsButtons();
+    return;
+  }
+  if(tts.engine !== "server"){
+    playBrowserUtterance();
     return;
   }
   const a = ensureTtsAudio();
@@ -1523,18 +1580,24 @@ async function playNextUtterance(){
     await a.play();
   }catch(err){
     if(gen !== tts.gen || tts.hardStop) return;
-    tts.active = false;
-    refreshTtsButtons();
-    alert("Colette needs the practice server and internet.\n\nRun: python learning/serve-dutch-b1.py\nThen open http://127.0.0.1:8765/dutch-b1-learn.html\n\n" + (err && err.message ? err.message : err));
+    tts.engine = "browser";
+    playBrowserUtterance();
   }
 }
 
 function togglePauseContinue(){
   const a = tts.audio;
-  if(tts.paused){
+  if(tts.paused || (window.speechSynthesis && speechSynthesis.paused)){
     tts.paused = false;
-    if(a && a.src) a.play();
+    if(window.speechSynthesis && speechSynthesis.paused) speechSynthesis.resume();
+    else if(a && a.src) a.play();
     else playNextUtterance();
+    refreshTtsButtons();
+    return;
+  }
+  if(tts.engine === "browser" && window.speechSynthesis && (speechSynthesis.speaking || speechSynthesis.pending || tts.active)){
+    try{ speechSynthesis.pause(); }catch(e){}
+    tts.paused = true;
     refreshTtsButtons();
     return;
   }
@@ -1552,6 +1615,7 @@ function stopTTS(){
   tts.active = false;
   tts.queue = [];
   tts.idx = 0;
+  if(window.speechSynthesis) speechSynthesis.cancel();
   if(tts.audio){
     tts.audio.pause();
     tts.audio.removeAttribute("src");
