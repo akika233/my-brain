@@ -1427,7 +1427,7 @@ const EDGE_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4";
 const EDGE_GEC_VERSION = "1-143.0.3650.75";
 const tts = {
   queue:[], idx:0, rate:"+0%", paused:false, active:false, hardStop:false,
-  audio:null, gen:0
+  audio:null, gen:0, engine:"neural"
 };
 const ttsCache = new Map();
 
@@ -1435,6 +1435,104 @@ function edgeRateFromUi(rate){
   if(typeof rate === "string" && /^[+-]\d+%$/.test(rate)) return rate;
   if(typeof rate === "number" && rate <= 0.8) return "-20%";
   return "+0%";
+}
+
+// ── Which engine can actually speak here ────────────────────────────
+// Neural Colette needs either the local practice server (/api/tts) or Edge's
+// own socket, which Microsoft refuses from another browser's origin. On GitHub
+// Pages in Safari or Chrome neither exists — POSTing /api/tts there just
+// returns 405 from the static host — so the browser's own Dutch voice is used.
+let neuralState = "unknown"; // unknown | unavailable
+
+function hasLocalTtsServer(){
+  if((localStorage.getItem("dutchTtsServer") || "").trim()) return true;
+  const host = location.hostname;
+  if(host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
+  // serve-dutch-b1.py binds 0.0.0.0, so a phone reaches it on a private IP
+  return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
+}
+
+function isEdgeBrowser(){ return /\bEdg\//.test(navigator.userAgent); }
+
+function neuralPossible(){
+  if(neuralState === "unavailable") return false;
+  return hasLocalTtsServer() || isEdgeBrowser();
+}
+
+// ── Browser Dutch voice (works on iPhone Safari) ─────────────────────
+let dutchVoice = null;
+
+function pickDutchVoice(){
+  if(!window.speechSynthesis) return null;
+  const voices = speechSynthesis.getVoices() || [];
+  let best = null;
+  let bestScore = -1;
+  for(const v of voices){
+    const lang = (v.lang || "").toLowerCase().replace("_", "-");
+    if(!lang.startsWith("nl")) continue;
+    let score = lang.startsWith("nl-nl") ? 100 : 70;
+    if(/colette|xander|ellen|lotte|fenna|claire/i.test(v.name || "")) score += 20;
+    if(/google/i.test(v.name || "")) score += 10;
+    if(score > bestScore){ bestScore = score; best = v; }
+  }
+  return best;
+}
+
+function refreshDutchVoice(){ dutchVoice = pickDutchVoice() || dutchVoice; }
+
+if(window.speechSynthesis){
+  refreshDutchVoice();
+  // Safari reports an empty list until voices finish loading
+  speechSynthesis.onvoiceschanged = refreshDutchVoice;
+  setTimeout(refreshDutchVoice, 500);
+}
+
+function browserRate(rate){
+  if(typeof rate === "number" && rate > 0) return Math.min(2, Math.max(0.5, rate));
+  const m = /^([+-])(\d+)%$/.exec(String(rate || ""));
+  if(m){
+    const pct = Number(m[2]) * (m[1] === "-" ? -1 : 1);
+    return Math.min(2, Math.max(0.5, 1 + pct / 100));
+  }
+  return 1;
+}
+
+function speakBrowserUtterance(text, gen){
+  if(!window.speechSynthesis) throw new Error("speechSynthesis unsupported");
+  refreshDutchVoice();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = (dutchVoice && dutchVoice.lang) || "nl-NL";
+  if(dutchVoice) u.voice = dutchVoice;
+  u.rate = browserRate(tts.rate);
+  u.onend = ()=>{
+    if(gen !== tts.gen || tts.hardStop || tts.paused) return;
+    tts.idx++;
+    playNextUtterance();
+  };
+  u.onerror = ()=>{
+    if(gen !== tts.gen || tts.hardStop) return;
+    tts.active = false;
+    refreshTtsButtons();
+  };
+  tts.engine = "browser";
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+  tts.active = true;
+  refreshTtsButtons();
+}
+
+function ttsUnavailable(err){
+  tts.active = false;
+  refreshTtsButtons();
+  alert(
+    "No Dutch voice is available in this browser.\n\n"
+    + "On iPhone: Settings > Accessibility > Spoken Content > Voices > Dutch, "
+    + "and check the side switch is not on silent.\n\n"
+    + "For the neural Colette voice run:\n"
+    + "  python learning/serve-dutch-b1.py\n"
+    + "then open http://127.0.0.1:8765/dutch-b1-learn.html\n\n"
+    + (err && err.message ? err.message : (err || ""))
+  );
 }
 
 function ttsEndpoint(){
@@ -1593,8 +1691,15 @@ async function fetchColetteUrl(text, rate){
   const key = rate + "\n" + text;
   if(ttsCache.has(key)) return ttsCache.get(key);
   let buf;
-  try { buf = await edgeTtsMp3(text, rate); }
-  catch(e){ buf = await fetchServerTts(text, rate); }
+  // Ask the practice server first when it is there; its edge-tts call is far
+  // more reliable than opening Microsoft's socket from the page itself.
+  if(hasLocalTtsServer()){
+    try { buf = await fetchServerTts(text, rate); }
+    catch(e){ buf = await edgeTtsMp3(text, rate); }
+  } else {
+    try { buf = await edgeTtsMp3(text, rate); }
+    catch(e){ buf = await fetchServerTts(text, rate); }
+  }
   const url = URL.createObjectURL(new Blob([buf], { type: "audio/mpeg" }));
   if(ttsCache.size > 40){
     const first = ttsCache.keys().next().value;
@@ -1617,6 +1722,7 @@ function speakQueue(texts, rate=1.0){
   tts.gen++;
   const a = tts.audio;
   if(a){ a.pause(); a.removeAttribute("src"); }
+  if(window.speechSynthesis) speechSynthesis.cancel();
   tts.hardStop = false;
   tts.queue = (Array.isArray(texts) ? texts : [texts]).map(t=>String(t||"").trim()).filter(Boolean);
   tts.idx = 0;
@@ -1637,23 +1743,48 @@ async function playNextUtterance(){
     refreshTtsButtons();
     return;
   }
+  const text = tts.queue[tts.idx];
+
+  // Speak immediately when neural is out of reach. Awaiting a fetch first would
+  // break the tap-to-play gesture that iOS requires before it emits any audio.
+  if(!neuralPossible()){
+    try { speakBrowserUtterance(text, gen); }
+    catch(err){ ttsUnavailable(err); }
+    return;
+  }
+
   const a = ensureTtsAudio();
   try{
-    const url = await fetchColetteUrl(tts.queue[tts.idx], tts.rate);
+    const url = await fetchColetteUrl(text, tts.rate);
     if(gen !== tts.gen || tts.hardStop) return;
+    tts.engine = "neural";
     a.src = url;
     tts.active = true;
     refreshTtsButtons();
     await a.play();
   }catch(err){
     if(gen !== tts.gen || tts.hardStop) return;
-    tts.active = false;
-    refreshTtsButtons();
-    alert("Microsoft Edge TTS is free, but Chrome/Safari block it on GitHub Pages.\n\nOpen this page in Microsoft Edge, or run:\npython learning/serve-dutch-b1.py\nthen http://127.0.0.1:8765/dutch-b1-learn.html\n\n" + (err && err.message ? err.message : err));
+    neuralState = "unavailable";
+    try { speakBrowserUtterance(text, gen); }
+    catch(e){ ttsUnavailable(err); }
   }
 }
 
 function togglePauseContinue(){
+  if(tts.engine === "browser" && window.speechSynthesis){
+    if(tts.paused){
+      tts.paused = false;
+      speechSynthesis.resume();
+      refreshTtsButtons();
+      return;
+    }
+    if(tts.active){
+      speechSynthesis.pause();
+      tts.paused = true;
+      refreshTtsButtons();
+    }
+    return;
+  }
   const a = tts.audio;
   if(tts.paused){
     tts.paused = false;
@@ -1676,6 +1807,7 @@ function stopTTS(){
   tts.active = false;
   tts.queue = [];
   tts.idx = 0;
+  if(window.speechSynthesis) speechSynthesis.cancel();
   if(tts.audio){
     tts.audio.pause();
     tts.audio.removeAttribute("src");
