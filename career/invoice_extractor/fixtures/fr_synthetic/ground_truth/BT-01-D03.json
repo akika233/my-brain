@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "document_id": "BT-01-D03",
+  "scenario_id": "BT-01",
+  "document_type": "final_invoice",
+  "document_type_label": "Facture de solde",
+  "document_number": "SOL-BT-2026-001-03",
+  "issue_date": "2026-04-07",
+  "currency": "EUR",
+  "language": "fr-FR",
+  "synthetic_data": true,
+  "seller": {
+    "legal_name": "Atelier Donnees Fictives SAS",
+    "address": "Adresse fictive - 75000 Paris",
+    "siren": "000 000 000 (identifiant de demonstration)",
+    "vat_number": "FR00 000000000 (demonstration)",
+    "iban": "FR00 DEMO 0000 0000 0000 0000 000 (non bancaire)"
+  },
+  "buyer": {
+    "legal_name": "Client Demo A",
+    "address": "Adresse fictive - 33000 Bordeaux"
+  },
+  "line_items": [
+    {
+      "line_id": "L01",
+      "label": "Main-d'oeuvre pose",
+      "quantity": 2,
+      "unit_price_cents": 6200,
+      "discount_basis_points": 0,
+      "vat_rate_basis_points": 2000,
+      "line_total_cents": 12400
+    },
+    {
+      "line_id": "L02",
+      "label": "Fourniture isolant",
+      "quantity": 3,
+      "unit_price_cents": 4890,
+      "discount_basis_points": 0,
+      "vat_rate_basis_points": 2000,
+      "line_total_cents": 14670
+    },
+    {
+      "line_id": "L03",
+      "label": "Location echafaudage",
+      "quantity": 1,
+      "unit_price_cents": 2750,
+      "discount_basis_points": 0,
+      "vat_rate_basis_points": 2000,
+      "line_total_cents": 2750
+    }
+  ],
+  "computed_totals": {
+    "ht_cents": 29820,
+    "vat_cents": 5964,
+    "ttc_cents": 35784,
+    "vat_breakdown": [
+      {
+        "rate_basis_points": 2000,
+        "base_cents": 29820,
+        "tax_cents": 5964
+      }
+    ]
+  },
+  "printed_totals": {
+    "ht_cents": 29820,
+    "vat_cents": 5964,
+    "ttc_cents": 35784,
+    "vat_breakdown": [
+      {
+        "rate_basis_points": 2000,
+        "base_cents": 29820,
+        "tax_cents": 5964
+      }
+    ]
+  },
+  "related_document_ids": [
+    "BT-01-D01",
+    "BT-01-D02"
+  ],
+  "integrity": {
+    "status": "valid",
+    "expected_findings": [],
+    "review_required": false
+  },
+  "render": {
+    "pdf_path": "pdf/BT-01-D03.pdf",
+    "expected_tokens": [
+      "BT-01-D03",
+      "SOL-BT-2026-001-03"
+    ]
+  }
+}

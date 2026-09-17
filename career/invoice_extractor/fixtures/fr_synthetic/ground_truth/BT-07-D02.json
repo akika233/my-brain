@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0",
+  "document_id": "BT-07-D02",
+  "scenario_id": "BT-07",
+  "document_type": "invoice",
+  "document_type_label": "Facture",
+  "document_number": "FAC-BT-2026-007-02",
+  "issue_date": "2026-04-18",
+  "currency": "EUR",
+  "language": "fr-FR",
+  "synthetic_data": true,
+  "seller": {
+    "legal_name": "Atelier Donnees Fictives SAS",
+    "address": "Adresse fictive - 75000 Paris",
+    "siren": "000 000 000 (identifiant de demonstration)",
+    "vat_number": "FR00 000000000 (demonstration)",
+    "iban": "FR00 DEMO 0000 0000 0000 0000 000 (non bancaire)"
+  },
+  "buyer": {
+    "legal_name": "Client Demo C",
+    "address": "Adresse fictive - 69000 Lyon"
+  },
+  "line_items": [
+    {
+      "line_id": "L01",
+      "label": "Main-d'oeuvre pose",
+      "quantity": 2,
+      "unit_price_cents": 6200,
+      "discount_basis_points": 0,
+      "vat_rate_basis_points": 2000,
+      "line_total_cents": 12400
+    },
+    {
+      "line_id": "L02",
+      "label": "Fourniture isolant",
+      "quantity": 3,
+      "unit_price_cents": 4890,
+      "discount_basis_points": 0,
+      "vat_rate_basis_points": 2000,
+      "line_total_cents": 14670
+    },
+    {
+      "line_id": "L03",
+      "label": "Location echafaudage",
+      "quantity": 1,
+      "unit_price_cents": 2750,
+      "discount_basis_points": 0,
+      "vat_rate_basis_points": 2000,
+      "line_total_cents": 2750
+    }
+  ],
+  "computed_totals": {
+    "ht_cents": 29820,
+    "vat_cents": 5964,
+    "ttc_cents": 35784,
+    "vat_breakdown": [
+      {
+        "rate_basis_points": 2000,
+        "base_cents": 29820,
+        "tax_cents": 5964
+      }
+    ]
+  },
+  "printed_totals": {
+    "ht_cents": 29820,
+    "vat_cents": 6047,
+    "ttc_cents": 35867,
+    "vat_breakdown": [
+      {
+        "rate_basis_points": 2000,
+        "base_cents": 29820,
+        "tax_cents": 5964
+      }
+    ]
+  },
+  "related_document_ids": [
+    "BT-07-D01"
+  ],
+  "integrity": {
+    "status": "attention",
+    "expected_findings": [
+      "wrong_vat_amount"
+    ],
+    "review_required": true
+  },
+  "render": {
+    "pdf_path": "pdf/BT-07-D02.pdf",
+    "expected_tokens": [
+      "BT-07-D02",
+      "FAC-BT-2026-007-02"
+    ]
+  }
+}

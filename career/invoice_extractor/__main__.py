@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Extract invoice fields from PDFs (local folder or NF Docstore).
+Extract invoice fields from PDFs (local folder or bosuka DocStore).
 
 Field mapping (French invoices):
   supplier          <- Emetteur / Emettrice, Vendu par, letterhead company,
@@ -14,8 +14,9 @@ Field mapping (French invoices):
   needs_review      <- set when a field is missing or HT+VAT does not reconcile with TTC
 
 Usage:
-  python -m career.invoice_extractor --input "C:\\Users\\shjiang\\OneDrive - New Balance Athletics, Inc\\Documents\\Invoice"
-  python -m career.invoice_extractor --from-docstore --lref 79954
+  python -m career.invoice_extractor --input "D:\\Invoices"
+  python -m career.invoice_extractor --from-docstore --country AT --lref 00011841
+  python -m career.invoice_extractor --from-excel career/DTC_Retail_2026_Budget_Tracker.xlsx --sheet "2026 GL listing"
 """
 from __future__ import annotations
 
@@ -24,7 +25,13 @@ import os
 import sys
 from pathlib import Path
 
-from .docstore import LocalFolderDocstore, build_docstore_from_env, default_invoice_folder
+from .docstore import (
+    BosukaDocstore,
+    LocalFolderDocstore,
+    build_docstore_from_env,
+    default_invoice_folder,
+    read_jobs_from_excel,
+)
 from .pipeline import extract_invoice
 from .store import save_records
 
@@ -53,11 +60,44 @@ def process_pdfs(paths: list[Path]) -> list:
             print(
                 f"OK{flag}  {path.name} | {rec.supplier} | {rec.invoice_date} | "
                 f"invoice={rec.invoice_number} | po={rec.po_number} | "
-                f"HT={rec.amount} | TVA={rec.vat_amount}"
+                f"amt={rec.amount} | basic={rec.basic_rent} | svc={rec.service_charges} | "
+                f"mkt={rec.marketing_charges} | to={rec.turnover_rent} | "
+                f"stor={rec.storage_charges} | period={rec.service_period}"
             )
         except Exception as exc:  # noqa: BLE001
             print(f"ERR {path.name}: {exc}", file=sys.stderr)
     return records
+
+
+def _download_from_docstore(
+    *,
+    jobs: list[tuple[str, str]] | None,
+    lrefs: list[str] | None,
+    country: str | None,
+    download_dir: Path,
+) -> list[Path]:
+    if country:
+        os.environ["DOCSTORE_COUNTRY"] = country
+    if not os.getenv("DOCSTORE_MODE"):
+        os.environ["DOCSTORE_MODE"] = "bosuka"
+
+    client = build_docstore_from_env(
+        extra_lrefs=None if jobs else (lrefs or None),
+        jobs=jobs,
+    )
+    pdf_paths: list[Path] = []
+    try:
+        if isinstance(client, BosukaDocstore):
+            client.prefetch()
+        for doc_id in client.list_pdfs():
+            try:
+                pdf_paths.append(client.download(doc_id, download_dir))
+                print(f"DL  {pdf_paths[-1].name}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"ERR {doc_id}: {exc}", file=sys.stderr)
+    finally:
+        client.close()
+    return pdf_paths
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -73,19 +113,49 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--from-docstore",
         action="store_true",
-        help="Download from NF Docstore / configured DOCSTORE_MODE",
+        help="Download from bosuka DocStore via Selenium",
+    )
+    parser.add_argument(
+        "--from-excel",
+        type=Path,
+        help="Excel with DocRef + Country columns (replaces hardcoded invoice list)",
+    )
+    parser.add_argument(
+        "--sheet",
+        default=None,
+        help='Excel sheet name, e.g. "2026 GL listing" (auto-detect if omitted)',
+    )
+    parser.add_argument(
+        "--docref-col",
+        default=None,
+        help="Override DocRef column header (default: DocRef / AllRows.DOCREF / LREF)",
+    )
+    parser.add_argument(
+        "--country-col",
+        default=None,
+        help="Override Country column header (default: Country)",
     )
     parser.add_argument(
         "--lref",
         action="append",
         default=[],
-        help="NF Docstore LREF to download (repeatable), e.g. --lref 79954",
+        help="DocStore LREF to download (repeatable), e.g. --lref 00011841",
+    )
+    parser.add_argument(
+        "--country",
+        default=None,
+        help="DocStore country when using --lref (store = '{country} Docstore')",
     )
     parser.add_argument(
         "--download-dir",
         type=Path,
         default=None,
-        help="Where downloads are saved (default: NB Invoice OneDrive folder)",
+        help="Where downloads are saved (default: invoice folder / RENT_TO_TEST style)",
+    )
+    parser.add_argument(
+        "--download-only",
+        action="store_true",
+        help="Only download PDFs; skip field extraction / Excel output",
     )
     parser.add_argument(
         "--output",
@@ -97,7 +167,7 @@ def main(argv: list[str] | None = None) -> int:
         "--files",
         nargs="*",
         type=Path,
-        help="Specific PDF file paths",
+        help="Specific PDF/image file paths",
     )
     args = parser.parse_args(argv)
     download_dir = args.download_dir or default_dir
@@ -106,23 +176,50 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.files:
         pdf_paths = list(args.files)
+    elif args.from_excel:
+        jobs = read_jobs_from_excel(
+            args.from_excel,
+            sheet=args.sheet,
+            docref_col=args.docref_col,
+            country_col=args.country_col,
+        )
+        if not jobs:
+            print("No DocRef/Country rows found in Excel.", file=sys.stderr)
+            return 1
+        print(f"Loaded {len(jobs)} job(s) from {args.from_excel.name}")
+        for country, docref in jobs[:5]:
+            print(f"  {country}  {docref}")
+        if len(jobs) > 5:
+            print(f"  ... +{len(jobs) - 5} more")
+        pdf_paths = _download_from_docstore(
+            jobs=jobs,
+            lrefs=None,
+            country=None,
+            download_dir=download_dir,
+        )
     elif args.from_docstore or args.lref:
-        if args.lref and not os.getenv("DOCSTORE_MODE"):
-            os.environ["DOCSTORE_MODE"] = "nf"
-        client = build_docstore_from_env(extra_lrefs=args.lref or None)
-        try:
-            for doc_id in client.list_pdfs():
-                pdf_paths.append(client.download(doc_id, download_dir))
-        finally:
-            client.close()
+        pdf_paths = _download_from_docstore(
+            jobs=None,
+            lrefs=args.lref or None,
+            country=args.country,
+            download_dir=download_dir,
+        )
     else:
         folder = args.input or default_dir
-        client = LocalFolderDocstore(folder)
-        pdf_paths = [folder / name for name in client.list_pdfs()]
+        folder = Path(folder)
+        pdf_paths = [
+            p
+            for p in sorted(folder.iterdir())
+            if p.suffix.lower() in {".pdf", ".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp"}
+        ]
 
     if not pdf_paths:
-        print("No PDFs found.", file=sys.stderr)
+        print("No invoice files found.", file=sys.stderr)
         return 1
+
+    if args.download_only:
+        print(f"Downloaded {len(pdf_paths)} PDF(s) -> {download_dir}")
+        return 0
 
     records = process_pdfs(pdf_paths)
     if not records:

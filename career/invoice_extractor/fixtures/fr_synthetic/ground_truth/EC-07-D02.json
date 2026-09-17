@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "document_id": "EC-07-D02",
+  "scenario_id": "EC-07",
+  "document_type": "invoice",
+  "document_type_label": "Facture",
+  "document_number": "FAC-EC-2026-006-02",
+  "issue_date": "2026-04-18",
+  "currency": "EUR",
+  "language": "fr-FR",
+  "synthetic_data": true,
+  "seller": {
+    "legal_name": "Atelier Donnees Fictives SAS",
+    "address": "Adresse fictive - 75000 Paris",
+    "siren": "000 000 000 (identifiant de demonstration)",
+    "vat_number": "FR00 000000000 (demonstration)",
+    "iban": "FR00 DEMO 0000 0000 0000 0000 000 (non bancaire)"
+  },
+  "buyer": {
+    "legal_name": "Client Demo C",
+    "address": "Adresse fictive - 69000 Lyon"
+  },
+  "line_items": [
+    {
+      "line_id": "L01",
+      "label": "Gourde isotherme",
+      "quantity": 2,
+      "unit_price_cents": 1890,
+      "discount_basis_points": 0,
+      "vat_rate_basis_points": 2000,
+      "line_total_cents": 3780
+    },
+    {
+      "line_id": "L02",
+      "label": "Livre cuisine",
+      "quantity": 3,
+      "unit_price_cents": 1590,
+      "discount_basis_points": 0,
+      "vat_rate_basis_points": 550,
+      "line_total_cents": 4770
+    },
+    {
+      "line_id": "L03",
+      "label": "Carte cadeau numerique",
+      "quantity": 1,
+      "unit_price_cents": 2500,
+      "discount_basis_points": 0,
+      "vat_rate_basis_points": 0,
+      "line_total_cents": 2500
+    }
+  ],
+  "computed_totals": {
+    "ht_cents": 11050,
+    "vat_cents": 1018,
+    "ttc_cents": 12068,
+    "vat_breakdown": [
+      {
+        "rate_basis_points": 0,
+        "base_cents": 2500,
+        "tax_cents": 0
+      },
+      {
+        "rate_basis_points": 550,
+        "base_cents": 4770,
+        "tax_cents": 262
+      },
+      {
+        "rate_basis_points": 2000,
+        "base_cents": 3780,
+        "tax_cents": 756
+      }
+    ]
+  },
+  "printed_totals": {
+    "ht_cents": 11050,
+    "vat_cents": 1018,
+    "ttc_cents": 12068,
+    "vat_breakdown": [
+      {
+        "rate_basis_points": 0,
+        "base_cents": 2500,
+        "tax_cents": 0
+      },
+      {
+        "rate_basis_points": 550,
+        "base_cents": 4770,
+        "tax_cents": 262
+      },
+      {
+        "rate_basis_points": 2000,
+        "base_cents": 3780,
+        "tax_cents": 756
+      }
+    ]
+  },
+  "related_document_ids": [
+    "EC-07-D01"
+  ],
+  "integrity": {
+    "status": "attention",
+    "expected_findings": [
+      "duplicate_invoice_number"
+    ],
+    "review_required": true
+  },
+  "render": {
+    "pdf_path": "pdf/EC-07-D02.pdf",
+    "expected_tokens": [
+      "EC-07-D02",
+      "FAC-EC-2026-006-02"
+    ]
+  }
+}

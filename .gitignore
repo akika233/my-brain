@@ -20,6 +20,15 @@ career/invoices.csv
 career/invoices.json
 career/invoice_extractor_package.zip
 
+# Real supplier invoice scans used as test fixtures — this repo is public, and
+# these carry landlord names, IBANs, contract numbers and amounts
+career/invoice_extractor/fixtures/ge_rent/
+career/ge_rent_invoices.xlsx
+
+# Generated distribution bundle (duplicates the source under career/)
+career/invoice_extractor_bundle/
+career/invoice_extractor_bundle.zip
+
 # Hevy API cache (local only)
 health/hevy-*.json
 

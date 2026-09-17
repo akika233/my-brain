@@ -113,6 +113,7 @@ Pull invoice fields from bosuka DocStore PDFs (Selenium + basic auth), or from a
 
 ```bash
 pip install -r career/requirements-invoice.txt
+# Python 3.10–3.13. OCR is rapidocr + onnxruntime (not rapidocr-onnxruntime).
 # copy career/config.example.env → career/.env
 # set DOCSTORE_USERNAME, DOCSTORE_PASSWORD, DOCSTORE_COUNTRY, DOCSTORE_LREFS
 # Chrome must be installed (Selenium Manager fetches the driver)

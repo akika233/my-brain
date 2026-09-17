@@ -22,27 +22,135 @@ _OCR_RESOLUTION = 300
 _ocr_engine = None
 
 
-def extract_text(pdf_path: Path) -> str:
-    """Extract text from a PDF, preserving visual row/column structure where possible.
+_IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp", ".bmp"}
 
-    Order of preference:
-      1. pdfplumber word coordinates grouped into visual rows (keeps label/value on one line)
-      2. pdfplumber flat text
-      3. pypdf flat text
+
+def _load_rapidocr():
+    """Prefer the current `rapidocr` package (Python 3.13). Fall back to the old one."""
+    try:
+        from rapidocr import RapidOCR
+        return RapidOCR
+    except ImportError:
+        from rapidocr_onnxruntime import RapidOCR
+        return RapidOCR
+
+
+def _ensure_ocr_engine():
+    global _ocr_engine
+    if _ocr_engine is None:
+        _ocr_engine = _load_rapidocr()()
+    return _ocr_engine
+
+
+def _ocr_items(raw):
+    """Yield (box, text, confidence) from RapidOCR 3.x output or 1.x (list, elapse)."""
+    if raw is None:
+        return
+    txts = getattr(raw, "txts", None)
+    if txts is not None:
+        boxes = getattr(raw, "boxes", None)
+        scores = getattr(raw, "scores", None)
+        n = len(txts)
+        if boxes is None:
+            boxes = [None] * n
+        if scores is None:
+            scores = [1.0] * n
+        for box, text, score in zip(boxes, txts, scores):
+            yield box, text, float(score if score is not None else 0.0)
+        return
+    if hasattr(raw, "txts"):
+        return
+    items = raw[0] if isinstance(raw, tuple) else raw
+    for item in items or []:
+        yield item[0], item[1], item[2]
+
+
+def extract_text(pdf_path: Path) -> str:
+    """Extract text from a PDF or invoice image.
+
+    PDFs: layout-aware pdfplumber, then flat pdfplumber/pypdf.
+    Images (.jpg/.png/…): full-page RapidOCR (these GE rent samples are scans).
     """
     path = Path(pdf_path)
     if not path.is_file():
         raise FileNotFoundError(path)
+
+    if path.suffix.lower() in _IMAGE_SUFFIXES:
+        text = ocr_image(path)
+        if text and text.strip():
+            return text
+        raise ValueError(f"OCR produced no text for image {path.name}")
 
     for extractor in (_try_pdfplumber_layout, _try_pdfplumber, _try_pypdf):
         text = extractor(path)
         if text and text.strip():
             return text
 
+    # Scanned PDF with no text layer — OCR full first page
+    text = ocr_pdf_page(path)
+    if text and text.strip():
+        return text
+
     raise ValueError(
         f"No extractable text in {path.name}. "
-        "If this is a scanned PDF, OCR support is needed."
+        "Install rapidocr and onnxruntime for scanned invoices."
     )
+
+
+def ocr_image(path: Path) -> str:
+    """OCR a full invoice image into approximate reading-order text."""
+    try:
+        import numpy as np
+        from PIL import Image
+
+        engine = _ensure_ocr_engine()
+        img = Image.open(path).convert("RGB")
+        # Upscale small phone/email crops so glyphs are readable
+        longest = max(img.size)
+        if longest < 1600:
+            scale = 1600 / longest
+            img = img.resize((int(img.width * scale), int(img.height * scale)))
+        return _ocr_result_to_text(engine(np.array(img)))
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def ocr_pdf_page(path: Path, page_index: int = 0) -> str:
+    """Rasterise one PDF page and OCR it (for scan-only PDFs)."""
+    try:
+        import numpy as np
+        import pdfplumber
+
+        engine = _ensure_ocr_engine()
+        with pdfplumber.open(path) as pdf:
+            if page_index >= len(pdf.pages):
+                return ""
+            image = pdf.pages[page_index].to_image(resolution=_OCR_RESOLUTION).original
+        return _ocr_result_to_text(engine(np.array(image)))
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def _ocr_result_to_text(result) -> str:
+    rows: list[tuple[float, list[tuple[float, str]]]] = []
+    for box, text, confidence in _ocr_items(result):
+        if box is None or confidence < _MIN_OCR_CONFIDENCE:
+            continue
+        text = (text or "").strip()
+        if not text:
+            continue
+        ys = [p[1] for p in box]
+        xs = [p[0] for p in box]
+        y, x = min(ys), min(xs)
+        if rows and abs(y - rows[-1][0]) < 18:
+            rows[-1][1].append((x, text))
+        else:
+            rows.append((y, [(x, text)]))
+    lines: list[str] = []
+    for _, cells in rows:
+        cells.sort()
+        lines.append("  ".join(t for _, t in cells))
+    return "\n".join(lines)
 
 
 def _try_pdfplumber_layout(path: Path) -> str:
@@ -145,33 +253,26 @@ def ocr_letterhead(pdf_path: Path) -> str | None:
 
 def _ocr_band(pdf_path: Path) -> list[tuple[float, float, str]]:
     """OCR the letterhead band, returning (y, text_height, text) per detection."""
-    global _ocr_engine
     try:
         import numpy as np
         import pdfplumber
-        from rapidocr_onnxruntime import RapidOCR
-    except ImportError:
-        return []
 
-    if _ocr_engine is None:
-        _ocr_engine = RapidOCR()
-
-    try:
+        engine = _ensure_ocr_engine()
         with pdfplumber.open(pdf_path) as pdf:
             if not pdf.pages:
                 return []
             page = pdf.pages[0]
             band = (0, 0, page.width, page.height * _LETTERHEAD_BAND)
             image = page.crop(band).to_image(resolution=_OCR_RESOLUTION).original
-        result, _ = _ocr_engine(np.array(image))
+        result = engine(np.array(image))
     except Exception:  # noqa: BLE001 - OCR is best-effort
         return []
 
     lines: list[tuple[float, float, str]] = []
-    for box, text, confidence in result or []:
-        if confidence < _MIN_OCR_CONFIDENCE:
+    for box, text, confidence in _ocr_items(result):
+        if box is None or confidence < _MIN_OCR_CONFIDENCE:
             continue
-        text = text.strip()
+        text = (text or "").strip()
         if not text:
             continue
         ys = [point[1] for point in box]

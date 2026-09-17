@@ -1,29 +1,30 @@
-"""PDF file -> InvoiceRecord, including the optional OCR retry.
-
-Kept separate from parse_invoice (text -> fields) and pdf_text (PDF -> text) so that
-each stage stays independently testable.
-"""
+"""Invoice file -> InvoiceRecord (PDF or image), with rent-aware routing."""
 from __future__ import annotations
 
 from pathlib import Path
 
 from .models import InvoiceRecord
 from .parse_invoice import parse_invoice_text
+from .parse_rent_de import looks_like_german_rent, parse_german_rent_invoice
 from .pdf_text import extract_text, ocr_letterhead
 
 
 def extract_invoice(path: Path, allow_ocr: bool = True) -> InvoiceRecord:
-    """Parse one invoice PDF, falling back to letterhead OCR for a missing supplier.
+    """Parse one invoice PDF/image.
 
-    OCR is deliberately driven by a missing field rather than by an empty text layer:
-    invoices exist that carry complete text for every amount yet print the supplier's
-    name only inside a logo image, so a page-level "is this scanned?" test never fires.
+    German commercial-rent layouts (Mindestmiete / Nebenkosten / Rental income)
+    use a dedicated parser. Everything else keeps the existing FR/generic path,
+    with letterhead OCR when supplier is missing on a PDF.
     """
     path = Path(path)
     text = extract_text(path)
+
+    if looks_like_german_rent(text):
+        return parse_german_rent_invoice(text, source_file=path.name)
+
     record = parse_invoice_text(text, source_file=path.name)
 
-    if allow_ocr and record.supplier is None:
+    if allow_ocr and record.supplier is None and path.suffix.lower() == ".pdf":
         brand = ocr_letterhead(path)
         if brand:
             record = parse_invoice_text(text, source_file=path.name, ocr_supplier=brand)
