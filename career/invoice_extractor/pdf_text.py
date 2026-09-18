@@ -25,51 +25,185 @@ _ocr_engine = None
 _IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".webp", ".bmp"}
 
 
-def _load_rapidocr():
-    """Prefer the current `rapidocr` package (Python 3.13). Fall back to the old one."""
-    try:
-        from rapidocr import RapidOCR
-        return RapidOCR
-    except ImportError:
-        from rapidocr_onnxruntime import RapidOCR
-        return RapidOCR
+def _make_paddle_ocr():
+    """Build a PaddleOCR engine. 3.x and 2.x take different constructor kwargs."""
+    import os
+
+    # Skip the slow hoster ping. Disable oneDNN: PaddlePaddle 3.3.x CPU + PIR crashes
+    # with ConvertPirAttribute2RuntimeAttribute on Windows.
+    os.environ.setdefault("PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK", "True")
+    os.environ.setdefault("FLAGS_use_mkldnn", "0")
+    from paddleocr import PaddleOCR
+
+    attempts = (
+        dict(
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=False,
+            enable_mkldnn=False,
+        ),
+        dict(
+            lang="en",
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=False,
+            enable_mkldnn=False,
+        ),
+        dict(
+            lang="french",
+            use_doc_orientation_classify=False,
+            use_doc_unwarping=False,
+            use_textline_orientation=False,
+            enable_mkldnn=False,
+        ),
+        dict(use_angle_cls=True, lang="en", show_log=False, enable_mkldnn=False),
+        dict(use_angle_cls=True, lang="en", show_log=False),
+        dict(lang="en"),
+        dict(),
+    )
+    last_error: Exception | None = None
+    for kwargs in attempts:
+        try:
+            return PaddleOCR(**kwargs)
+        except (TypeError, ValueError) as exc:
+            last_error = exc
+    if last_error is not None:
+        raise last_error
+    return PaddleOCR()
 
 
 def _ensure_ocr_engine():
     global _ocr_engine
     if _ocr_engine is None:
-        _ocr_engine = _load_rapidocr()()
+        _ocr_engine = _make_paddle_ocr()
     return _ocr_engine
 
 
+def _to_bgr(image):
+    """PaddleOCR expects OpenCV-style BGR arrays."""
+    import numpy as np
+
+    arr = np.asarray(image)
+    if arr.ndim == 3 and arr.shape[2] == 3:
+        return arr[:, :, ::-1].copy()
+    return arr
+
+
+def _run_ocr(image):
+    engine = _ensure_ocr_engine()
+    if hasattr(engine, "predict"):
+        try:
+            return engine.predict(image)
+        except TypeError:
+            pass
+    ocr = getattr(engine, "ocr", None)
+    if callable(ocr):
+        try:
+            return ocr(image, cls=True)
+        except TypeError:
+            return ocr(image)
+    raise RuntimeError("PaddleOCR engine has no predict/ocr method")
+
+
+def _paddle3_page(page) -> dict | None:
+    """Normalize a PaddleOCR 3.x page result to rec_texts / rec_scores / rec_polys."""
+    if page is None:
+        return None
+    if isinstance(page, dict):
+        data = page.get("res", page)
+        if isinstance(data, dict) and (
+            "rec_texts" in data or "rec_text" in data or "dt_polys" in data
+        ):
+            return data
+        return None
+    rec_texts = getattr(page, "rec_texts", None)
+    if rec_texts is not None:
+        polys = getattr(page, "rec_polys", None)
+        if polys is None:
+            polys = getattr(page, "dt_polys", None)
+        return {
+            "rec_texts": rec_texts,
+            "rec_scores": getattr(page, "rec_scores", None),
+            "rec_polys": polys,
+        }
+    for meth in ("to_dict", "json"):
+        fn = getattr(page, meth, None)
+        if not callable(fn):
+            continue
+        try:
+            data = fn()
+        except Exception:  # noqa: BLE001
+            continue
+        if isinstance(data, dict):
+            data = data.get("res", data)
+            if isinstance(data, dict) and "rec_texts" in data:
+                return data
+    try:
+        texts = page["rec_texts"]
+    except Exception:  # noqa: BLE001
+        return None
+    scores = None
+    polys = None
+    try:
+        scores = page["rec_scores"]
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        polys = page["rec_polys"]
+    except Exception:  # noqa: BLE001
+        try:
+            polys = page["dt_polys"]
+        except Exception:  # noqa: BLE001
+            pass
+    return {"rec_texts": texts, "rec_scores": scores, "rec_polys": polys}
+
+
+def _as_seq(value):
+    if value is None:
+        return []
+    if isinstance(value, (str, int, float)):
+        return [value]
+    return value
+
+
 def _ocr_items(raw):
-    """Yield (box, text, confidence) from RapidOCR 3.x output or 1.x (list, elapse)."""
+    """Yield (box, text, confidence) from PaddleOCR 3.x or 2.x output."""
     if raw is None:
         return
-    txts = getattr(raw, "txts", None)
-    if txts is not None:
-        boxes = getattr(raw, "boxes", None)
-        scores = getattr(raw, "scores", None)
-        n = len(txts)
-        if boxes is None:
-            boxes = [None] * n
-        if scores is None:
-            scores = [1.0] * n
-        for box, text, score in zip(boxes, txts, scores):
-            yield box, text, float(score if score is not None else 0.0)
-        return
-    if hasattr(raw, "txts"):
-        return
-    items = raw[0] if isinstance(raw, tuple) else raw
-    for item in items or []:
-        yield item[0], item[1], item[2]
+    pages = raw if isinstance(raw, list) else [raw]
+    for page in pages:
+        mapped = _paddle3_page(page)
+        if mapped is not None:
+            texts = _as_seq(mapped.get("rec_texts", mapped.get("rec_text")))
+            scores = _as_seq(mapped.get("rec_scores", mapped.get("rec_score")))
+            polys = mapped.get("rec_polys")
+            if polys is None:
+                polys = mapped.get("dt_polys")
+            polys = _as_seq(polys)
+            for i, text in enumerate(texts):
+                score = scores[i] if i < len(scores) else 1.0
+                box = polys[i] if i < len(polys) else None
+                yield box, text, float(score if score is not None else 0.0)
+            continue
+        if page is None:
+            continue
+        # PaddleOCR 2.x: [[box, (text, conf)], ...]
+        for line in page:
+            if not line:
+                continue
+            box, payload = line[0], line[1]
+            if isinstance(payload, (list, tuple)):
+                text, confidence = payload[0], payload[1]
+            else:
+                text, confidence = payload, 1.0
+            yield box, text, float(confidence)
 
 
 def extract_text(pdf_path: Path) -> str:
     """Extract text from a PDF or invoice image.
 
     PDFs: layout-aware pdfplumber, then flat pdfplumber/pypdf.
-    Images (.jpg/.png/…): full-page RapidOCR (these GE rent samples are scans).
+    Images (.jpg/.png/…): full-page PaddleOCR (these GE rent samples are scans).
     """
     path = Path(pdf_path)
     if not path.is_file():
@@ -93,24 +227,22 @@ def extract_text(pdf_path: Path) -> str:
 
     raise ValueError(
         f"No extractable text in {path.name}. "
-        "Install rapidocr and onnxruntime for scanned invoices."
+        "Install paddleocr (and paddlepaddle) for scanned invoices."
     )
 
 
 def ocr_image(path: Path) -> str:
     """OCR a full invoice image into approximate reading-order text."""
     try:
-        import numpy as np
         from PIL import Image
 
-        engine = _ensure_ocr_engine()
         img = Image.open(path).convert("RGB")
         # Upscale small phone/email crops so glyphs are readable
         longest = max(img.size)
         if longest < 1600:
             scale = 1600 / longest
             img = img.resize((int(img.width * scale), int(img.height * scale)))
-        return _ocr_result_to_text(engine(np.array(img)))
+        return _ocr_result_to_text(_run_ocr(_to_bgr(img)))
     except Exception:  # noqa: BLE001
         return ""
 
@@ -118,15 +250,13 @@ def ocr_image(path: Path) -> str:
 def ocr_pdf_page(path: Path, page_index: int = 0) -> str:
     """Rasterise one PDF page and OCR it (for scan-only PDFs)."""
     try:
-        import numpy as np
         import pdfplumber
 
-        engine = _ensure_ocr_engine()
         with pdfplumber.open(path) as pdf:
             if page_index >= len(pdf.pages):
                 return ""
             image = pdf.pages[page_index].to_image(resolution=_OCR_RESOLUTION).original
-        return _ocr_result_to_text(engine(np.array(image)))
+        return _ocr_result_to_text(_run_ocr(_to_bgr(image)))
     except Exception:  # noqa: BLE001
         return ""
 
@@ -254,17 +384,15 @@ def ocr_letterhead(pdf_path: Path) -> str | None:
 def _ocr_band(pdf_path: Path) -> list[tuple[float, float, str]]:
     """OCR the letterhead band, returning (y, text_height, text) per detection."""
     try:
-        import numpy as np
         import pdfplumber
 
-        engine = _ensure_ocr_engine()
         with pdfplumber.open(pdf_path) as pdf:
             if not pdf.pages:
                 return []
             page = pdf.pages[0]
             band = (0, 0, page.width, page.height * _LETTERHEAD_BAND)
             image = page.crop(band).to_image(resolution=_OCR_RESOLUTION).original
-        result = engine(np.array(image))
+        result = _run_ocr(_to_bgr(image))
     except Exception:  # noqa: BLE001 - OCR is best-effort
         return []
 

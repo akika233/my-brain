@@ -4,8 +4,7 @@ openpyxl>=3.1.0
 requests>=2.31.0
 selenium>=4.15.0
 
-# Optional: recovers supplier names printed only inside logo images, and OCR for
-# scanned JPG/PNG invoices. Works on Python 3.10–3.13.
-# rapidocr-onnxruntime is unmaintained and refuses Python 3.13 — use these instead.
-rapidocr>=2.0.3
-onnxruntime>=1.21.0
+# Optional: OCR for scans / logo-only supplier names (Python 3.10–3.13).
+# paddleocr 3.x needs paddlepaddle 3.0+ (3.3+ on Python 3.13). First run downloads models.
+paddlepaddle>=3.0.0
+paddleocr>=2.7.0
