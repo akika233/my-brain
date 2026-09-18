@@ -2,6 +2,13 @@
 
 Work notes, career goals, skills.
 
+## Career path (Career Mentor)
+- [[career-goals]] — direction and outcomes
+- [[skills-map]] — skills inventory and practice
+
+## AP ops quick list (Work Finance Ops)
+- [[weekly-ap-ops-checklist]] — Monday / month-end checklist
+
 ## Supplier dashboard
 
 User guide: [[supplier-dashboard-guide]] — weekly payment run, month-end close, what to type.
