@@ -1,0 +1,17 @@
+RECHNUNG  20260000000531
+Leistungsempfanger:  NewBalance Germany GmbH
+Mietvertrag:  t0000582
+Liegenschaft:  AlterSpandauerWeg1
+14641Wustermark
+EigentumerinVermieterin:FREY Berlin OpCo GmbH Alter Spandauer Weg 1
+14641Wustermark
+USt-IdNr.(UID-Nr.):  DE454322880
+Steuemummer:
+Mieteinheit:  87B-C
+Leistungszeitraum  Bemerkungen  Netto 
+01.03.2026-31.03.2026  Rentalincome-Retail  13.704,25
+Netto USt % USt Betrag  Brutto
+Gesamtsumme  13.704,25  19,00  2.603,81  16.308,06
+DieForderungziehenwirmitderSEPA-LastschriftzumMandatdeberl-t0000582zuderGlaubiger-
+Identifikationsnummer von Ihrem Konto IBAN DE04300308800013701016 bei der HSBC Germany
+() ein.

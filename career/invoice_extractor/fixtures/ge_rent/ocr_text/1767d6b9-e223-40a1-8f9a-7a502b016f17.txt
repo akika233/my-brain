@@ -1,0 +1,13 @@
+RECHNUNG
+Bezug:ZweibruckenFashionOutlet  RechnungsNummer  ：1202600556
+Datum  ：02/03/2026
+Falligkeit  ：09/03/2026
+Kundennr.  ：t0003017/cu003015
+HiermitberechnenwirIhnendenBetragvon:
+Beschreibung  Netto Betrag  USt  USt (E)  Gesamt (E)
+(C)  %
+BasismietefurUnitZ01-011furdenZeitraum01/03/2026  15.446,77  19,00  2.934,89  18.381,66
+-31/03/2026
+NebenkostenpauschalefurUnitZ01-011furdenZeitraum  7.348,44  19,00  1.396,20  8.744,64
+01/03/2026-31/03/2026
+Gesamt:  22.795,21  4.331,09  27.126,30

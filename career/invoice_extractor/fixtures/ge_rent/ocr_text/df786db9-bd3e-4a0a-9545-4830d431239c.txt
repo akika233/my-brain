@@ -1,0 +1,11 @@
+GUTSCHRIFT
+Kategorie  Beschreibung/Leistungs-/Lieferdatum  Netto  MwSt
+Rentalincome  SPECIALCREDIT02/2026forDTOR  -6.503,97
+MwSt@19%  -1.235,75
+GesamtNetto  -6.503,97
+GesamtMwSt  -1.235,75
+Endbetrag  -7.739.72
+AufschlusselungderMwSt.
+Steuersatzin%  SteuersatzSteuerpflichtigerBetrag  SteuersatzSteuerbetrag
+19  -6.503,97  -1.235.75
+WennSiedemSEPA-Lastschriftverfahrenzugestimmthaben,werdenwirdenBetragdieserRechnungunterAngabeIhrerMandatsreferenzsowieunserer

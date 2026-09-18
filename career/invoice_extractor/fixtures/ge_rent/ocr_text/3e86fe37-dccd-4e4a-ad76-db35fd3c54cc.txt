@@ -1,0 +1,13 @@
+Rechnung: GA02INV202600785
+Datum:01/03/2026
+Kundennummer:NBALW1
+Geschaftseinheit: WV1074-Unit 74, Wertheim Village
+Bestellnummer:
+Fallig  Beschreibung  Nettobetrag
+01/03/2026  Nebenkosten01/03/26-31/03/26  8,406.00
+GesamtNettoEUR  8,406.00
+Umsatzsteuer @ 19%  1,597.14
+GesamtBruttoEUR  10,003.14
+Fur Lastschrift werden wir wie vereinbart einziehen. Unsere Bankdaten finden Sie unten,
+falls dies fur eine Uberweisung erforderlich ist
+Bankverbindung:

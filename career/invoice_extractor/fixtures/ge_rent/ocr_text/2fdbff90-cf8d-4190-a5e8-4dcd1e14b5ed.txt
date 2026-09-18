@@ -1,0 +1,13 @@
+Rechnung:GA02INV202600673
+Datum:01/03/2026
+Kundennummer:NBALW1
+Geschaftseinheit: WV1074-Unit 74, Wertheim Village
+Bestellnummer:
+Fallig  Beschreibung  Nettobetrag
+01/03/2026  BasisMiete01/03/26-31/03/26  10,800.00
+GesamtNettoEUR  10,800.00
+Umsatzsteuer @ 19%  2,052.00
+GesamtBruttoEUR  12,852.00
+Fur Lastschrift werden wir wie vereinbart einziehen. Unsere Bankdaten finden Sie unten,
+fallsdiesfureineUberweisungerforderlichist
+Bankverbindung:

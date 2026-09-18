@@ -1,0 +1,16 @@
+Rechnung
+MietrechnungfurFebruar2026
+gem.Mietvertragvom14.07./22.08.2025
+FuirObjekt:NewBalanceFactoryOutlet,BremerStraBe111A,28816Stuhr-Brinkum
+Flache:448qm
+Bezeichnung  Betrag EUR
+Mietrechnung2/28tel  803,52
+Zeitraum27.und28.Februar2026
+Nebenkostenvorauszahlung  3.136,00
+ZeitraumFebruar2026
+Summe:  3.939,52
+19,00%USt.aUfEUR3.939,52:  748,51
+Endbetrag:  4.688,03
+DieZahlungerfolgtperLastschriftvonlhremKontoDE04300308800013701016.
+MitfreundlichenGruBen
+Dr.RolfundMichaelaMullmann

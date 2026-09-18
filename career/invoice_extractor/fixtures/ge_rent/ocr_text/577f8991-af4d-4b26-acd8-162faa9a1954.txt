@@ -1,0 +1,13 @@
+RECHNUNG
+Bezug:ZweibruckenFashionOutlet  RechnungsNummer  ：1202600676
+Datum  ：02/03/2026
+Falligkeit  ：09/03/2026
+Kundennr.  ：t0001295/cu003015
+HiermitberechnenwirlhnendenBetragvon:
+Beschreibung  Netto Betrag  USt  USt (e)  Gesamt (∈)
+(∈)  %
+Lager/ContainerfurUnitStorageST116furdenZeitraum  468,18  19,00  88,95  557,13
+01/03/2026-31/03/2026
+StorageServicesfurUnitStorageST116furdenZeitraum  118,19  19,00  22,46  140,65
+01/03/2026-31/03/2026
+Gesamt:  586,37  111,41  697,78

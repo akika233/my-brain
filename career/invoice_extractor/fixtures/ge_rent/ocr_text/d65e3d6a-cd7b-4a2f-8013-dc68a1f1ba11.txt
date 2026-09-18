@@ -1,0 +1,33 @@
+DESIGNEROUTLETS
+zuHanden:Kreditorenbuchhaltung  NeumuensterDesignerOutletGmbH
+Rechnungsanschrift  Oderstrasse10
+NewBalanceGermanyGmbH  24539Neumunster
+PlangeMuhle2  Tel:+4915115206852
+40221Dusseldorf  Email:Buchhaltung.debitoren@mcarthurglen.com
+Gemany
+Versandanschrift  Lease1D:NEUM02_009275
+NewBalance  Nummer:CINVNEU2026002402
+PlangeMuhle2  Datum:05.03.2026
+40221Dusseldorf  Falligkeitsdatum:05.03.2026
+Gemany
+Wahrung:EUR
+KundenNr.:CUST-00000569
+KundenUst-IDNr.:DE303400537
+RECHNUNG
+Kategorie  Beschreibung/Leistungs-/Lieferdatum  Netto  MwSt
+ServiceChargeIncomefrom  01/03/2026-31/03/2026  56.00
+Tenants
+MwSt@19%  10,64
+Rentalincome  01/03/2026-31/03/2026  17.140,18
+MwSt@19%  3.256,63
+StorageIncome  01/03/2026-31/03/2026  698,74
+MwSt@19%  132,76
+GesamtNetto  17.894,92
+GesamtMwSt  3.400,03
+Endbetrag  21.294.95
+Aufschlusselung derMwSt.
+Steuersatzin%  SteuersatzSteuerpflichtigerBetrag  SteuersatzSteuerbetrag
+19  17.894,92  3.400,03
+BeiRechnungsfragenrufenSiebittedieDebitorenbuchhaltungan+4915115206852
+ZahlungsaviszusendenanBuchhaltung.debitoren@mcarthurglen.com
+WennSiedemSEPA-Lastschriftverfahrenzugestimmt haben,werdenwir denBetrag dieserRechnung unterAngabeIhrerMandatsreferenz sowie unserer

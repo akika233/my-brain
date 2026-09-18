@@ -1,0 +1,14 @@
+Rechnung
+Dauermietrechnunggultigab01.Marz2026
+gem.Mietvertragvom14.07./22.08.2025
+FurObjekt:NewBalanceFactoryOutlet,BremerStraBe111A,28816Stuhr-Brinkum
+Flache:448qm
+Bezeichnung  Betrag EUR
+Monatsmiete  11.249,28
+Nebenkostenvorauszahlung  3.136,00
+Summe:  14.385,28
+19,00%USt.aufEUR14.385,28:  2.733,20
+Endbetrag:  17.118,48
+DieZahlungerfolgtmonatlichperLastschriftvonlhremKontoDE04300308800013701016.
+MitfreundlichenGruBen
+Dr.RolfundMichaelaMullmann
