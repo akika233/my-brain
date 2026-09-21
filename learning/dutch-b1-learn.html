@@ -1438,16 +1438,16 @@ function edgeRateFromUi(rate){
 }
 
 // ── Which engine can actually speak here ────────────────────────────
-// Neural Colette needs either the local practice server (/api/tts) or Edge's
-// own socket, which Microsoft refuses from another browser's origin. On GitHub
-// Pages in Safari or Chrome neither exists — POSTing /api/tts there just
-// returns 405 from the static host — so the browser's own Dutch voice is used.
+// Neural Colette needs a same-origin /api/tts (Vercel or the PC practice
+// server) or Edge's own socket. GitHub Pages is static — POSTing /api/tts
+// there returns 405 — so the browser's own Dutch voice is used instead.
 let neuralState = "unknown"; // unknown | unavailable
 
 function hasLocalTtsServer(){
   if((localStorage.getItem("dutchTtsServer") || "").trim()) return true;
   const host = location.hostname;
   if(host === "localhost" || host === "127.0.0.1" || host === "::1") return true;
+  if(/\.vercel\.app$/i.test(host)) return true;
   // serve-dutch-b1.py binds 0.0.0.0, so a phone reaches it on a private IP
   return /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host);
 }
@@ -1676,6 +1676,9 @@ function ensureTtsAudio(){
   const a = document.createElement("audio");
   a.id = "edgeTtsPlayer";
   a.preload = "auto";
+  a.playsInline = true;
+  a.setAttribute("playsinline", "");
+  a.setAttribute("webkit-playsinline", "");
   a.style.display = "none";
   document.body.appendChild(a);
   a.addEventListener("ended", ()=>{
@@ -1685,6 +1688,16 @@ function ensureTtsAudio(){
   });
   tts.audio = a;
   return a;
+}
+
+function unlockTtsAudio(){
+  const a = ensureTtsAudio();
+  if(a.dataset.unlocked === "1") return;
+  a.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+  const p = a.play();
+  if(p && p.then){
+    p.then(()=>{ a.pause(); a.dataset.unlocked = "1"; }).catch(()=>{});
+  }
 }
 
 async function fetchColetteUrl(text, rate){
@@ -1720,8 +1733,9 @@ function refreshTtsButtons(){
 
 function speakQueue(texts, rate=1.0){
   tts.gen++;
+  unlockTtsAudio();
   const a = tts.audio;
-  if(a){ a.pause(); a.removeAttribute("src"); }
+  if(a) a.pause();
   if(window.speechSynthesis) speechSynthesis.cancel();
   tts.hardStop = false;
   tts.queue = (Array.isArray(texts) ? texts : [texts]).map(t=>String(t||"").trim()).filter(Boolean);

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+serve-dutch-b1.py
+transcript_ai.py
+*.md
+dutch-b1-planner.html
+dutch-b1-mobile.html
+contact2-index.json
+transcripts-cache/
+.vercel/
+api/

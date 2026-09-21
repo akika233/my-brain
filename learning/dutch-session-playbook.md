@@ -29,7 +29,7 @@ Prompt pattern for AI: “Corrigeer dit B1-Nederlands en leg 3 fouten uit.”
 
 ## After
 - Check chapter boxes in [[dutch-b1-log]] when a part is truly done
-- Optional: practice site (`dutch-b1-learn.html` — GitHub Pages, Edge, or local PC server) for vocab or chapter test
+- Optional: practice site (`dutch-b1-learn.html` — Vercel on phone, GitHub Pages in Edge, or local PC server) for vocab or chapter test
 
 **See also:** [[dutch-b1-planner]], [[dutch-b1-log]]
 
