@@ -2,6 +2,11 @@
 
 Work notes, career goals, skills.
 
+## Path & skills
+
+Skills map: [[skills-map]] — living evidence from shipped AP tooling (controls, extracts, matching, automation).
+Career goals will live in [[career-goals]] when written.
+
 ## Supplier dashboard
 
 User guide: [[supplier-dashboard-guide]] — weekly payment run, month-end close, what to type.
