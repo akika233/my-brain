@@ -6,8 +6,10 @@ Things I'm studying or practicing
 
 - [[dutch-b1-planner]] — Dutch B1 with *Contact! 2* (3 months: Jul–Oct 2026)
 - [[dutch-b1-log]] — session + chapter checklist
+- [[dutch-session-playbook]] — how to run a night + correction protocol
 - **Self-contained learning module:** `learning/dutch-b1-learn.html` — Vercel (Colette on phone) or the local server
   - **Phone:** https://dutch-b1-sage.vercel.app/
+  - **GitHub Pages (no TTS server):** https://akika233.github.io/dutch-b1-site/dutch-b1-learn.html — works in Microsoft Edge. Chrome/Safari block Microsoft’s WebSocket; use Edge, the Vercel URL, or the PC server below.
   - All 8 chapters built-in: vocab flashcards + TTS audio, grammar, reading, listening, speaking, writing
   - **Reading / Listening difficulty:** NT2 II · B1→B2 — Klokhuis-style culture articles + Jeugdjournaal-style news/interview audio (see [NTI Nederlands voor anderstaligen](https://www.nti.nl/talen/nederlands/nederlands-voor-anderstaligen/), [Jeugdjournaal](https://jeugdjournaal.nl/), [Het Klokhuis](https://hetklokhuis.nl/))
   - **CD Lab:** play real Contact! 2 MP3s (tekstboek/werkboek CDs) — via local server or a folder picker
