@@ -114,6 +114,8 @@ outside the query table so a refresh does not wipe them). Re-run the script
 only when new PAs appear, so they show up on `PO_Match`; there are spare rows
 on that sheet if you want to type a PO by hand.
 
+Store names for the last 5 digits of `Acct`: [[store-cost-centres]].
+
 ## Invoice PDF extractor
 
 Pull invoice fields from bosuka DocStore PDFs (Selenium + basic auth), or from a local folder.
