@@ -9,9 +9,11 @@ import re
 from pathlib import Path
 from urllib.parse import parse_qs
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, File, Form, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
+
+from store import get_upload_file, list_uploads, load_progress, save_progress, save_upload, storage_mode
 
 VOICE = "nl-NL-ColetteNeural"
 RATE_RE = re.compile(r"^[+-]\d+%$")
@@ -25,7 +27,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
 
@@ -207,4 +209,79 @@ async def tts_post(request: Request) -> Response:
         str(payload.get("text") or ""),
         str(payload.get("rate") or "+0%"),
         str(payload.get("voice") or VOICE),
+    )
+
+
+@app.get("/api/progress")
+async def progress_get() -> JSONResponse:
+    data = await load_progress()
+    data["storage"] = storage_mode()
+    return JSONResponse(data, headers={"Cache-Control": "private, no-store"})
+
+
+@app.put("/api/progress")
+async def progress_put(request: Request) -> JSONResponse:
+    n = int(request.headers.get("content-length") or 0)
+    if n > 200_000:
+        return json_error(413, "payload too large")
+    try:
+        payload = await request.json()
+    except json.JSONDecodeError:
+        return json_error(400, "invalid json")
+    if not isinstance(payload, dict):
+        return json_error(400, "invalid json")
+    try:
+        data = await save_progress(payload)
+    except ValueError as e:
+        return json_error(413, str(e))
+    except Exception as e:
+        return json_error(502, str(e))
+    data["storage"] = storage_mode()
+    return JSONResponse(data, headers={"Cache-Control": "private, no-store"})
+
+
+@app.get("/api/uploads")
+async def uploads_list(chapter: str = "", kind: str = "") -> JSONResponse:
+    items = await list_uploads(chapter or None, kind or None)
+    return JSONResponse(
+        {"items": items, "storage": storage_mode()},
+        headers={"Cache-Control": "private, no-store"},
+    )
+
+
+@app.post("/api/uploads")
+async def uploads_post(
+    file: UploadFile = File(...),
+    kind: str = Form("speaking"),
+    chapter: str = Form(""),
+    slot: str = Form("0"),
+    transcript: str = Form(""),
+) -> JSONResponse:
+    data = await file.read()
+    try:
+        item = await save_upload(
+            data=data,
+            mime=file.content_type or "application/octet-stream",
+            kind=kind,
+            chapter=chapter,
+            slot=slot,
+            transcript=transcript,
+        )
+    except ValueError as e:
+        return json_error(400, str(e))
+    except Exception as e:
+        return json_error(502, str(e))
+    return JSONResponse(item, headers={"Cache-Control": "private, no-store"})
+
+
+@app.get("/api/uploads/{upload_id}/file")
+async def uploads_file(upload_id: str) -> Response:
+    found = await get_upload_file(upload_id)
+    if not found:
+        return json_error(404, "not found")
+    body, mime = found
+    return Response(
+        content=body,
+        media_type=mime,
+        headers={"Cache-Control": "private, max-age=3600"},
     )

@@ -159,6 +159,8 @@ a{color:var(--accent)}
 .writing-tip{font-size:.88rem;background:#fffbf0;border:1px solid #f0e6c0;border-radius:10px;padding:.6rem .85rem;margin-bottom:.65rem;color:#6b5000}
 .saved-indicator{font-size:.8rem;color:var(--ok);margin-left:.5rem;opacity:0;transition:.3s}
 .saved-indicator.show{opacity:1}
+.cloud-status{margin-left:auto;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.72);white-space:nowrap}
+.topbar a.logout{color:#fff;font-size:.72rem;font-weight:700;opacity:.8;text-decoration:none}
 
 /* ── progress dots ── */
 .prog-row{display:flex;gap:.3rem;flex-wrap:wrap;margin:.35rem 0}
@@ -182,6 +184,8 @@ a{color:var(--accent)}
 <div class="topbar">
   <h1>Dutch B1</h1>
   <div class="ch-tabs" id="chTabs"></div>
+  <span class="cloud-status" id="cloudStatus"></span>
+  <a class="logout" href="/logout">Log out</a>
 </div>
 
 <!-- ── module nav ── -->
@@ -1415,9 +1419,137 @@ function getKnown(chId){
   }
   return knownSets[chId];
 }
-function saveKnown(chId){ localStorage.setItem("known_"+chId, JSON.stringify([...getKnown(chId)])); }
+function saveKnown(chId){ localStorage.setItem("known_"+chId, JSON.stringify([...getKnown(chId)])); scheduleCloudPush(); }
 
 function currentChapter(){ return CHAPTERS[currentChIdx]; }
+
+let cloudTimer = null;
+let cloudReady = false;
+
+function setCloudStatus(msg){
+  const el = document.getElementById("cloudStatus");
+  if(el) el.textContent = msg || "";
+}
+
+function collectProgress(){
+  const known = {}, writing = {}, tests = {};
+  CHAPTERS.forEach(ch=>{
+    known[ch.id] = [...getKnown(ch.id)];
+    writing[ch.id] = localStorage.getItem("write_"+ch.id) || "";
+    const t = localStorage.getItem("test_"+ch.id);
+    if(t){
+      try { tests[ch.id] = JSON.parse(t); } catch(e){}
+    }
+  });
+  return { known, writing, tests, currentChIdx };
+}
+
+function applyProgress(data){
+  if(!data) return;
+  if(data.known && typeof data.known === "object"){
+    Object.keys(data.known).forEach(id=>{
+      const words = data.known[id];
+      if(Array.isArray(words)){
+        knownSets[id] = new Set(words);
+        localStorage.setItem("known_"+id, JSON.stringify(words));
+      }
+    });
+  }
+  if(data.writing && typeof data.writing === "object"){
+    Object.keys(data.writing).forEach(id=>{
+      if(typeof data.writing[id] === "string") localStorage.setItem("write_"+id, data.writing[id]);
+    });
+  }
+  if(data.tests && typeof data.tests === "object"){
+    Object.keys(data.tests).forEach(id=>{
+      try { localStorage.setItem("test_"+id, JSON.stringify(data.tests[id])); } catch(e){}
+    });
+  }
+  if(Number.isInteger(data.currentChIdx) && data.currentChIdx >= 0 && data.currentChIdx < CHAPTERS.length){
+    currentChIdx = data.currentChIdx;
+  }
+}
+
+async function pullCloud(){
+  try{
+    const r = await fetch("/api/progress", { cache:"no-store" });
+    if(!r.ok) throw new Error("no cloud");
+    const data = await r.json();
+    const local = collectProgress();
+    applyProgress(data);
+    CHAPTERS.forEach(ch=>{
+      const merged = new Set(data.known && data.known[ch.id] ? data.known[ch.id] : []);
+      (local.known[ch.id] || []).forEach(w=>merged.add(w));
+      knownSets[ch.id] = merged;
+      localStorage.setItem("known_"+ch.id, JSON.stringify([...merged]));
+      const serverWrite = (data.writing && data.writing[ch.id]) || "";
+      const localWrite = local.writing[ch.id] || "";
+      if(localWrite.length > serverWrite.length) localStorage.setItem("write_"+ch.id, localWrite);
+    });
+    cloudReady = true;
+    setCloudStatus(data.storage === "blob" ? "☁ across devices" : (data.storage === "ephemeral" ? "☁ until restart" : "☁ saved on server"));
+    await pushCloud();
+  }catch(e){
+    cloudReady = false;
+    setCloudStatus("");
+  }
+}
+
+function scheduleCloudPush(){
+  if(!cloudReady) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(pushCloud, 800);
+}
+
+async function pushCloud(){
+  if(!cloudReady) return;
+  try{
+    const r = await fetch("/api/progress", {
+      method:"PUT",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(collectProgress())
+    });
+    if(r.ok) setCloudStatus("☁ saved");
+  }catch(e){}
+}
+
+async function uploadRecording(idx, blob, transcript){
+  if(!cloudReady || !blob) return;
+  const fd = new FormData();
+  const ext = (blob.type || "").includes("mp4") ? "mp4" : "webm";
+  fd.append("file", blob, "speak." + ext);
+  fd.append("kind", "speaking");
+  fd.append("chapter", String(currentChapter().id));
+  fd.append("slot", String(idx));
+  fd.append("transcript", transcript || "");
+  try{
+    const r = await fetch("/api/uploads", { method:"POST", body: fd });
+    if(r.ok) setCloudStatus("☁ recording saved");
+  }catch(e){}
+}
+
+async function hydrateRecordings(){
+  if(!cloudReady) return;
+  try{
+    const r = await fetch("/api/uploads?chapter=" + currentChapter().id + "&kind=speaking", { cache:"no-store" });
+    if(!r.ok) return;
+    const data = await r.json();
+    (data.items || []).forEach(it=>{
+      const audioEl = document.getElementById("recAudio_" + it.slot);
+      const playBtn = document.getElementById("playRecBtn_" + it.slot);
+      const result = document.getElementById("recResult_" + it.slot);
+      if(!audioEl) return;
+      audioEl.src = "/api/uploads/" + it.id + "/file";
+      audioEl.classList.add("show");
+      if(playBtn) playBtn.disabled = false;
+      if(result){
+        result.textContent = it.transcript
+          ? ("Saved. Transcript: " + it.transcript)
+          : "Saved recording — press ▶ Listen recording";
+      }
+    });
+  }catch(e){}
+}
 
 // ════════════════════════════════════════════════════════════════════
 // TTS — Microsoft Edge neural (Colette), free, no Azure key
@@ -1868,6 +2000,7 @@ function selectChapter(idx){
     testRun.finished=false;
   }
   currentChIdx=idx;
+  scheduleCloudPush();
   document.querySelectorAll(".ch-tab").forEach((b,i)=>b.classList.toggle("active",i===idx));
   buildHeader();
   resetVocabDeck();
@@ -2214,6 +2347,7 @@ function renderSpeaking(){
     </div>`;
   });
   document.getElementById("speakingContent").innerHTML=html;
+  hydrateRecordings();
 
   window.toggleSample=function(id){
     const el=document.getElementById(id+"_sample");
@@ -2268,6 +2402,7 @@ function renderSpeaking(){
           const blob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
           const url=URL.createObjectURL(blob);
           recState[idx].url=url;
+          recState[idx].blob=blob;
           audioEl.src=url;
           audioEl.classList.add("show");
           playBtn.disabled=false;
@@ -2275,6 +2410,7 @@ function renderSpeaking(){
           result.textContent = transcript
             ? ("Saved. Transcript: "+transcript+" — press ▶ Listen recording")
             : "Recording saved — press ▶ Listen recording to hear yourself.";
+          uploadRecording(idx, blob, transcript);
         } else {
           result.textContent="No audio captured. Try again and allow the microphone.";
         }
@@ -2570,6 +2706,15 @@ function finishChapterTest(timedOut){
   });
   testRun.score=score;
   testRun.max=T.listenQs.length;
+  localStorage.setItem("test_"+ch.id, JSON.stringify({
+    score: testRun.score,
+    max: testRun.max,
+    timedOut: testRun.timedOut,
+    answers: testRun.answers,
+    realNotes: testRun.realNotes || "",
+    finishedAt: Date.now()
+  }));
+  scheduleCloudPush();
   renderTest();
 }
 
@@ -2644,7 +2789,7 @@ function renderTest(){
       <h4>2. Real CD sample</h4>
       <p style="font-size:.88rem;color:var(--muted);margin-bottom:.55rem">Pick any track. Listen once or twice. Write 3 words or a short summary — this part is practice, not scored.</p>
       ${realAudioPickerHtml("testPick")}
-      <textarea class="note-area" id="testRealNotes" placeholder="Wat hoorde je? 3 woorden / korte samenvatting…" oninput="testRun.realNotes=this.value">${esc(testRun.realNotes)}</textarea>
+      <textarea class="note-area" id="testRealNotes" placeholder="Wat hoorde je? 3 woorden / korte samenvatting…" oninput="testRun.realNotes=this.value;scheduleCloudPush()">${esc(testRun.realNotes)}</textarea>
     </div>
     <div class="test-part">
       <h4>3. Spreken</h4>`;
@@ -2669,6 +2814,7 @@ function renderTest(){
 
   document.getElementById("testContent").innerHTML=html;
   wireRealAudioPicker("testPick");
+  hydrateRecordings();
 
   window.pickTestAnswer=function(qi, oi){
     if(!testRun.active || testRun.finished) return;
@@ -2719,10 +2865,12 @@ function renderWriting(){
     el.textContent=wc+" woorden (minimum: "+min+")";
     el.className="word-count"+(wc>=min?" ok":"");
     localStorage.setItem(key, txt);
+    scheduleCloudPush();
   };
   window.saveWriting=function(key){
     const txt=document.getElementById("writeArea").value;
     localStorage.setItem(key, txt);
+    scheduleCloudPush();
     const ind=document.getElementById("savedInd");
     ind.classList.add("show");
     setTimeout(()=>ind.classList.remove("show"),1800);
@@ -2732,12 +2880,16 @@ function renderWriting(){
 // ════════════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════════════
-buildChTabs();
-setupModTabs();
-buildHeader();
-resetVocabDeck();
-updateVocabUI();
-connectMaterials();
+async function boot(){
+  await pullCloud();
+  buildChTabs();
+  setupModTabs();
+  buildHeader();
+  resetVocabDeck();
+  updateVocabUI();
+  connectMaterials();
+}
+boot();
 </script>
 </body>
 </html>

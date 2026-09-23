@@ -9,6 +9,7 @@ Things I'm studying or practicing
 - [[dutch-session-playbook]] — how to run a night + correction protocol
 - **Self-contained learning module:** `learning/dutch-b1-learn.html` — Vercel (Colette on phone) or the local server
   - **Phone:** https://dutch-b1-sage.vercel.app/
+  - Progress + writing + speaking recordings sync to the server (needs a Vercel Blob store on the project)
   - **GitHub Pages (no TTS server):** https://akika233.github.io/dutch-b1-site/dutch-b1-learn.html — works in Microsoft Edge. Chrome/Safari block Microsoft’s WebSocket; use Edge, the Vercel URL, or the PC server below.
   - All 8 chapters built-in: vocab flashcards + TTS audio, grammar, reading, listening, speaking, writing
   - **Reading / Listening difficulty:** NT2 II · B1→B2 — Klokhuis-style culture articles + Jeugdjournaal-style news/interview audio (see [NTI Nederlands voor anderstaligen](https://www.nti.nl/talen/nederlands/nederlands-voor-anderstaligen/), [Jeugdjournaal](https://jeugdjournaal.nl/), [Het Klokhuis](https://hetklokhuis.nl/))
@@ -18,7 +19,7 @@ Things I'm studying or practicing
   - **GitHub Pages copies** still exist but have no TTS server — use the Vercel URL on your phone
   - **PC practice server:** same Colette MP3s via `python learning/serve-dutch-b1.py` then `http://127.0.0.1:8765/dutch-b1-learn.html`. `pip install edge-tts` once.
   - Speech recognition for speaking practice
-  - Progress saved in browser (localStorage)
+  - Progress saved in browser (localStorage) **and** on Vercel (`/api/progress`, `/api/uploads`) so phone and PC stay in sync
 - **Cloud site (phone anywhere):** https://akika233.github.io/dutch-b1-site/
   - Plan + Practice UI online
   - On phone: Practice → **PDF book** / **Audio** → pick from OneDrive

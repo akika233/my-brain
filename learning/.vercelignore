@@ -8,4 +8,5 @@ dutch-b1-mobile.html
 contact2-index.json
 transcripts-cache/
 .vercel/
+.data/
 api/
